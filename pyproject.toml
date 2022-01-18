@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "xpresso"
-version = "0.2.0"
+version = "0.2.1"
 description = "A developer centric, performant Python web framework"
 authors = ["Adrian Garcia Badaracco <adrian@adriangb.com>"]
 readme = "README.md"
