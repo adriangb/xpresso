@@ -1,6 +1,12 @@
 import inspect
+import sys
 from dataclasses import dataclass
-from typing import Any, Type, get_args
+from typing import Any, Type
+
+if sys.version_info < (3, 8):
+    from typing_extensions import get_args
+else:
+    from typing import get_args
 
 import msgpack  # type: ignore[import]
 from pydantic import BaseModel
