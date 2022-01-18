@@ -8,7 +8,7 @@ If you are not, that is okay! There are a lot of excellent guides out there to g
 
 ## Runtime types (reflection)
 
-Most languages loose a lot of their type information at runtime.
+Most languages lose a lot of their type information at runtime.
 This can range between complete loss of type information (like TypeScript) or only weak support for runtime reflection (Golang).
 
 Python stands out for it's strong support for typing information at runtime (often called _reflection_). Because of Python's dynamic runtime behavior, it is possible to read types and modify the runtime behavior of the program.
