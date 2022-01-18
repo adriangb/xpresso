@@ -1,0 +1,2 @@
+class InvalidSerialization(ValueError):
+    pass

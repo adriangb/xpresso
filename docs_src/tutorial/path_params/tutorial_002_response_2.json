@@ -1,0 +1,12 @@
+{
+  "detail": [
+    {
+      "loc": [
+        "path",
+        "item_id"
+      ],
+      "msg": "value is not a valid integer",
+      "type": "type_error.integer"
+    }
+  ]
+}

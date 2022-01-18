@@ -1,0 +1,68 @@
+site_name: "xpresso"
+site_description: developer centric, performant web framework
+site_url: https://www.adriangb.com/xpresso
+
+theme:
+  name: "material"
+  logo: assets/images/xpresso.png
+  favicon: assets/images/xpresso-favicon@32x32.ico
+  features:
+    - navigation.expand
+  custom_dir: docs/overrides
+  palette:
+    - scheme: "default"
+      primary: "black"
+      accent: "amber"
+      media: "(prefers-color-scheme: light)"
+      toggle:
+        icon: "material/weather-night"
+        name: "Switch to dark mode"
+    - scheme: "slate"
+      primary: "black"
+      accent: "amber"
+      media: "(prefers-color-scheme: dark)"
+      toggle:
+        icon: "material/weather-sunny"
+        name: "Switch to light mode"
+
+repo_name: adriangb/xpresso
+repo_url: https://github.com/adriangb/xpresso
+edit_uri: "blob/main/docs/"
+
+nav:
+  - Intro: "README.md"
+  - Python Types: "types.md"
+  - Tutorial:
+      - Minimal App: "tutorial/minimal_app.md"
+      - Path Parameters: "tutorial/path_params.md"
+      - Query Parameters: "tutorial/query_params.md"
+      - Parameter Constraints and Metadata: "tutorial/param_constraints_and_metadata.md"
+      - Request Body: "tutorial/body.md"
+      - Cookie Parameters: "tutorial/cookie_params.md"
+      - Header Parameters: "tutorial/header_params.md"
+      - File Uploads: "tutorial/files.md"
+      - Forms: "tutorial/forms.md"
+      - Dependency Injection: "tutorial/di.md"
+
+markdown_extensions:
+  - admonition
+  - pymdownx.highlight:
+      use_pygments: true
+  - pymdownx.snippets
+  - pymdownx.superfences
+
+extra_css:
+  - css/termynal.css
+  - css/custom.css
+extra_javascript:
+  - js/termynal.js
+  - js/custom.js
+
+extra:
+  version:
+    provider: mike
+
+plugins:
+  - mike:
+      version_selector: true
+  - search:

@@ -1,0 +1,15 @@
+{
+  "detail": [
+    {
+      "ctx": {
+        "limit_value": 0
+      },
+      "loc": [
+        "path",
+        "item_id"
+      ],
+      "msg": "ensure this value is greater than 0",
+      "type": "value_error.number.not_gt"
+    }
+  ]
+}

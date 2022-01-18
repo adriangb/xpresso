@@ -1,0 +1,100 @@
+[tool.poetry]
+name = "xpresso"
+version = "0.1.1"
+description = "A developer centric, performant Python web framework"
+authors = ["Adrian Garcia Badaracco <adrian@adriangb.com>"]
+readme = "README.md"
+repository = "https://github.com/adriangb/xpresso"
+documentation = "https://www.adriangb.com/xpresso"
+keywords = ["web-framework", "http", "openapi"]
+license = "MIT"
+classifiers = [
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: System Administrators",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python",
+    "Topic :: Internet",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development",
+    "Typing :: Typed",
+    "Development Status :: 3 - Alpha",
+    "Environment :: Web Environment",
+    "Framework :: AsyncIO",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
+    "Topic :: Internet :: WWW/HTTP",
+]
+
+[tool.poetry.dependencies]
+python = ">=3.7,<4"
+di = "~0.38"
+anyio = "~3"
+starlette = ">=0.16.0,<2"
+importlib-metadata = {version = ">=3", python = "<3.8"}
+typing-extensions = {version = ">=3", python = "<3.9"}
+pydantic = "~1"
+
+[tool.poetry.dev-dependencies]
+# linting
+black = ">=21.9b0,<22"
+flake8 = "~3"
+isort = "~5"
+mypy = ">=v0.930"
+pre-commit = "~2"
+# testing
+pytest = "~6"
+pytest-cov = { version = "~3"}
+pytest-sugar = "~0"
+coverage = {extras = ["toml"], version = "~6"}
+requests = "~2"
+python-multipart = "~0"
+# docs
+mkdocs = "~1"
+mkdocs-material = "~8"
+mkautodoc = "~0"
+mike = "~1"
+# benchmarks
+starlette = "~0"
+fastapi = ">=0.70.0"
+httpx = "<2"
+asgi-lifespan = "~1"
+gunicorn = "^20.1.0"
+uvicorn = {extras = ["standard"], version = "^0.15.0"}
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.isort]
+profile = "black"
+
+[tool.coverage.run]
+branch = true
+source = ["xpresso", "tests", "docs"]
+dynamic_context = "test_function"
+
+[tool.coverage.report]
+exclude_lines = ["pragma: no cover", '\.\.\.', "raise NotImplementedError", "TYPE_CHECKING", "__repr__", "import"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.black]
+exclude = 'docs\/.*\.py$'
+
+[tool.mypy]
+files = "xpresso/**/*.py,tests/**/*.py"
+no_implicit_optional = true
+allow_redefinition = false
+implicit_reexport = false
+warn_unreachable = true
+show_error_codes = true

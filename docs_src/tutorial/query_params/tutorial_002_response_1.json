@@ -1,0 +1,12 @@
+{
+  "detail": [
+    {
+      "loc": [
+        "query",
+        "input"
+      ],
+      "msg": "Missing required query parameter",
+      "type": "value_error"
+    }
+  ]
+}

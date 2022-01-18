@@ -1,0 +1,5 @@
+[flake8]
+# See https://ichard26-testblackdocs.readthedocs.io/en/refactor_docs/compatible_configs.html#flake8
+extend-ignore = E203, E231, E501, W503, E302
+# for black compatibiilty
+max-line-length = 88
