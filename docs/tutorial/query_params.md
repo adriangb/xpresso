@@ -86,5 +86,36 @@ To accept repeated query parameters and extract them into a list, just pass the 
     If no values are sent, you will get an empty list.
     To require at least one value, use parameter constraints, which you will learn about in the [Paramter Constraints and Metadata] section of the docs.
 
+## Object query parameters
+
+For advanced use cases, Xpresso also supports object-valued query parameters.
+These can be extracted into a Pydantic model or a dictionary (including support for free-form query parameters).
+
+```python
+--8<-- "docs_src/tutorial/query_params/tutorial_005.py"
+```
+
+Now if you navigate to [http://127.0.0.1:8000/items/?prefix=Ba&limit=1](http://127.0.0.1:8000/items/?prefix=Ba&limit=1) you will get back the following JSON response:
+
+```json
+--8<-- "docs_src/tutorial/query_params/tutorial_005_response_1.json"
+```
+
+## Customizing deserialization
+
+Xpresso supports the full [OpenAPI parameter serialization spec].
+For example, let's change the example above so that the paramters get serialized as `?filter[prefix]=Ba&filter[limit]=1`:
+
+```python
+--8<-- "docs_src/tutorial/query_params/tutorial_006.py"
+```
+
+Now if you navigate to [http://127.0.0.1:8000/items/?filter[prefix]=Ba&filter[limit]=1](http://127.0.0.1:8000/items/?filter%5Bprefix%5D=Ba&filter%5Blimit%5D=1) (note that the URL is URL encoded) you will get back the following JSON response:
+
+```json
+--8<-- "docs_src/tutorial/query_params/tutorial_006_response_1.json"
+```
+
 [PEP 613 type alias]: https://www.python.org/dev/peps/pep-0613/
 [Paramter Constraints and Metadata]: param_constraints_and_metadata.md
+[OpenAPI parameter serialization spec]: https://swagger.io/docs/specification/serialization/

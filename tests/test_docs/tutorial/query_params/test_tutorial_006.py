@@ -1,8 +1,7 @@
-from typing import Any, Dict, Iterable, Tuple
+import json
+from typing import Any, Dict
 
-import pytest
-
-from docs_src.tutorial.query_params.tutorial_004 import app
+from docs_src.tutorial.query_params.tutorial_006 import app
 from xpresso.testclient import TestClient
 
 client = TestClient(app)
@@ -28,15 +27,14 @@ openapi_schema: Dict[str, Any] = {
                 },
                 "parameters": [
                     {
-                        "required": False,
-                        "style": "form",
+                        "required": True,
+                        "style": "deepObject",
                         "explode": True,
                         "schema": {
-                            "title": "Prefix",
-                            "type": "array",
-                            "items": {"type": "string"},
+                            "$ref": "#/components/schemas/Filter",
+                            "nullable": True,
                         },
-                        "name": "prefix",
+                        "name": "filter",
                         "in": "query",
                     }
                 ],
@@ -45,6 +43,16 @@ openapi_schema: Dict[str, Any] = {
     },
     "components": {
         "schemas": {
+            "Filter": {
+                "title": "Filter",
+                "required": ["prefix", "limit"],
+                "type": "object",
+                "properties": {
+                    "prefix": {"title": "Prefix", "type": "string"},
+                    "limit": {"title": "Limit", "type": "integer"},
+                    "skip": {"title": "Skip", "type": "integer", "default": 0},
+                },
+            },
             "ValidationError": {
                 "title": "ValidationError",
                 "required": ["loc", "msg", "type"],
@@ -81,16 +89,11 @@ def test_openapi_schema():
     assert response.json() == openapi_schema
 
 
-@pytest.mark.parametrize(
-    "params,json_response",
-    [
-        ([], [{"item_name": "Foo"}, {"item_name": "Bar"}, {"item_name": "Baz"}]),
-        ([("prefix", "B")], [{"item_name": "Bar"}, {"item_name": "Baz"}]),
-        ([("prefix", "B"), ("prefix", "Baz")], [{"item_name": "Baz"}]),
-        ([("prefix", "B"), ("prefix", "F")], []),
-    ],
-)
-def test_read_item(params: Iterable[Tuple[str, str]], json_response: Dict[str, Any]):
-    response = client.get("/items/", params=params)
+def test_read_items():
+    response = client.get(
+        "/items/", params=[("filter[prefix]", "Ba"), ("filter[limit]", "1")]
+    )
     assert response.status_code == 200, response.content
-    assert response.json() == json_response
+    assert response.json() == json.load(
+        open("docs_src/tutorial/query_params/tutorial_006_response_1.json")
+    )

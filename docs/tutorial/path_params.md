@@ -72,10 +72,10 @@ It should look something like:
 
 ![Swagger UI](path_params_001.png)
 
-## Deserialziation and parsing
+## Array path parameters
 
 Xpresso offers full support for the the [OpenAPI parameter serialization spec].
-You can control the serialization style using the `style` and `explode` arguments to `Path()`:
+You can control the serialization style using the `style` and `explode` arguments to `PathParam()`:
 The Python type can be a scalar value, a collection (like a list or dict) or even a Pydantic model (for object-valued parameters).
 
 ```python
