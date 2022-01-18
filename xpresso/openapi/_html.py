@@ -13,18 +13,23 @@ def get_swagger_ui_html(
     title: str,
     swagger_js_url: str = "https://cdn.jsdelivr.net/npm/swagger-ui-dist@3/swagger-ui-bundle.js",
     swagger_css_url: str = "https://cdn.jsdelivr.net/npm/swagger-ui-dist@3/swagger-ui.css",
-    swagger_favicon_url: str = "https://adriangb.com/xpresso/img/favicon.png",
+    swagger_favicon_url: Optional[str] = None,
     oauth2_redirect_url: Optional[str] = None,
     init_oauth: Optional[Dict[str, Any]] = None,
     encoder: Encoder = JsonableEncoder(),
 ) -> HTMLResponse:
+    if swagger_favicon_url:
+        swagger_favicon_html = (
+            f"""\n<link rel="shortcut icon" href="{swagger_favicon_url}">"""
+        )
+    else:
+        swagger_favicon_html = ""
 
     html = f"""
     <!DOCTYPE html>
     <html>
     <head>
-    <link type="text/css" rel="stylesheet" href="{swagger_css_url}">
-    <link rel="shortcut icon" href="{swagger_favicon_url}">
+    <link type="text/css" rel="stylesheet" href="{swagger_css_url}">{swagger_favicon_html}
     <title>{title}</title>
     </head>
     <body>

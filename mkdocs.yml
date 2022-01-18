@@ -1,6 +1,6 @@
 site_name: "Xpresso"
 site_description: Developer centric, performant and extensible ASGI framework
-site_url: https://www.adriangb.com/xpresso
+site_url: https://www.xpresso-api.dev
 
 theme:
   name: "material"

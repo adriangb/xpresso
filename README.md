@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://adriangb.com/xpresso"><img src="https://adriangb.com/xpresso/xpresso-with-title.png" alt="Xpresso"></a>
+  <a href="https://www.xpresso-api.dev"><img src="https://www.xpresso-api.dev/xpresso-with-title.png" alt="Xpresso"></a>
 </p>
 
 <p align="center">
@@ -95,5 +95,5 @@ For more examples, tutorials and reference materials, see our [documentation].
 [FastAPI]: https://github.com/adriangb/xpresso
 [di]: https://github.com/adriangb/di
 [Uvicorn]: http://www.uvicorn.org/
-[documentation]: https://www.adriangb.com/xpresso/
+[documentation]: https://www.xpresso-api.dev/
 [Swagger UI]: https://swagger.io/tools/swagger-ui/
