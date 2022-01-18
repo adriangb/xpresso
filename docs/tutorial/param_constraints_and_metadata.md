@@ -17,7 +17,7 @@ First, import `Field` from Pydantic and `Annotated` from `typing` (Python >= 3.9
     All it does is import `Annotated` from `typing` if your Python version is >= 3.9 and [typing_extensions] otherwise.
     But if you are already using Python >= 3.9, you can just replace that with `from typing import Annotated`.
 
-Now use `Field()` inside of `Annotated[...]` to attach validation and schema customziation metadata to the `price` field:
+Now use `Field()` inside of `Annotated[...]` to attach validation and schema customization metadata to the `price` field:
 
 ```python hl_lines="10-19"
 --8<-- "docs_src/tutorial/param_constraints_and_metadata/tutorial_001.py"
@@ -33,7 +33,7 @@ Now use `Field()` inside of `Annotated[...]` to attach validation and schema cus
     For example, you can do `Limit = Annotated[int, QueryParam(), Field(gt=0)]` and then use that like `limit: Limit` in your endpoint function.
     This is also useful if you are re-using the same parameter in multiple function signatures or even across modules.
 
-Of course, you will get automatic validation of the `gt` constraints and the metadata will be reflected inthe  OpenAPI schema:
+Of course, you will get automatic validation of the `gt` constraints and the metadata will be reflected in the  OpenAPI schema:
 
 ![Swagger UI](param_constraints_and_metadata_001.png)
 
