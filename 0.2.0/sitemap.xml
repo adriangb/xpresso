@@ -101,6 +101,11 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://www.xpresso-api.dev/0.2.0/tutorial/dependencies/lifecycle/</loc>
+         <lastmod>2022-01-18</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://www.xpresso-api.dev/0.2.0/tutorial/dependencies/nested/</loc>
          <lastmod>2022-01-18</lastmod>
          <changefreq>daily</changefreq>
