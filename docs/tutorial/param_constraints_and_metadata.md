@@ -3,7 +3,7 @@
 Query, Path, Header and Cookie parameters benefit from Pydantic's rich validation and schema generation.
 You can attach extra validation and schema metadata using Pydantic's `Field()`.
 For in depth information on the topic, see [Pydantic]'s docs.
-But here is a quick example of how this can work in xpresso.
+But here is a quick example of how this can work in Xpresso.
 First, import `Field` from Pydantic and `Annotated`:
 
 ```py hl_lines="1 4"
@@ -11,7 +11,7 @@ First, import `Field` from Pydantic and `Annotated`:
 ```
 
 !!! tip "Tip"
-    The import `from xpresso.typing import Annotated` is just a convenience import.
+    The import `from Xpresso.typing import Annotated` is just a convenience import.
     All it does is import `Annotated` from `typing` if your Python version is >= 3.9 and [typing_extensions] otherwise.
     But if you are already using Python >= 3.9, you can just replace that with `from typing import Annotated`.
 

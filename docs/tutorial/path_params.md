@@ -1,8 +1,8 @@
 # Path parameters
 
 Path parameters are declared in the route defenition, using the same foramt as formatting strings (`"{}"`):
-To tell xpresso that you want to extract a path parameter and inject it into your function, use `FromPath`.
-This is just a marker that tells xpresso how to inject the value, it has no effect on the function if it is called directly.
+To tell Xpresso that you want to extract a path parameter and inject it into your function, use `FromPath`.
+This is just a marker that tells Xpresso how to inject the value, it has no effect on the function if it is called directly.
 
 ```python
 --8<-- "docs_src/tutorial/path_params/tutorial_001.py"
@@ -16,8 +16,8 @@ If you run this example using Uvicorn, you can go to [http://127.0.0.1:8000/item
 
 ## Type conversions
 
-xpresso uses type annotations from your parameters to do conversions and parsing.
-If we modify the example above to expect an `int`, xpresso will convert the path parameter (which is always a string, since it is coming from a URL) int an `int` and automatically return an error response if it is not a valid integer:
+Xpresso uses type annotations from your parameters to do conversions and parsing.
+If we modify the example above to expect an `int`, Xpresso will convert the path parameter (which is always a string, since it is coming from a URL) int an `int` and automatically return an error response if it is not a valid integer:
 
 ```python
 --8<-- "docs_src/tutorial/path_params/tutorial_002.py"
@@ -45,11 +45,11 @@ So you can also use Pydantic constraints:
 !!! info "Info"
     This is probably a good spot to digress and talk about `Annotated` since you may be confused if you are not familiar with it.
     If you've used FastAPI, you may be used to declaring things like `param: str = Path(gt=0)`.
-    In xpresso, this turns into `param: Annotated[str, Path(), Field(gt=0)]`.
+    In Xpresso, this turns into `param: Annotated[str, Path(), Field(gt=0)]`.
     For more background on `Annoated` itself, see the [Python Types] section of our docs.
 
 !!! tip "Tip"
-    The import `from xpresso.typing import Annotated` is just a convenience import.
+    The import `from Xpresso.typing import Annotated` is just a convenience import.
     All it does is import `Annotated` from `typing` if your Python version is >= 3.9 and [typing_extensions] otherwise.
     But if you are already using Python >= 3.9, you can just replace that with `from typing import Annotated`.
 
@@ -74,7 +74,7 @@ It should look something like:
 
 ## Deserialziation and parsing
 
-xpresso offers full support for the the [OpenAPI parameter serialization spec].
+Xpresso offers full support for the the [OpenAPI parameter serialization spec].
 You can control the serialization style using the `style` and `explode` arguments to `Path()`:
 The Python type can be a scalar value, a collection (like a list or dict) or even a Pydantic model (for object-valued parameters).
 
@@ -82,7 +82,7 @@ The Python type can be a scalar value, a collection (like a list or dict) or eve
 --8<-- "docs_src/tutorial/path_params/tutorial_004.py"
 ```
 
-Navigating to [http://127.0.0.1:8000/items/;items=1;items=2;items=3](http://127.0.0.1:8000/items/;items=1;items=2;items=3) will return:
+Navigating to [http://127.0.0.1:8000/items/;items=1;items=2;items=3](http://127.0.0.1:8000/items/;items=1;items=2;items=3) will return the following JSON:
 
 ```json
 --8<-- "docs_src/tutorial/path_params/tutorial_004_response_1.json"

@@ -1,8 +1,21 @@
-# xpresso
+<p align="center">
+  <a href="https://adriangb.com/xpresso"><img src="https://adriangb.com/xpresso/xpresso-with-title.png" alt="Xpresso"></a>
+</p>
 
-[![codecov](https://codecov.io/gh/adriangb/xpresso/branch/main/graph/badge.svg?token=A0FXC8B93Y)](https://codecov.io/gh/adriangb/xpresso)
-![Test & Release](https://github.com/adriangb/xpresso/actions/workflows/workflow.yaml/badge.svg)
-
+<p align="center">
+<a href="https://github.com/adriangb/xpresso/actions?query=workflow%3ATest+event%3Apush+branch%3Amain" target="_blank">
+    <img src="https://github.com/adriangb/xpresso/actions/workflows/workflow.yaml/badge.svg?event=push&branch=main" alt="Test">
+</a>
+<a href="https://codecov.io/gh/adriangb/xpresso" target="_blank">
+    <img src="https://img.shields.io/codecov/c/github/adriangb/xpresso?color=%2334D058" alt="Coverage">
+</a>
+<a href="https://pypi.org/project/xpresso" target="_blank">
+    <img src="https://img.shields.io/pypi/v/xpresso?color=%2334D058&label=pypi%20package" alt="Package version">
+</a>
+<a href="https://pypi.org/project/xpresso" target="_blank">
+    <img src="https://img.shields.io/pypi/pyversions/xpresso.svg?color=%2334D058" alt="Supported Python versions">
+</a>
+</p>
 ## Introduction
 
 xpresso is an ASGI web framework built on top of [Starlette], [Pydantic] and [di], with heavy inspiration from [FastAPI].
@@ -73,7 +86,7 @@ For more examples, tutorials and reference materials, see our [documentation].
 
 [Starlette]: https://github.com/encode/starlette
 [Pydantic]: https://github.com/samuelcolvin/pydantic/
-[FastAPI]: https://github.com/tiangolo/fastapi
+[FastAPI]: https://github.com/adriangb/xpresso
 [di]: https://github.com/adriangb/di
 [Uvicorn]: http://www.uvicorn.org/
 [documentation]: https://www.adriangb.com/xpresso/

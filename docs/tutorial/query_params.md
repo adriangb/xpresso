@@ -11,9 +11,9 @@ This URL has two simple query parameters:
 - `skip`: value of `1`
 - `limit`: value of `2`
 
-In xpresso, these are extracted using `FromQuery[...]`, which is an alias for `Annoated[..., QueryParam()]`.
+In Xpresso, these are extracted using `FromQuery[...]`, which is an alias for `Annoated[..., QueryParam()]`.
 Since they are part of the URL, they are always received as strings.
-But just like with path parameters, xpresso can extract them and parse them into Python types and data structrues:
+But just like with path parameters, Xpresso can extract them and parse them into Python types and data structrues:
 
 ```python
 --8<-- "docs_src/tutorial/query_params/tutorial_001.py"

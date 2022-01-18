@@ -1,6 +1,6 @@
 # Dependency Injection
 
-xpresso has a powerful dependency injection system, backed by [di].
+Xpresso has a powerful dependency injection system, backed by [di].
 You can inject classes, callable class instances, sync and async functions and context managers.
 These can be chained, and dependencies are auto wired.
 
@@ -15,7 +15,7 @@ As always, you can head over to [http://localhost:8000/docs](http://localhost:80
 
 As it turns out, `FromQuery` is just a dependency that extracts a query paratemeter from the request, parses it into the type declared via the type annotation and then injects it into the function.
 So really, we are alaready using nested dependencies!
-xpresso supports arbitrarily deep nested dependency graphs.
+Xpresso supports arbitrarily deep nested dependency graphs.
 
 ## Depending on abstractions
 
