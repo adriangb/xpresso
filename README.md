@@ -77,6 +77,17 @@ Run the application:
 uvicorn example:app
 ```
 
+Navigate to [http://127.0.0.1:8000/items/123?name=foobarbaz](http://127.0.0.1:8000/items/123?name=foobarbaz) in your browser.
+You will get the following JSON response:
+
+```json
+{"item_id":123,"name":"foobarbaz"}
+```
+
+Now navigate to [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) to poke around the interactive [Swagger UI] documentation:
+
+![Swagger UI](docs/readme_example_swagger.png)
+
 For more examples, tutorials and reference materials, see our [documentation].
 
 [Starlette]: https://github.com/encode/starlette
@@ -85,3 +96,4 @@ For more examples, tutorials and reference materials, see our [documentation].
 [di]: https://github.com/adriangb/di
 [Uvicorn]: http://www.uvicorn.org/
 [documentation]: https://www.adriangb.com/xpresso/
+[Swagger UI]: https://swagger.io/tools/swagger-ui/
