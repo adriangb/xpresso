@@ -2,7 +2,7 @@ from starlette.exceptions import HTTPException
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
-from xpresso._encoder import JsonableEncoder
+from xpresso.encoders.json import JsonableEncoder
 from xpresso.exceptions import RequestValidationError
 
 encoder = JsonableEncoder()

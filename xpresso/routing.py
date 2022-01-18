@@ -25,12 +25,13 @@ from di.dependant import JoinedDependant
 from starlette.routing import Host as Host  # noqa: F401
 from starlette.routing import Mount as Mount  # noqa: F401
 
-import xpresso._param_dependants as param_dependants
 import xpresso._utils.asgi_scope_extension as asgi_scope_extension
+import xpresso.binders.dependants as param_dependants
 import xpresso.openapi.models as openapi_models
 from xpresso.dependencies.models import Dependant
+from xpresso.encoders.api import Encoder
+from xpresso.encoders.json import JsonableEncoder
 from xpresso.exceptions import HTTPException
-from xpresso.experimental.encoders import Encoder, JsonableEncoder
 from xpresso.responses import ResponseSpec
 
 __all__ = (
@@ -161,9 +162,7 @@ class Operation(starlette.routing.BaseRoute):
             )
         )
         flat = self.dependant.get_flat_subdependants()
-        bodies = [
-            dep for dep in flat if isinstance(dep, param_dependants.BodyDependant)
-        ]
+        bodies = [dep for dep in flat if isinstance(dep, param_dependants.BodyBinder)]
         if len(bodies) > 1:
             raise TypeError("There can only be 1 top level body per operation")
         executor: AsyncExecutorProtocol
@@ -233,7 +232,7 @@ class Path(starlette.routing.Route):
         description: typing.Optional[str] = None,
         servers: typing.Optional[typing.Sequence[openapi_models.Server]] = None,
         parameters: typing.Optional[
-            typing.Sequence[param_dependants.ParameterDependantMarker]
+            typing.Sequence[param_dependants.ParameterBinderMarker]
         ] = None,
     ) -> None:
         if not path.startswith("/"):

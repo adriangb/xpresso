@@ -28,14 +28,14 @@ from pydantic.typing import NoneType
 from starlette.responses import Response
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
-from xpresso import _param_dependants as param_dependants
-from xpresso._security.base import SecurityBase
-from xpresso._security.dependants import Security
 from xpresso._utils.routing import visit_routes
+from xpresso.binders import dependants as binder_dependants
 from xpresso.openapi import models
 from xpresso.openapi.constants import REF_PREFIX
 from xpresso.responses import JsonResponseSpec, ResponseSpec
 from xpresso.routing import APIRouter, Operation, Path
+from xpresso.security._base import SecurityBase
+from xpresso.security._dependants import Security
 
 ModelNameMap = Dict[Union[Type[BaseModel], Type[Enum]], str]
 
@@ -121,7 +121,7 @@ def get_response_specs_from_return_type_hints(
 
 
 def get_parameters(
-    deps: List[param_dependants.ParameterDependant],
+    deps: List[binder_dependants.ParameterBinder],
     model_name_map: ModelNameMap,
     schemas: Dict[str, Any],
 ) -> Optional[List[models.ConcreteParameter]]:
@@ -137,7 +137,7 @@ def get_parameters(
 
 
 def get_request_body(
-    dependant: param_dependants.BodyDependant,
+    dependant: binder_dependants.BodyBinder,
     model_name_map: ModelNameMap,
     schemas: Dict[str, Any],
 ) -> models.RequestBody:
@@ -308,7 +308,7 @@ def get_operation(
         [
             dep
             for dep in route_dependant.dag
-            if isinstance(dep, param_dependants.ParameterDependant)
+            if isinstance(dep, binder_dependants.ParameterBinder)
         ],
         model_name_map,
         schemas,
@@ -319,7 +319,7 @@ def get_operation(
         (
             dep
             for dep in route_dependant.dag
-            if isinstance(dep, param_dependants.BodyDependant)
+            if isinstance(dep, binder_dependants.BodyBinder)
         ),
         None,
     )

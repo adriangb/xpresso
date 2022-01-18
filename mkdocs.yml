@@ -33,16 +33,18 @@ nav:
   - Intro: "README.md"
   - Python Types: "types.md"
   - Tutorial:
-      - Minimal App: "tutorial/minimal_app.md"
-      - Path Parameters: "tutorial/path_params.md"
-      - Query Parameters: "tutorial/query_params.md"
-      - Parameter Constraints and Metadata: "tutorial/param_constraints_and_metadata.md"
-      - Request Body: "tutorial/body.md"
-      - Cookie Parameters: "tutorial/cookie_params.md"
-      - Header Parameters: "tutorial/header_params.md"
-      - File Uploads: "tutorial/files.md"
-      - Forms: "tutorial/forms.md"
-      - Dependency Injection: "tutorial/di.md"
+    - Minimal App: "tutorial/minimal_app.md"
+    - Path Parameters: "tutorial/path_params.md"
+    - Query Parameters: "tutorial/query_params.md"
+    - Parameter Constraints and Metadata: "tutorial/param_constraints_and_metadata.md"
+    - Request Body: "tutorial/body.md"
+    - Cookie Parameters: "tutorial/cookie_params.md"
+    - Header Parameters: "tutorial/header_params.md"
+    - File Uploads: "tutorial/files.md"
+    - Forms: "tutorial/forms.md"
+    - Dependency Injection: "tutorial/di.md"
+  - Advanced Usage:
+    - Binders: advanced/binders.md
 
 markdown_extensions:
   - admonition

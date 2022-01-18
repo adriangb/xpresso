@@ -15,7 +15,6 @@ from starlette.responses import HTMLResponse, JSONResponse, Response
 from starlette.routing import BaseRoute
 from starlette.routing import Route as StarletteRoute
 
-from xpresso._security.dependants import Security
 from xpresso._utils.routing import get_path_params, visit_routes
 from xpresso.dependencies.models import Dependant
 from xpresso.dependencies.utils import bind_framework_dependencies_to_container
@@ -28,6 +27,7 @@ from xpresso.openapi import models as openapi_models
 from xpresso.openapi._builder import SecurityModels, genrate_openapi
 from xpresso.openapi._html import get_swagger_ui_html
 from xpresso.routing import APIRouter, Path
+from xpresso.security._dependants import Security
 
 ExceptionHandler = typing.Callable[[Request, typing.Type[BaseException]], Response]
 
