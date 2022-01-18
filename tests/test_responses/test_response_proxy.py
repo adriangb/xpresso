@@ -4,7 +4,7 @@ import sys
 import typing
 
 from starlette.requests import Request
-from starlette.responses import Response
+from starlette.responses import JSONResponse, Response
 from starlette.testclient import TestClient
 
 if sys.version_info < (3, 9):
@@ -13,10 +13,10 @@ else:
     from typing import Annotated
 
 from xpresso import App, Dependant, Path
-from xpresso.responses import get_response
+from xpresso.responses import get_response, set_response
 
 
-def test_response_proxy() -> None:
+def test_get_response() -> None:
     """ResponseProxy can be used to get the final Response from within a dependency"""
 
     def dependency(request: Request) -> typing.Generator[None, None, None]:
@@ -43,7 +43,7 @@ def test_response_proxy() -> None:
     assert resp.status_code == 405
 
 
-def test_response_proxy_connection_scope() -> None:
+def test_get_response_connection_scope() -> None:
     """Connection scoped dependencies can get a copy of the Response but can't modify it"""
 
     def dependency(request: Request) -> typing.Generator[None, None, None]:
@@ -65,3 +65,20 @@ def test_response_proxy_connection_scope() -> None:
     assert (
         resp.status_code == 405
     )  # does not pick up on 404 because response was alredy sent
+
+
+def test_set_response() -> None:
+    def dependency(request: Request) -> typing.Generator[None, None, None]:
+        yield
+        set_response(request, JSONResponse({"foo": "bar"}))
+
+    async def endpoint() -> Response:
+        return Response()
+
+    app = App([Path("/", get=endpoint, dependencies=[Dependant(dependency)])])
+
+    with TestClient(app) as client:
+        resp = client.get("/")
+
+    assert resp.status_code == 200, resp.content
+    assert resp.json() == {"foo": "bar"}

@@ -90,7 +90,7 @@ class _OperationApp:
                     self.response_encoder.encode(endpoint_return)
                 )
             xpresso_scope["response"] = response
-        await response(scope, receive, send)
+        await xpresso_scope["response"](scope, receive, send)
 
 
 class Operation(starlette.routing.BaseRoute):
@@ -132,7 +132,7 @@ class Operation(starlette.routing.BaseRoute):
         self.servers = servers
         self.external_docs = external_docs
         self.responses = dict(responses or {})
-        self.dependencies = dependencies
+        self.dependencies = dependencies or []
         self.execute_dependencies_concurrently = execute_dependencies_concurrently
         self.response_factory = response_factory
         self.response_encoder = response_encoder
@@ -239,7 +239,7 @@ class Path(starlette.routing.Route):
             raise ValueError("Routed paths must start with '/'")
         self.path = path
         self.redirect_slashes = redirect_slashes
-        self.dependencies = dependencies
+        self.dependencies = dependencies or []
         self.summary = summary
         self.description = description
         self.servers = servers

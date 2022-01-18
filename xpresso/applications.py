@@ -147,7 +147,11 @@ class App(Starlette):
                 for operation in route.route.operations.values():
                     operation.solve(
                         path_params=get_path_params(route.path),
-                        dependencies=dependencies,
+                        dependencies=[
+                            *dependencies,
+                            *route.route.dependencies,
+                            *operation.dependencies,
+                        ],
                         container=self.container,
                     )
 

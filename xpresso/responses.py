@@ -17,6 +17,10 @@ def get_response(request: Request) -> Response:
         )
 
 
+def set_response(request: Request, response: Response) -> None:
+    request.scope["extensions"]["xpresso"]["response"] = response  # type: ignore[assignment]
+
+
 class ResponseSpec(BaseModel):
     description: str
     model: Any = None
