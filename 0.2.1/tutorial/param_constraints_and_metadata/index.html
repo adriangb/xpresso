@@ -891,7 +891,7 @@ First, import <code>Field</code> from Pydantic and <code>Annotated</code> from <
 All it does is import <code>Annotated</code> from <code>typing</code> if your Python version is &gt;= 3.9 and [typing_extensions] otherwise.
 But if you are already using Python &gt;= 3.9, you can just replace that with <code>from typing import Annotated</code>.</p>
 </div>
-<p>Now use <code>Field()</code> inside of <code>Annotated[...]</code> to attach validation and schema customziation metadata to the <code>price</code> field:</p>
+<p>Now use <code>Field()</code> inside of <code>Annotated[...]</code> to attach validation and schema customization metadata to the <code>price</code> field:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">pydantic</span> <span class="kn">import</span> <span class="n">Field</span>
 
 <span class="kn">from</span> <span class="nn">xpresso</span> <span class="kn">import</span> <span class="n">App</span><span class="p">,</span> <span class="n">Path</span><span class="p">,</span> <span class="n">QueryParam</span>
@@ -901,8 +901,8 @@ But if you are already using Python &gt;= 3.9, you can just replace that with <c
 
 
 <span class="k">async</span> <span class="k">def</span> <span class="nf">read_item</span><span class="p">(</span>
-    <span class="n">skip</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span>
-<span class="hll">        <span class="nb">int</span><span class="p">,</span>
+<span class="hll">    <span class="n">skip</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span>
+</span><span class="hll">        <span class="nb">int</span><span class="p">,</span>
 </span><span class="hll">        <span class="n">QueryParam</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Count of items to skip starting from the 0th item&quot;</span><span class="p">),</span>
 </span><span class="hll">        <span class="n">Field</span><span class="p">(</span><span class="n">gt</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
 </span><span class="hll">    <span class="p">],</span>
@@ -911,8 +911,8 @@ But if you are already using Python &gt;= 3.9, you can just replace that with <c
 </span><span class="hll">        <span class="n">QueryParam</span><span class="p">(),</span>
 </span><span class="hll">        <span class="n">Field</span><span class="p">(</span><span class="n">gt</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Maximum number of items to return&quot;</span><span class="p">),</span>
 </span><span class="hll">    <span class="p">],</span>
-</span><span class="hll"><span class="p">):</span>
-</span>    <span class="k">return</span> <span class="n">fake_items_db</span><span class="p">[</span><span class="n">skip</span> <span class="p">:</span> <span class="n">skip</span> <span class="o">+</span> <span class="n">limit</span><span class="p">]</span>
+</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">fake_items_db</span><span class="p">[</span><span class="n">skip</span> <span class="p">:</span> <span class="n">skip</span> <span class="o">+</span> <span class="n">limit</span><span class="p">]</span>
 
 
 <span class="n">app</span> <span class="o">=</span> <span class="n">App</span><span class="p">(</span>
@@ -936,7 +936,7 @@ Whenever there is a duplicate parameter, the value in <code>QueryParam(...)</cod
 For example, you can do <code>Limit = Annotated[int, QueryParam(), Field(gt=0)]</code> and then use that like <code>limit: Limit</code> in your endpoint function.
 This is also useful if you are re-using the same parameter in multiple function signatures or even across modules.</p>
 </div>
-<p>Of course, you will get automatic validation of the <code>gt</code> constraints and the metadata will be reflected inthe  OpenAPI schema:</p>
+<p>Of course, you will get automatic validation of the <code>gt</code> constraints and the metadata will be reflected in the  OpenAPI schema:</p>
 <p><img alt="Swagger UI" src="../param_constraints_and_metadata_001.png" /></p>
 <h3 id="pydantics-types">Pydantic's types</h3>
 <p>Pydantic provides a set of types like <code>HttpUrl</code> and <code>constr</code> (constrained string).
