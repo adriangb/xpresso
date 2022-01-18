@@ -19,7 +19,7 @@ First, import `Field` from Pydantic and `Annotated` from `typing` (Python >= 3.9
 
 Now use `Field()` inside of `Annotated[...]` to attach validation and schema customziation metadata to the `price` field:
 
-```python hl_lines="11-20"
+```python hl_lines="10-19"
 --8<-- "docs_src/tutorial/param_constraints_and_metadata/tutorial_001.py"
 ```
 
