@@ -17,8 +17,6 @@
 </a>
 </p>
 
----
-
 ## Introduction
 
 xpresso is an ASGI web framework built on top of [Starlette], [Pydantic] and [di], with heavy inspiration from [FastAPI].
