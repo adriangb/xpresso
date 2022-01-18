@@ -42,9 +42,21 @@ nav:
     - Header Parameters: "tutorial/header_params.md"
     - File Uploads: "tutorial/files.md"
     - Forms: "tutorial/forms.md"
-    - Dependency Injection: "tutorial/di.md"
+    - Dependencies:
+      - Introduction: "tutorial/dependencies/README.md"
+      - Nested Dependencies: "tutorial/dependencies/nested.md"
+      - HTTP Parameter Dependencies: "tutorial/dependencies/http-params.md"
+      - Dependency lifecycle: "tutorial/dependencies/lifecycle.md"
+      - Scopes: "tutorial/dependencies/scopes.md"
+      - Global Dependencies: "tutorial/dependencies/global.md"
+    - Application Lifespan: "advanced/lifespan.md"
   - Advanced Usage:
     - Binders: advanced/binders.md
+    - Dependencies:
+      - Responses: "advanced/dependencies/responses.md"
+      - Registration: "advanced/dependencies/registration.md"
+      - Testing: "advanced/dependencies/testing.md"
+      - Concurrency: "advanced/dependencies/concurrency.md"
 
 markdown_extensions:
   - admonition

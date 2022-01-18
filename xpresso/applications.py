@@ -3,7 +3,6 @@ from contextlib import asynccontextmanager
 
 import starlette.types as asgi
 from di import AsyncExecutor, BaseContainer
-from di.api.container import ContainerProtocol
 from di.api.dependencies import DependantBase
 from di.api.providers import DependencyProviderType
 from starlette.applications import Starlette
@@ -17,7 +16,7 @@ from starlette.routing import Route as StarletteRoute
 
 from xpresso._utils.routing import get_path_params, visit_routes
 from xpresso.dependencies.models import Dependant
-from xpresso.dependencies.utils import bind_framework_dependencies_to_container
+from xpresso.dependencies.utils import register_framework_dependencies
 from xpresso.exception_handlers import (
     http_exception_handler,
     validation_exception_handler,
@@ -47,7 +46,7 @@ class App(Starlette):
         self,
         routes: typing.Optional[typing.Sequence[BaseRoute]] = None,
         *,
-        container: typing.Optional[ContainerProtocol] = None,
+        container: typing.Optional[BaseContainer] = None,
         dependencies: typing.Optional[typing.List[Dependant]] = None,
         debug: bool = False,
         middleware: typing.Optional[typing.Sequence[Middleware]] = None,
@@ -81,7 +80,7 @@ class App(Starlette):
         self.container = container or BaseContainer(
             scopes=("app", "connection", "endpoint")
         )
-        bind_framework_dependencies_to_container(self.container)
+        register_framework_dependencies(self.container)
         if lifespan is not None:
             solved_lifespan = self.container.solve(
                 Dependant(call=lifespan, scope="app")

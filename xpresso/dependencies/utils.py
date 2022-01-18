@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import typing
 
-from di.api.container import ContainerProtocol
+from di import BaseContainer
 from starlette.background import BackgroundTasks
 from starlette.requests import HTTPConnection, Request
 from starlette.websockets import WebSocket
@@ -12,16 +12,16 @@ from xpresso.dependencies.models import Dependant
 T = typing.TypeVar("T")
 
 
-def bind_framework_dependencies_to_container(container: ContainerProtocol):
-    container.bind(
+def register_framework_dependencies(container: BaseContainer):
+    container.register_by_type(
         Dependant(Request, scope="connection", wire=False),
         Request,
     )
-    container.bind(
+    container.register_by_type(
         Dependant(Request, scope="connection", wire=False),
         Request,
     )
-    container.bind(
+    container.register_by_type(
         Dependant(
             HTTPConnection,
             scope="connection",
@@ -29,7 +29,7 @@ def bind_framework_dependencies_to_container(container: ContainerProtocol):
         ),
         HTTPConnection,
     )
-    container.bind(
+    container.register_by_type(
         Dependant(
             WebSocket,
             scope="connection",
@@ -37,7 +37,7 @@ def bind_framework_dependencies_to_container(container: ContainerProtocol):
         ),
         WebSocket,
     )
-    container.bind(
+    container.register_by_type(
         Dependant(
             BackgroundTasks,
             scope="connection",

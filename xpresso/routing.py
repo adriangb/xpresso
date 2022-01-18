@@ -15,8 +15,7 @@ import starlette.responses
 import starlette.routing
 import starlette.status
 import starlette.types
-from di import AsyncExecutor, ConcurrentAsyncExecutor
-from di.api.container import ContainerProtocol
+from di import AsyncExecutor, BaseContainer, ConcurrentAsyncExecutor
 from di.api.dependencies import DependantBase
 from di.api.executor import AsyncExecutorProtocol
 from di.api.providers import DependencyProvider as Endpoint
@@ -151,7 +150,7 @@ class Operation(starlette.routing.BaseRoute):
 
     def solve(
         self,
-        container: ContainerProtocol,
+        container: BaseContainer,
         path_params: typing.Set[str],
         dependencies: typing.List[DependantBase[typing.Any]],
     ) -> None:

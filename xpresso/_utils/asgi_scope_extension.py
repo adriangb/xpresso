@@ -6,10 +6,10 @@ else:
     from typing import TypedDict
 
 
-from di.api.container import ContainerProtocol
+from di import BaseContainer
 from starlette.responses import Response
 
 
 class xpressoASGIExtension(TypedDict):
-    container: ContainerProtocol
+    container: BaseContainer
     response: Response
