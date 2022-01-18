@@ -44,8 +44,8 @@ There are many more benefits to dependency injection, and you can go really deep
 ## Dependency Injection in Xpresso
 
 Xpresso's dependency injection API is modeled after [FastAPI].
-It is implemented as a standalong package called [di].
-The simplest for of dependency injection is requesting a dependency in your path function.
+It is implemented as a standalone package called [di].
+The simplest form of dependency injection is requesting a dependency in your path function.
 For simple cases, all we need to do is add a type annotation:
 
 ```python hl_lines="8"
