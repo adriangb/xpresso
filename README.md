@@ -16,6 +16,9 @@
     <img src="https://img.shields.io/pypi/pyversions/xpresso.svg?color=%2334D058" alt="Supported Python versions">
 </a>
 </p>
+
+---
+
 ## Introduction
 
 xpresso is an ASGI web framework built on top of [Starlette], [Pydantic] and [di], with heavy inspiration from [FastAPI].

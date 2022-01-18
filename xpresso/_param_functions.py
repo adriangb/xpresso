@@ -69,7 +69,6 @@ def QueryParam(
     )
     openapi = OpenAPIQueryParameterMarker(
         alias=alias,
-        in_="query",
         description=description,
         style=style,
         explode=explode,
@@ -99,7 +98,6 @@ def PathParam(
     )
     openapi = OpenAPIPathParameterMarker(
         alias=alias,
-        in_="path",
         description=description,
         style=style,
         explode=explode,
@@ -129,7 +127,6 @@ def HeaderParam(
     )
     openapi = OpenAPIHeaderParameterMarker(
         alias=alias,
-        in_="header",
         description=description,
         explode=explode,
         style="simple",
@@ -157,7 +154,6 @@ def CookieParam(
     )
     openapi = OpenAPICookieParameterMarker(
         alias=alias,
-        in_="cookie",
         description=description,
         style="form",
         explode=explode,

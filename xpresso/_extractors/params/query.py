@@ -1,6 +1,6 @@
 import inspect
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any, ClassVar, Optional
 
 from pydantic.error_wrappers import ErrorWrapper
 from starlette.requests import HTTPConnection
@@ -15,6 +15,7 @@ from xpresso.exceptions import RequestValidationError
 @dataclass(frozen=True)
 class QueryParameterExtractor(ParameterExtractorBase):
     extractor: Extractor
+    in_: ClassVar[str] = "query"
 
     def extract(self, connection: HTTPConnection) -> Any:
         try:
@@ -38,7 +39,7 @@ class QueryParameterExtractorMarker(ParameterExtractorMarker):
     alias: Optional[str]
     explode: bool
     style: str
-    in_ = "query"
+    in_: ClassVar[str] = "query"
 
     def register_parameter(self, param: inspect.Parameter) -> ParameterExtractor:
         if self.style == "deepObject" and not self.explode:
@@ -48,5 +49,5 @@ class QueryParameterExtractorMarker(ParameterExtractorMarker):
         extractor = get_extractor(style=self.style, explode=self.explode, field=field)
         name = self.alias or field.alias
         return QueryParameterExtractor(
-            field=field, loc=loc, name=name, extractor=extractor, in_=self.in_
+            field=field, loc=loc, name=name, extractor=extractor
         )

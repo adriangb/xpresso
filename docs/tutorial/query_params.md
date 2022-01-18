@@ -72,4 +72,19 @@ While not including the parameter ([http://localhost:8000/items/](http://localho
 --8<-- "docs_src/tutorial/query_params/tutorial_003_response_2.json"
 ```
 
+## Repeated query parameters
+
+Query parameters can be repeated, for example `?param=1&param=2`.
+You can extract these repeated query parmaeters into a Python list (`List[int]` in this case).
+To accept repeated query parameters and extract them into a list, just pass the list type into `FromQuery[...]`:
+
+```python
+--8<-- "docs_src/tutorial/query_params/tutorial_004.py"
+```
+
+!!! warning "Warning"
+    If no values are sent, you will get an empty list.
+    To require at least one value, use parameter constraints, which you will learn about in the [Paramter Constraints and Metadata] section of the docs.
+
 [PEP 613 type alias]: https://www.python.org/dev/peps/pep-0613/
+[Paramter Constraints and Metadata]: param_constraints_and_metadata.md

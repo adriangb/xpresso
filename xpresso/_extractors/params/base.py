@@ -16,7 +16,7 @@ class ParameterExtractorBase(ParameterExtractor):
     field: ModelField
     loc: typing.Tuple[str, ...]
     name: str
-    in_: str
+    in_: typing.ClassVar[str]
 
     def validate(self, values: typing.Optional[Some[typing.Any]]) -> typing.Any:
         """Validate after parsing. Only used by the top-level body"""

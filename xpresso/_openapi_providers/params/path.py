@@ -1,4 +1,4 @@
-import inspect
+from dataclasses import dataclass
 
 from pydantic.schema import field_schema, get_flat_models_from_field, get_model_name_map
 
@@ -44,14 +44,8 @@ class OpenAPIPathParameter(OpenAPIParameterBase):
         )
 
 
+@dataclass(frozen=True)
 class OpenAPIPathParameterMarker(OpenAPIParameterMarkerBase):
     cls = OpenAPIPathParameter
     in_ = "path"
-
-    def register_parameter(self, param: inspect.Parameter) -> OpenAPIParameterBase:
-        openapi = super().register_parameter(param)
-        if openapi.required is False:
-            raise TypeError(
-                "Path parameters MUST be required and MUST NOT have default values"
-            )
-        return openapi
+    must_be_required = True

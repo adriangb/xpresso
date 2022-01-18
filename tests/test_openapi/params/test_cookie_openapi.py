@@ -174,7 +174,7 @@ def test_scalar() -> None:
 def test_array() -> None:
     async def endpoint(
         # arrays only work with explode=False
-        cookie: Annotated[int, CookieParam(explode=False)]
+        cookie: Annotated[typing.List[int], CookieParam(explode=False)]
     ) -> Response:
         ...
 
@@ -201,10 +201,14 @@ def test_array() -> None:
                     },
                     "parameters": [
                         {
-                            "required": True,
+                            "required": False,
                             "style": "form",
                             "explode": False,
-                            "schema": {"title": "Cookie", "type": "integer"},
+                            "schema": {
+                                "title": "Cookie",
+                                "type": "array",
+                                "items": {"type": "integer"},
+                            },
                             "name": "cookie",
                             "in": "cookie",
                         }

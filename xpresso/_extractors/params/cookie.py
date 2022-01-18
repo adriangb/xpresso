@@ -1,8 +1,7 @@
 import inspect
 import sys
-import typing
 from dataclasses import dataclass
-from typing import Any, Dict, Iterable, List, Optional, Tuple, cast
+from typing import Any, ClassVar, Dict, Iterable, List, Optional, Tuple, cast
 
 if sys.version_info < (3, 8):
     from typing_extensions import Protocol
@@ -35,7 +34,7 @@ def collect_scalar(value: str) -> str:
 
 
 class Extractor(Protocol):
-    def __call__(self, value: str) -> typing.Any:
+    def __call__(self, value: str) -> Any:
         ...
 
 
@@ -59,6 +58,7 @@ def get_extractor(explode: bool, field: ModelField) -> Extractor:
 @dataclass(frozen=True)
 class CookieParameterExtractor(ParameterExtractorBase):
     extractor: Extractor
+    in_: ClassVar[str] = "cookie"
 
     def extract(self, connection: HTTPConnection) -> Any:
         param = connection.cookies.get(self.name, None)
@@ -74,11 +74,11 @@ class CookieParameterExtractor(ParameterExtractorBase):
 class CookieParameterExtractorMarker(ParameterExtractorMarker):
     alias: Optional[str]
     explode: bool
-    in_ = "cookie"
+    in_: ClassVar[str] = "cookie"
 
     def register_parameter(self, param: inspect.Parameter) -> CookieParameterExtractor:
         field, name, loc = get_basic_param_info(param, self.alias, self.in_)
         extractor = get_extractor(field=field, explode=self.explode)
         return CookieParameterExtractor(
-            field=field, loc=loc, in_=self.in_, name=name, extractor=extractor
+            field=field, loc=loc, name=name, extractor=extractor
         )

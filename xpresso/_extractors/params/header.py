@@ -2,7 +2,7 @@ import functools
 import inspect
 import sys
 from dataclasses import dataclass
-from typing import Any, Dict, Iterable, List, Optional, Tuple, cast
+from typing import Any, ClassVar, Dict, Iterable, List, Optional, Tuple, cast
 
 if sys.version_info < (3, 8):
     from typing_extensions import Protocol
@@ -67,6 +67,7 @@ def get_extractor(explode: bool, field: ModelField) -> Extractor:
 @dataclass(frozen=True)
 class HeaderParameterExtractor(ParameterExtractorBase):
     extractor: Extractor
+    in_: ClassVar[str] = "header"
 
     def extract(self, connection: HTTPConnection) -> Any:
         param_value = connection.headers.get(self.name, None)
@@ -84,7 +85,7 @@ class HeaderParameterExtractorMarker(ParameterExtractorMarker):
     alias: Optional[str]
     explode: bool
     convert_underscores: bool
-    in_ = "header"
+    in_: ClassVar[str] = "header"
 
     def register_parameter(self, param: inspect.Parameter) -> ParameterExtractor:
         field, name, loc = get_basic_param_info(param, self.alias, self.in_)
@@ -92,5 +93,5 @@ class HeaderParameterExtractorMarker(ParameterExtractorMarker):
             name = name.replace("_", "-")
         extractor = get_extractor(explode=self.explode, field=field)
         return HeaderParameterExtractor(
-            field=field, loc=loc, name=name, in_=self.in_, extractor=extractor
+            field=field, loc=loc, name=name, extractor=extractor
         )

@@ -1,7 +1,7 @@
 import functools
 import inspect
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, cast
+from typing import Any, Callable, ClassVar, Dict, Iterable, List, Optional, Tuple, cast
 
 from pydantic.error_wrappers import ErrorWrapper
 from pydantic.fields import ModelField
@@ -114,6 +114,7 @@ def get_extractor(style: str, explode: bool, field: ModelField) -> Callable[...,
 @dataclass(frozen=True)
 class PathParameterExtractor(ParameterExtractorBase):
     extractor: Callable[..., Any]
+    in_: ClassVar[str] = "path"
 
     def extract(self, connection: HTTPConnection) -> Any:
         param_value: str = connection.path_params[self.name]  # type: ignore[assignment]
@@ -131,11 +132,11 @@ class PathParameterExtractorMarker(ParameterExtractorMarker):
     alias: Optional[str]
     explode: bool
     style: str
-    in_ = "path"
+    in_: ClassVar[str] = "path"
 
     def register_parameter(self, param: inspect.Parameter) -> ParameterExtractor:
         field, name, loc = get_basic_param_info(param, self.alias, self.in_)
         extractor = get_extractor(style=self.style, explode=self.explode, field=field)
         return PathParameterExtractor(
-            field=field, loc=loc, name=name, in_=self.in_, extractor=extractor
+            field=field, loc=loc, name=name, extractor=extractor
         )

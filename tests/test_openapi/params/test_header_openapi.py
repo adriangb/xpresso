@@ -198,7 +198,7 @@ def test_array() -> None:
                     },
                     "parameters": [
                         {
-                            "required": True,
+                            "required": False,
                             "style": "simple",
                             "explode": False,
                             "schema": {
