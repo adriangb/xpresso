@@ -20,13 +20,13 @@ For most use cases, you'll want to stick with a Pydantic model.
 Declaring a Pydantic model is simple.
 Start by importing `BaseModel` from Pydantic and declaring the fields of the model using type annotations:
 
-```py hl_lines="3 8-11"
+```python hl_lines="3 8-11"
 --8<-- "docs_src/tutorial/body/tutorial_001.py"
 ```
 
 Then we declare add the `FromJson[...]` marker (which is syntactic sugar for `Annotated[..., Json()]`) to a paramter in our path function:
 
-```py hl_lines="14"
+```python hl_lines="14"
 --8<-- "docs_src/tutorial/body/tutorial_001.py"
 ```
 
@@ -48,7 +48,7 @@ For in depth information on the topic, see [Pydantic]'s docs.
 But here is a quick example of how this can work in Xpresso.
 First, import `Field` from Pydantic and `Annotated`:
 
-```py hl_lines="3 6"
+```python hl_lines="3 6"
 --8<-- "docs_src/tutorial/body/tutorial_002.py"
 ```
 
@@ -59,7 +59,7 @@ First, import `Field` from Pydantic and `Annotated`:
 
 Now use `Field()` inside of `Annotated[...]` to attach validation and schema customziation metadata to the `price` field:
 
-```py hl_lines="11-17"
+```python hl_lines="11-17"
 --8<-- "docs_src/tutorial/body/tutorial_002.py"
 ```
 
@@ -73,7 +73,7 @@ Now use `Field()` inside of `Annotated[...]` to attach validation and schema cus
 While you will probably need Pydantic models for complex cases, in many simple cases you can get away with just using the standard library's container types.
 For example, you can declare that a JSON body is a list of integers:
 
-```py hl_lines="6"
+```python hl_lines="6"
 --8<-- "docs_src/tutorial/body/tutorial_003.py"
 ```
 
@@ -81,7 +81,7 @@ For example, you can declare that a JSON body is a list of integers:
 
 You can also wrap an existing Pydantic model in a container, for example to receive a list of items:
 
-```py hl_lines="14"
+```python hl_lines="14"
 --8<-- "docs_src/tutorial/body/tutorial_004.py"
 ```
 
