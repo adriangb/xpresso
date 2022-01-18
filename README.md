@@ -86,7 +86,7 @@ You will get the following JSON response:
 
 Now navigate to [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) to poke around the interactive [Swagger UI] documentation:
 
-![Swagger UI](/docs/readme_example_swagger.png)
+![Swagger UI](docs/readme_example_swagger.png)
 
 For more examples, tutorials and reference materials, see our [documentation].
 
