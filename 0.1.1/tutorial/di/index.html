@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="developer centric, performant web framework">
+        <meta name="description" content="Developer centric, performant and extensible ASGI framework">
       
       
       
@@ -17,7 +17,7 @@
     
     
       
-        <title>Dependency Injection - xpresso</title>
+        <title>Dependency Injection - Xpresso</title>
       
     
     
@@ -100,7 +100,7 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="xpresso" class="md-header__button md-logo" aria-label="xpresso" data-md-component="logo">
+    <a href="../.." title="Xpresso" class="md-header__button md-logo" aria-label="Xpresso" data-md-component="logo">
       
   <img src="../../assets/images/xpresso.png" alt="logo">
 
@@ -112,7 +112,7 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            xpresso
+            Xpresso
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
@@ -219,12 +219,12 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="xpresso" class="md-nav__button md-logo" aria-label="xpresso" data-md-component="logo">
+    <a href="../.." title="Xpresso" class="md-nav__button md-logo" aria-label="Xpresso" data-md-component="logo">
       
   <img src="../../assets/images/xpresso.png" alt="logo">
 
     </a>
-    xpresso
+    Xpresso
   </label>
   
     <div class="md-nav__source">
@@ -581,7 +581,7 @@
 
 
 <h1 id="dependency-injection">Dependency Injection</h1>
-<p>xpresso has a powerful dependency injection system, backed by <a href="https://github.com/adriangb/di">di</a>.
+<p>Xpresso has a powerful dependency injection system, backed by <a href="https://github.com/adriangb/di">di</a>.
 You can inject classes, callable class instances, sync and async functions and context managers.
 These can be chained, and dependencies are auto wired.</p>
 <p>In this example, we'll create a common set of query parameters that can be collected and used from multiple endpoints.</p>
@@ -623,7 +623,7 @@ These can be chained, and dependencies are auto wired.</p>
 As always, you can head over to <a href="http://localhost:8000/docs">http://localhost:8000/docs</a> to see the live docs.</p>
 <p>As it turns out, <code>FromQuery</code> is just a dependency that extracts a query paratemeter from the request, parses it into the type declared via the type annotation and then injects it into the function.
 So really, we are alaready using nested dependencies!
-xpresso supports arbitrarily deep nested dependency graphs.</p>
+Xpresso supports arbitrarily deep nested dependency graphs.</p>
 <h2 id="depending-on-abstractions">Depending on abstractions</h2>
 <p>Binds can be used to depend on an abstract interface and inject an implementation at the main entrypoint.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">sys</span>

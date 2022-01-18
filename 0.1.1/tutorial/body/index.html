@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="developer centric, performant web framework">
+        <meta name="description" content="Developer centric, performant and extensible ASGI framework">
       
       
       
@@ -17,7 +17,7 @@
     
     
       
-        <title>Request Body - xpresso</title>
+        <title>Request Body - Xpresso</title>
       
     
     
@@ -100,7 +100,7 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="xpresso" class="md-header__button md-logo" aria-label="xpresso" data-md-component="logo">
+    <a href="../.." title="Xpresso" class="md-header__button md-logo" aria-label="Xpresso" data-md-component="logo">
       
   <img src="../../assets/images/xpresso.png" alt="logo">
 
@@ -112,7 +112,7 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            xpresso
+            Xpresso
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
@@ -219,12 +219,12 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="xpresso" class="md-nav__button md-logo" aria-label="xpresso" data-md-component="logo">
+    <a href="../.." title="Xpresso" class="md-nav__button md-logo" aria-label="Xpresso" data-md-component="logo">
       
   <img src="../../assets/images/xpresso.png" alt="logo">
 
     </a>
-    xpresso
+    Xpresso
   </label>
   
     <div class="md-nav__source">
@@ -595,16 +595,16 @@
 
 
 <h1 id="request-body">Request Body</h1>
-<p>xpresso has a rich system of extractors to extract and parse request bodies.
+<p>Xpresso has a rich system of extractors to extract and parse request bodies.
 These help give you type safety, data validation and automatic OpenAPI spec generation.</p>
 <p>We'll start off using JSON as an example since this is one of the most common types of request bodies.
 But as you will see in the later chapters, a lot of the same concepts apply forms and multipart requests.</p>
 <h2 id="declaring-a-body-schema">Declaring a body schema</h2>
-<p>First, we need to define the schema of our body and give xpresso a data structure to extract our body into.
+<p>First, we need to define the schema of our body and give Xpresso a data structure to extract our body into.
 This data structure can be a built in type (like <code>int</code> or <code>str</code>), a collection (like <code>dict</code> or <code>list</code>) or a <a href="https://pydantic-docs.helpmanual.io">Pydantic</a> model.</p>
 <div class="admonition info">
 <p class="admonition-title">Info</p>
-<p>Although xpresso makes extensive use of Pydantic and no other similar libraries are supported out of the box, there is no reason why support could not be implemented.
+<p>Although Xpresso makes extensive use of Pydantic and no other similar libraries are supported out of the box, there is no reason why support could not be implemented.
 As you will see later, writing a custom extractor is pretty easy.
 It just doesn't make sense to provide out of the box integration with dozens of libraries, so we chose Pydantic.</p>
 </div>
@@ -673,7 +673,7 @@ Your function will receive a validated instance of <code>Item</code>.</p>
 <h2 id="constraints-and-customization">Constraints and Customization</h2>
 <p>Pydantic supports rich validation and customization of model schemas.
 For in depth information on the topic, see <a href="https://pydantic-docs.helpmanual.io">Pydantic</a>'s docs.
-But here is a quick example of how this can work in xpresso.
+But here is a quick example of how this can work in Xpresso.
 First, import <code>Field</code> from Pydantic and <code>Annotated</code>:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span>
 
@@ -710,7 +710,7 @@ First, import <code>Field</code> from Pydantic and <code>Annotated</code>:</p>
 </code></pre></div>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
-<p>The import <code>from xpresso.typing import Annotated</code> is just a convenience import.
+<p>The import <code>from Xpresso.typing import Annotated</code> is just a convenience import.
 All it does is import <code>Annotated</code> from <code>typing</code> if your Python version is &gt;= 3.9 and [typing_extensions] otherwise.
 But if you are already using Python &gt;= 3.9, you can just replace that with <code>from typing import Annotated</code>.</p>
 </div>
@@ -751,7 +751,7 @@ But if you are already using Python &gt;= 3.9, you can just replace that with <c
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
 <p>Pydantic also supports the syntax <code>field_name: str = Field(...)</code>, but we encourage youto get used to using <code>Annotated</code> instead.
-As you will see in later chapters about forms and multipart requests, this will allow you to mix in Pydantic's validation and schema customization with xpresso's extractor system.
+As you will see in later chapters about forms and multipart requests, this will allow you to mix in Pydantic's validation and schema customization with Xpresso's extractor system.
 That said, for JSON bodies using <code>field_name: str = Field(...)</code> will work just fine.</p>
 </div>
 <h2 id="using-builtin-types">Using builtin types</h2>

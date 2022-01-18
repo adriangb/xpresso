@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="developer centric, performant web framework">
+        <meta name="description" content="Developer centric, performant and extensible ASGI framework">
       
       
       
@@ -17,7 +17,7 @@
     
     
       
-        <title>Path Parameters - xpresso</title>
+        <title>Path Parameters - Xpresso</title>
       
     
     
@@ -100,7 +100,7 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="xpresso" class="md-header__button md-logo" aria-label="xpresso" data-md-component="logo">
+    <a href="../.." title="Xpresso" class="md-header__button md-logo" aria-label="Xpresso" data-md-component="logo">
       
   <img src="../../assets/images/xpresso.png" alt="logo">
 
@@ -112,7 +112,7 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            xpresso
+            Xpresso
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
@@ -219,12 +219,12 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="xpresso" class="md-nav__button md-logo" aria-label="xpresso" data-md-component="logo">
+    <a href="../.." title="Xpresso" class="md-nav__button md-logo" aria-label="Xpresso" data-md-component="logo">
       
   <img src="../../assets/images/xpresso.png" alt="logo">
 
     </a>
-    xpresso
+    Xpresso
   </label>
   
     <div class="md-nav__source">
@@ -568,8 +568,8 @@
 
 <h1 id="path-parameters">Path parameters</h1>
 <p>Path parameters are declared in the route defenition, using the same foramt as formatting strings (<code>"{}"</code>):
-To tell xpresso that you want to extract a path parameter and inject it into your function, use <code>FromPath</code>.
-This is just a marker that tells xpresso how to inject the value, it has no effect on the function if it is called directly.</p>
+To tell Xpresso that you want to extract a path parameter and inject it into your function, use <code>FromPath</code>.
+This is just a marker that tells Xpresso how to inject the value, it has no effect on the function if it is called directly.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span>
 
 <span class="kn">from</span> <span class="nn">xpresso</span> <span class="kn">import</span> <span class="n">App</span><span class="p">,</span> <span class="n">FromPath</span><span class="p">,</span> <span class="n">Path</span>
@@ -594,8 +594,8 @@ This is just a marker that tells xpresso how to inject the value, it has no effe
 <span class="p">}</span><span class="w"></span>
 </code></pre></div>
 <h2 id="type-conversions">Type conversions</h2>
-<p>xpresso uses type annotations from your parameters to do conversions and parsing.
-If we modify the example above to expect an <code>int</code>, xpresso will convert the path parameter (which is always a string, since it is coming from a URL) int an <code>int</code> and automatically return an error response if it is not a valid integer:</p>
+<p>Xpresso uses type annotations from your parameters to do conversions and parsing.
+If we modify the example above to expect an <code>int</code>, Xpresso will convert the path parameter (which is always a string, since it is coming from a URL) int an <code>int</code> and automatically return an error response if it is not a valid integer:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span>
 
 <span class="kn">from</span> <span class="nn">xpresso</span> <span class="kn">import</span> <span class="n">App</span><span class="p">,</span> <span class="n">FromPath</span><span class="p">,</span> <span class="n">Path</span>
@@ -662,12 +662,12 @@ So you can also use Pydantic constraints:</p>
 <p class="admonition-title">Info</p>
 <p>This is probably a good spot to digress and talk about <code>Annotated</code> since you may be confused if you are not familiar with it.
 If you've used FastAPI, you may be used to declaring things like <code>param: str = Path(gt=0)</code>.
-In xpresso, this turns into <code>param: Annotated[str, Path(), Field(gt=0)]</code>.
+In Xpresso, this turns into <code>param: Annotated[str, Path(), Field(gt=0)]</code>.
 For more background on <code>Annoated</code> itself, see the <a href="../../types/">Python Types</a> section of our docs.</p>
 </div>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
-<p>The import <code>from xpresso.typing import Annotated</code> is just a convenience import.
+<p>The import <code>from Xpresso.typing import Annotated</code> is just a convenience import.
 All it does is import <code>Annotated</code> from <code>typing</code> if your Python version is &gt;= 3.9 and <a href="https://pypi.org/project/typing-extensions/">typing_extensions</a> otherwise.
 But if you are already using Python &gt;= 3.9, you can just replace that with <code>from typing import Annotated</code>.</p>
 </div>
@@ -698,7 +698,7 @@ But if you are already using Python &gt;= 3.9, you can just replace that with <c
 It should look something like:</p>
 <p><img alt="Swagger UI" src="../path_params_001.png" /></p>
 <h2 id="deserialziation-and-parsing">Deserialziation and parsing</h2>
-<p>xpresso offers full support for the the <a href="https://swagger.io/docs/specification/serialization/">OpenAPI parameter serialization spec</a>.
+<p>Xpresso offers full support for the the <a href="https://swagger.io/docs/specification/serialization/">OpenAPI parameter serialization spec</a>.
 You can control the serialization style using the <code>style</code> and <code>explode</code> arguments to <code>Path()</code>:
 The Python type can be a scalar value, a collection (like a list or dict) or even a Pydantic model (for object-valued parameters).</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
@@ -722,7 +722,7 @@ The Python type can be a scalar value, a collection (like a list or dict) or eve
     <span class="p">]</span>
 <span class="p">)</span>
 </code></pre></div>
-<p>Navigating to <a href="http://127.0.0.1:8000/items/;items=1;items=2;items=3">http://127.0.0.1:8000/items/;items=1;items=2;items=3</a> will return:</p>
+<p>Navigating to <a href="http://127.0.0.1:8000/items/;items=1;items=2;items=3">http://127.0.0.1:8000/items/;items=1;items=2;items=3</a> will return the following JSON:</p>
 <div class="highlight"><pre><span></span><code><span class="p">[</span><span class="w"></span>
 <span class="w">  </span><span class="mi">1</span><span class="p">,</span><span class="w"></span>
 <span class="w">  </span><span class="mi">2</span><span class="p">,</span><span class="w"></span>

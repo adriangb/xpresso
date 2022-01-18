@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="developer centric, performant web framework">
+        <meta name="description" content="Developer centric, performant and extensible ASGI framework">
       
       
       
@@ -17,7 +17,7 @@
     
     
       
-        <title>Header Parameters - xpresso</title>
+        <title>Header Parameters - Xpresso</title>
       
     
     
@@ -100,7 +100,7 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="xpresso" class="md-header__button md-logo" aria-label="xpresso" data-md-component="logo">
+    <a href="../.." title="Xpresso" class="md-header__button md-logo" aria-label="Xpresso" data-md-component="logo">
       
   <img src="../../assets/images/xpresso.png" alt="logo">
 
@@ -112,7 +112,7 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            xpresso
+            Xpresso
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
@@ -219,12 +219,12 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="xpresso" class="md-nav__button md-logo" aria-label="xpresso" data-md-component="logo">
+    <a href="../.." title="Xpresso" class="md-nav__button md-logo" aria-label="Xpresso" data-md-component="logo">
       
   <img src="../../assets/images/xpresso.png" alt="logo">
 
     </a>
-    xpresso
+    Xpresso
   </label>
   
     <div class="md-nav__source">
@@ -591,8 +591,8 @@
 <h2 id="underscore-conversion">Underscore conversion</h2>
 <p>Headers names are usually composed of several words separated by hyphens (<code>"-"</code>).
 But Python veriable names cannot contain hyphens.
-Since xpresso automatically derives the header names from the parameter names, this creates a problem.
-To get around this, xpresso automatically converts parameter name underscores (<code>"_"</code>) to hyphens (<code>"-"</code>).
+Since Xpresso automatically derives the header names from the parameter names, this creates a problem.
+To get around this, Xpresso automatically converts parameter name underscores (<code>"_"</code>) to hyphens (<code>"-"</code>).
 This is controlled using the <code>convert_underscores</code> parameter to <code>HeaderParam(...)</code>:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span>
 
@@ -617,7 +617,7 @@ This is controlled using the <code>convert_underscores</code> parameter to <code
 </code></pre></div>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
-<p>The import <code>from xpresso.typing import Annotated</code> is just a convenience import.
+<p>The import <code>from Xpresso.typing import Annotated</code> is just a convenience import.
 All it does is import <code>Annotated</code> from <code>typing</code> if your Python version is &gt;= 3.9 and [typing_extensions] otherwise.
 But if you are already using Python &gt;= 3.9, you can just replace that with <code>from typing import Annotated</code>.</p>
 </div>

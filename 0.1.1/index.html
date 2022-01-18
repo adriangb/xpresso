@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="developer centric, performant web framework">
+        <meta name="description" content="Developer centric, performant and extensible ASGI framework">
       
       
       
@@ -17,7 +17,7 @@
     
     
       
-        <title>xpresso</title>
+        <title>Xpresso</title>
       
     
     
@@ -70,7 +70,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#xpresso" class="md-skip">
+        <a href="#introduction" class="md-skip">
           Skip to content
         </a>
       
@@ -100,7 +100,7 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="." title="xpresso" class="md-header__button md-logo" aria-label="xpresso" data-md-component="logo">
+    <a href="." title="Xpresso" class="md-header__button md-logo" aria-label="Xpresso" data-md-component="logo">
       
   <img src="assets/images/xpresso.png" alt="logo">
 
@@ -112,7 +112,7 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            xpresso
+            Xpresso
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
@@ -219,12 +219,12 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="." title="xpresso" class="md-nav__button md-logo" aria-label="xpresso" data-md-component="logo">
+    <a href="." title="Xpresso" class="md-nav__button md-logo" aria-label="Xpresso" data-md-component="logo">
       
   <img src="assets/images/xpresso.png" alt="logo">
 
     </a>
-    xpresso
+    Xpresso
   </label>
   
     <div class="md-nav__source">
@@ -255,8 +255,6 @@
       <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
       
       
-        
-      
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
           Intro
@@ -272,8 +270,6 @@
 <nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
-  
-    
   
   
     <label class="md-nav__title" for="__toc">
@@ -524,8 +520,6 @@
   
   
   
-    
-  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -578,11 +572,28 @@
 </a>
 
 
-<h1 id="xpresso">xpresso</h1>
-<p><a href="https://codecov.io/gh/adriangb/xpresso"><img alt="codecov" src="https://codecov.io/gh/adriangb/xpresso/branch/main/graph/badge.svg?token=A0FXC8B93Y" /></a>
-<img alt="Test &amp; Release" src="https://github.com/adriangb/xpresso/actions/workflows/workflow.yaml/badge.svg" /></p>
+  <h1>Intro</h1>
+
+<p align="center">
+  <a href="https://adriangb.com/xpresso"><img src="https://adriangb.com/xpresso/xpresso-with-title.png" alt="Xpresso"></a>
+</p>
+
+<p align="center">
+<a href="https://github.com/adriangb/xpresso/actions?query=workflow%3ATest+event%3Apush+branch%3Amain" target="_blank">
+    <img src="https://github.com/adriangb/xpresso/actions/workflows/workflow.yaml/badge.svg?event=push&branch=main" alt="Test">
+</a>
+<a href="https://codecov.io/gh/adriangb/xpresso" target="_blank">
+    <img src="https://img.shields.io/codecov/c/github/adriangb/xpresso?color=%2334D058" alt="Coverage">
+</a>
+<a href="https://pypi.org/project/xpresso" target="_blank">
+    <img src="https://img.shields.io/pypi/v/xpresso?color=%2334D058&label=pypi%20package" alt="Package version">
+</a>
+<a href="https://pypi.org/project/xpresso" target="_blank">
+    <img src="https://img.shields.io/pypi/pyversions/xpresso.svg?color=%2334D058" alt="Supported Python versions">
+</a>
+</p>
 <h2 id="introduction">Introduction</h2>
-<p>xpresso is an ASGI web framework built on top of <a href="https://github.com/encode/starlette">Starlette</a>, <a href="https://github.com/samuelcolvin/pydantic/">Pydantic</a> and <a href="https://github.com/adriangb/di">di</a>, with heavy inspiration from <a href="https://github.com/tiangolo/fastapi">FastAPI</a>.</p>
+<p>xpresso is an ASGI web framework built on top of <a href="https://github.com/encode/starlette">Starlette</a>, <a href="https://github.com/samuelcolvin/pydantic/">Pydantic</a> and <a href="https://github.com/adriangb/di">di</a>, with heavy inspiration from <a href="https://github.com/adriangb/xpresso">FastAPI</a>.</p>
 <p>Some of the standout features are:</p>
 <ul>
 <li>ASGI support for high performance (within the context of Python web frameworks)</li>

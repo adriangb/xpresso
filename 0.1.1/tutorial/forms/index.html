@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="developer centric, performant web framework">
+        <meta name="description" content="Developer centric, performant and extensible ASGI framework">
       
       
       
@@ -17,7 +17,7 @@
     
     
       
-        <title>Forms - xpresso</title>
+        <title>Forms - Xpresso</title>
       
     
     
@@ -100,7 +100,7 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="xpresso" class="md-header__button md-logo" aria-label="xpresso" data-md-component="logo">
+    <a href="../.." title="Xpresso" class="md-header__button md-logo" aria-label="Xpresso" data-md-component="logo">
       
   <img src="../../assets/images/xpresso.png" alt="logo">
 
@@ -112,7 +112,7 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            xpresso
+            Xpresso
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
@@ -219,12 +219,12 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="xpresso" class="md-nav__button md-logo" aria-label="xpresso" data-md-component="logo">
+    <a href="../.." title="Xpresso" class="md-nav__button md-logo" aria-label="Xpresso" data-md-component="logo">
       
   <img src="../../assets/images/xpresso.png" alt="logo">
 
     </a>
-    xpresso
+    Xpresso
   </label>
   
     <div class="md-nav__source">
@@ -553,7 +553,7 @@
 
 
 <h1 id="forms">Forms</h1>
-<p>To extract forms in xpresso, you start by declaring a data structure to unpack the form into.
+<p>To extract forms in Xpresso, you start by declaring a data structure to unpack the form into.
 The fields of the datastructure correspond to the fields of the form data.
 The datastructure can be almost anything, including dataclasses, pydantic models and regular Python classes.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
@@ -588,7 +588,7 @@ The datastructure can be almost anything, including dataclasses, pydantic models
 So for non form-native fields (anything except <code>FromFormField</code>) you need to wrap it in <code>ExtractField</code>.</p>
 </div>
 <h2 id="form-serialization">Form serialization</h2>
-<p>xpresso fully supports the <a href="https://swagger.io/docs/specification/serialization/">OpenAPI parameter serialization</a> standard.
+<p>Xpresso fully supports the <a href="https://swagger.io/docs/specification/serialization/">OpenAPI parameter serialization</a> standard.
 You can customize how extraction ocurrs using the <code>style</code> and <code>explode</code> keyword arguments to <code>FormField()</code>:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>

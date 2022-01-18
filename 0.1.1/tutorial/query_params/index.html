@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="developer centric, performant web framework">
+        <meta name="description" content="Developer centric, performant and extensible ASGI framework">
       
       
       
@@ -17,7 +17,7 @@
     
     
       
-        <title>Query Parameters - xpresso</title>
+        <title>Query Parameters - Xpresso</title>
       
     
     
@@ -100,7 +100,7 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="xpresso" class="md-header__button md-logo" aria-label="xpresso" data-md-component="logo">
+    <a href="../.." title="Xpresso" class="md-header__button md-logo" aria-label="Xpresso" data-md-component="logo">
       
   <img src="../../assets/images/xpresso.png" alt="logo">
 
@@ -112,7 +112,7 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            xpresso
+            Xpresso
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
@@ -219,12 +219,12 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="xpresso" class="md-nav__button md-logo" aria-label="xpresso" data-md-component="logo">
+    <a href="../.." title="Xpresso" class="md-nav__button md-logo" aria-label="Xpresso" data-md-component="logo">
       
   <img src="../../assets/images/xpresso.png" alt="logo">
 
     </a>
-    xpresso
+    Xpresso
   </label>
   
     <div class="md-nav__source">
@@ -561,9 +561,9 @@
 <li><code>skip</code>: value of <code>1</code></li>
 <li><code>limit</code>: value of <code>2</code></li>
 </ul>
-<p>In xpresso, these are extracted using <code>FromQuery[...]</code>, which is an alias for <code>Annoated[..., QueryParam()]</code>.
+<p>In Xpresso, these are extracted using <code>FromQuery[...]</code>, which is an alias for <code>Annoated[..., QueryParam()]</code>.
 Since they are part of the URL, they are always received as strings.
-But just like with path parameters, xpresso can extract them and parse them into Python types and data structrues:</p>
+But just like with path parameters, Xpresso can extract them and parse them into Python types and data structrues:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">xpresso</span> <span class="kn">import</span> <span class="n">App</span><span class="p">,</span> <span class="n">FromQuery</span><span class="p">,</span> <span class="n">Path</span>
 
 <span class="n">fake_items_db</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;item_name&quot;</span><span class="p">:</span> <span class="s2">&quot;Foo&quot;</span><span class="p">},</span> <span class="p">{</span><span class="s2">&quot;item_name&quot;</span><span class="p">:</span> <span class="s2">&quot;Bar&quot;</span><span class="p">},</span> <span class="p">{</span><span class="s2">&quot;item_name&quot;</span><span class="p">:</span> <span class="s2">&quot;Baz&quot;</span><span class="p">}]</span>
