@@ -60,7 +60,7 @@ It is even possible to have a nullable parameter with a non-null default value, 
 --8<-- "docs_src/tutorial/query_params/tutorial_003.py"
 ```
 
-If you navigate to [http://localhost:8000/items/?limit=](http://localhost:8000/items/?limit=) you will get 3 items back:
+If you navigate to [http://localhost:8000/items/?limit=](http://localhost:8000/items/?limit=) you will get all of the items back (3):
 
 ```json
 --8<-- "docs_src/tutorial/query_params/tutorial_003_response_1.json"
