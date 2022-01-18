@@ -1,5 +1,5 @@
 site_name: "xpresso"
-site_description: developer centric, performant web framework
+site_description: Developer centric, performant and extensible ASGI framework
 site_url: https://www.adriangb.com/xpresso
 
 theme:
