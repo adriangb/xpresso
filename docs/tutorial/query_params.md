@@ -116,6 +116,8 @@ Now if you navigate to [http://127.0.0.1:8000/items/?filter[prefix]=Ba&filter[li
 --8<-- "docs_src/tutorial/query_params/tutorial_006_response_1.json"
 ```
 
+This particular serialization is useful to support multiple objects with the same field name without name collisions.
+
 [PEP 613 type alias]: https://www.python.org/dev/peps/pep-0613/
 [Paramter Constraints and Metadata]: param_constraints_and_metadata.md
 [OpenAPI parameter serialization spec]: https://swagger.io/docs/specification/serialization/
