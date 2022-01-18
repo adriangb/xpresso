@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-<a href="https://github.com/adriangb/xpresso/actions?query=workflow%3ATest+event%3Apush+branch%3Amain" target="_blank">
+<a href="https://github.com/adriangb/xpresso/actions?query=workflow%3ACI%2FCD+event%3Apush+branch%3Amain" target="_blank">
     <img src="https://github.com/adriangb/xpresso/actions/workflows/workflow.yaml/badge.svg?event=push&branch=main" alt="Test">
 </a>
 <a href="https://codecov.io/gh/adriangb/xpresso" target="_blank">
