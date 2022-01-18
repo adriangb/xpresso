@@ -93,8 +93,8 @@ You can declare it in the path function's signature, but often it is convenient 
 ```
 
 !!! tip "Tip"
-  For simple cases like this, you can even use a lambda function: `Dependant(lambda: httpx.AsyncClient(...))`
-  Just be concious of legibility!
+    For simple cases like this, you can even use a lambda function: `Dependant(lambda: httpx.AsyncClient(...))`
+    Just be concious of legibility!
 
 Since we are now specifying the `base_url` when we construct the `httpx.AsyncClient`, we can just use `"/get"` as the URL in our path function:
 
