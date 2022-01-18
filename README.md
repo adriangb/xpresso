@@ -50,27 +50,21 @@ pip install uvicorn
 Create a file named `example.py`:
 
 ```python
-from typing import List, Optional
 from pydantic import BaseModel
-from xpresso import App, PathItem, FromPath, FromQuery
+from xpresso import App, Path, FromPath, FromQuery
 
-class UserModel(BaseModel):
-    user_id: str
-    age: Optional[int] = None
+class Item(BaseModel):
+    item_id: int
+    name: str
 
-async def get_users(
-    ids: FromPath[List[int]],
-    include_age: FromQuery[bool],
-) -> List[UserModel]:
-    if include_age:
-        return [UserModel(user_id=user_id, age=123) for user_id in ids]
-    return [UserModel(user_id=user_id) for user_id in ids]
+async def read_item(item_id: FromPath[int], name: FromQuery[str]) -> Item:
+    return Item(item_id=item_id, name=name)
 
 app = App(
     routes=[
-        PathItem(
-            path="/users/{ids}",
-            get=get_users
+        Path(
+            "/items/{item_id}",
+            get=read_item,
         )
     ]
 )
