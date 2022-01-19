@@ -29,4 +29,5 @@ Everything else can stay the same, this is all we need!
 
 If you run this and navigate to [http://127.0.0.1:8000/echo/url](http://127.0.0.1:8000/echo/url) the response will be the same, but you will probably notice reduced latency if you refresh to make several requests.
 
+[pytest]: https://docs.pytest.org/en/6.2.x/fixture.html
 [dependency lifecycles]: lifecycle.md
