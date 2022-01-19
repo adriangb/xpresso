@@ -118,6 +118,7 @@ class Operation(starlette.routing.BaseRoute):
             [typing.Any], starlette.responses.Response
         ] = starlette.responses.JSONResponse,
         response_encoder: Encoder = JsonableEncoder(),
+        sync_to_thread: bool = True,
     ) -> None:
         self._app: typing.Optional[starlette.types.ASGIApp] = None
         self.endpoint = endpoint
@@ -135,6 +136,7 @@ class Operation(starlette.routing.BaseRoute):
         self.response_encoder = response_encoder
         self.include_in_schema = include_in_schema
         self.name: str = starlette.routing.get_name(endpoint) if name is None else name  # type: ignore
+        self.sync_to_thread = sync_to_thread
 
     async def handle(
         self,
@@ -149,12 +151,11 @@ class Operation(starlette.routing.BaseRoute):
     def solve(
         self,
         container: BaseContainer,
-        path_params: typing.Set[str],
         dependencies: typing.List[DependantBase[typing.Any]],
     ) -> None:
         self.dependant = container.solve(
             JoinedDependant(
-                Dependant(self.endpoint),
+                Dependant(self.endpoint, sync_to_thread=self.sync_to_thread),
                 siblings=[*dependencies, *(self.dependencies or ())],
             )
         )

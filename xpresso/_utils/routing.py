@@ -1,7 +1,7 @@
 import typing
 from dataclasses import dataclass
 
-from starlette.routing import BaseRoute, Mount, Router, compile_path
+from starlette.routing import BaseRoute, Mount, Router
 
 
 @dataclass(frozen=True)
@@ -22,8 +22,3 @@ def visit_routes(
             yield from visit_routes(routers + [route.app], path + route.path)
         elif hasattr(route, "path"):
             yield VisitedRoute(path + getattr(route, "path"), routers, route)
-
-
-def get_path_params(path: str) -> typing.Set[str]:
-    *_, converters = compile_path(path)
-    return set(converters.keys())

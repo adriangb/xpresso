@@ -14,7 +14,7 @@ from starlette.responses import HTMLResponse, JSONResponse, Response
 from starlette.routing import BaseRoute
 from starlette.routing import Route as StarletteRoute
 
-from xpresso._utils.routing import get_path_params, visit_routes
+from xpresso._utils.routing import visit_routes
 from xpresso.dependencies.models import Dependant
 from xpresso.dependencies.utils import register_framework_dependencies
 from xpresso.exception_handlers import (
@@ -143,7 +143,6 @@ class App(Starlette):
             if isinstance(route.route, Path):
                 for operation in route.route.operations.values():
                     operation.solve(
-                        path_params=get_path_params(route.path),
                         dependencies=[
                             *dependencies,
                             *route.route.dependencies,

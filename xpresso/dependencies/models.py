@@ -9,8 +9,6 @@ else:
     from typing import Literal
 
 import di
-import di.dependant
-from di.api.dependencies import DependantBase
 from di.api.providers import DependencyProvider
 
 T = typing.TypeVar("T")
@@ -28,14 +26,12 @@ class Dependant(di.Dependant[typing.Any]):
         scope: Scope = "operation",
         use_cache: bool = True,
         wire: bool = True,
-        overrides: typing.Optional[
-            typing.Mapping[str, DependantBase[typing.Any]]
-        ] = None,
+        sync_to_thread: bool = False,
     ) -> None:
         super().__init__(
             call=call,
             scope=scope,
             use_cache=use_cache,
             wire=wire,
-            overrides=overrides,
+            sync_to_thread=sync_to_thread,
         )
