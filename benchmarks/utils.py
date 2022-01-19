@@ -1,6 +1,6 @@
 import time  # noqa: F401
 from random import Random
-from typing import Any, Callable, Dict, Literal, Mapping, Tuple
+from typing import Any, Callable, Dict, Mapping, Tuple
 
 import anyio  # noqa: F401
 
@@ -16,7 +16,7 @@ def generate_dag(
     *,
     sync: bool = False,
     sleep: Tuple[float, float] = (0, 0),
-) -> Callable[..., Literal[1]]:
+) -> Callable[..., int]:
     """Build a complex DAG of async dependencies"""
     sleep_func = time.sleep if sync else anyio.sleep
 
