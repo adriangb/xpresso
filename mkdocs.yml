@@ -30,7 +30,7 @@ repo_url: https://github.com/adriangb/xpresso
 edit_uri: "blob/main/docs/"
 
 nav:
-  - Intro: "README.md"
+  - Introduction: "README.md"
   - Python Types: "types.md"
   - Tutorial:
     - Minimal App: "tutorial/minimal_app.md"
