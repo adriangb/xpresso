@@ -53,8 +53,8 @@ nav:
   - Advanced Usage:
     - Binders: advanced/binders.md
     - Dependencies:
-      - Responses: "advanced/dependencies/responses.md"
-      - Registration: "advanced/dependencies/registration.md"
+      - Accessing Responses: "advanced/dependencies/responses.md"
+      - Provider Registration: "advanced/dependencies/registration.md"
       - Testing: "advanced/dependencies/testing.md"
       - Concurrency: "advanced/dependencies/concurrency.md"
 
