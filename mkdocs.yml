@@ -45,8 +45,8 @@ nav:
     - Dependencies:
       - Introduction: "tutorial/dependencies/README.md"
       - Nested Dependencies: "tutorial/dependencies/nested.md"
+      - Dependency Lifecycle: "tutorial/dependencies/lifecycle.md"
       - HTTP Parameter Dependencies: "tutorial/dependencies/http-params.md"
-      - Dependency lifecycle: "tutorial/dependencies/lifecycle.md"
       - Scopes: "tutorial/dependencies/scopes.md"
       - Global Dependencies: "tutorial/dependencies/global.md"
     - Application Lifespan: "advanced/lifespan.md"

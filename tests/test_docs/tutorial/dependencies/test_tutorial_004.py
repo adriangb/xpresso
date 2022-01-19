@@ -1,6 +1,6 @@
 import httpx
 
-from docs_src.tutorial.dependencies.tutorial_002 import app
+from docs_src.tutorial.dependencies.tutorial_004 import app
 from xpresso import Dependant
 from xpresso.testclient import TestClient
 

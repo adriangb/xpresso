@@ -33,12 +33,6 @@ class ParameterBinderMarker(Dependant):
         self.extractor_marker = extractor_marker
         self.openapi_marker = openapi_marker
 
-    def __hash__(self) -> int:
-        return id(self)
-
-    def __eq__(self, o: object) -> bool:
-        return o is self
-
     def register_parameter(self, param: inspect.Parameter) -> DependantBase[typing.Any]:
         return ParameterBinder(
             in_=self.in_,
@@ -64,15 +58,11 @@ class ParameterBinder(Dependant):
         self.openapi = openapi
         super().__init__(call=extractor.extract, scope="connection")
 
-    def __hash__(self) -> int:
+    @property
+    def cache_key(self) -> typing.Tuple[str, str]:
         # As per the spec, parameters are identified
         # by name and location
-        return hash((self.openapi.name, self.in_))
-
-    def __eq__(self, o: object) -> bool:
-        if isinstance(o, ParameterBinder):
-            return self.openapi.name == o.openapi.name and self.in_ == o.in_
-        return False
+        return (self.openapi.name, self.in_)
 
 
 class BodyBinderMarker(Dependant):
@@ -85,12 +75,6 @@ class BodyBinderMarker(Dependant):
         super().__init__(call=None, scope="connection")
         self.extractor_marker = extractor_marker
         self.openapi_marker = openapi_marker
-
-    def __hash__(self) -> int:
-        return id(self)
-
-    def __eq__(self, o: object) -> bool:
-        return self is o
 
     def register_parameter(self, param: inspect.Parameter) -> BodyBinder:
         return BodyBinder(

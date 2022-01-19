@@ -9,7 +9,7 @@ In this case, we probably don't want to create a new `httpx.AsyncClient` for eac
 --8<-- "docs_src/tutorial/dependencies/tutorial_002.py"
 ```
 
-If you run this and navigate to [http://127.0.0.1:8000/echo/headers](http://127.0.0.1:8000/echo/headers) the response will be the same, but you will probably notice reduced latency if you refresh to make several requests.
+If you run this and navigate to [http://127.0.0.1:8000/echo/url](http://127.0.0.1:8000/echo/url) the response will be the same, but you will probably notice reduced latency if you refresh to make several requests.
 
 There are three scopes available:
 

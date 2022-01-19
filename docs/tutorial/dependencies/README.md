@@ -48,25 +48,19 @@ It is implemented as a standalone package called [di].
 The simplest form of dependency injection is requesting a dependency in your path function.
 For simple cases, all we need to do is add a type annotation:
 
-```python hl_lines="8"
+```python hl_lines="6"
 --8<-- "docs_src/tutorial/dependencies/tutorial_001.py"
 ```
 
-If you run the app (make a file called `example.py`, copy the source code above and run `uvicorn example:app`) and navigate to [http://127.0.0.1:8000/echo/headers](http://127.0.0.1:8000/echo/headers) you will get something like the following as a response:
+If you run the app (make a file called `example.py`, copy the source code above and run `uvicorn example:app`) and navigate to [http://127.0.0.1:8000/echo/url](http://127.0.0.1:8000/echo/url) you will get the following as a response:
 
 ```json
-{
-  "Accept": "*/*",
-  "Accept-Encoding": "gzip, deflate",
-  "Host": "httpbin.org",
-  "User-Agent": "python-httpx/0.21.3",
-  "X-Amzn-Trace-Id": "Root=1-61e70d3a-1ae1092a5fd3bc400bb83494"
-}
+"https://httpbin.org/get"
 ```
 
 ### What happened in the background?
 
-The dependency injection system ([di]) "autowired" the dependency on `httpx.AsyncClient`.
+The dependency injection system ([di]) auto-wired the dependency on `httpx.AsyncClient`.
 This means that it recognized that our path function needed an instance of that class and so it created that class and injected it.
 This works well for simple cases (classes that do not have any dependencies or where all of the parameters are themselves resolvable by [di]) and when it works, it may be all you need!
 
@@ -80,7 +74,7 @@ In this example, we'll use an explicit marker to customize the `base_url` option
 First, we declare a dependency function.
 This function will just create the client with customized parameters and return it.
 
-```python hl_lines="9-10"
+```python hl_lines="7-8"
 --8<-- "docs_src/tutorial/dependencies/tutorial_002.py"
 ```
 
@@ -88,7 +82,7 @@ Next, we'll create the **Marker** for our dependency.
 This is what the dependency injection system will look for.
 You can declare it in the path function's signature, but often it is convenient to declare Markers as a type alias to avoid cluttering the function signature:
 
-```python hl_lines="13"
+```python hl_lines="11"
 --8<-- "docs_src/tutorial/dependencies/tutorial_002.py"
 ```
 
@@ -98,7 +92,7 @@ You can declare it in the path function's signature, but often it is convenient 
 
 Since we are now specifying the `base_url` when we construct the `httpx.AsyncClient`, we can just use `"/get"` as the URL in our path function:
 
-```python hl_lines="17"
+```python hl_lines="15"
 --8<-- "docs_src/tutorial/dependencies/tutorial_002.py"
 ```
 
