@@ -73,7 +73,7 @@ class JsonableEncoder(Encoder):
                 return Some(key(obj))
         return None
 
-    def encode(
+    def __call__(
         self, obj: Any, custom_encoder: Dict[Any, Callable[[Any], Any]] = {}
     ) -> Any:
         custom_encoder = {**self.custom_encoder, **custom_encoder}
@@ -91,7 +91,7 @@ class JsonableEncoder(Encoder):
             )
             if "__root__" in obj_dict:
                 obj_dict = obj_dict["__root__"]
-            return self.encode(obj_dict, custom_encoder=encoder)
+            return self(obj_dict, custom_encoder=encoder)
         if dataclasses.is_dataclass(obj):
             return dataclasses.asdict(obj)
         if isinstance(obj, Enum):
@@ -108,14 +108,14 @@ class JsonableEncoder(Encoder):
                     or not self.exclude
                     or key not in self.exclude
                 ):
-                    encoded_key = self.encode(key, custom_encoder=custom_encoder)
-                    encoded_value = self.encode(value, custom_encoder=custom_encoder)
+                    encoded_key = self(key, custom_encoder=custom_encoder)
+                    encoded_value = self(value, custom_encoder=custom_encoder)
                     encoded_dict[encoded_key] = encoded_value
             return encoded_dict
         if isinstance(obj, (list, set, frozenset, GeneratorType, tuple)):
             encoded_list: List[Any] = []
             for item in cast(Sequence[Any], obj):
-                encoded_list.append(self.encode(item, custom_encoder=custom_encoder))
+                encoded_list.append(self(item, custom_encoder=custom_encoder))
             return encoded_list
 
         custom = self.apply_custom_encoder(obj, custom_encoder=custom_encoder)
@@ -138,4 +138,4 @@ class JsonableEncoder(Encoder):
             except Exception as e:
                 errors.append(e)
                 raise ValueError(errors)
-        return self.encode(data, custom_encoder=custom_encoder)
+        return self(data, custom_encoder=custom_encoder)

@@ -85,9 +85,7 @@ class _OperationApp:
             if isinstance(endpoint_return, starlette.responses.Response):
                 response = endpoint_return
             else:
-                response = self.response_factory(
-                    self.response_encoder.encode(endpoint_return)
-                )
+                response = self.response_factory(self.response_encoder(endpoint_return))
             xpresso_scope["response"] = response
         await xpresso_scope["response"](scope, receive, send)
 

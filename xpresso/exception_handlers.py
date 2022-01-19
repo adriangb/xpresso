@@ -22,6 +22,6 @@ async def validation_exception_handler(
     request: Request, exc: RequestValidationError
 ) -> JSONResponse:
     return JSONResponse(
-        encoder.encode({"detail": exc.errors()}),
+        encoder({"detail": exc.errors()}),
         status_code=exc.status_code,
     )

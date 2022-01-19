@@ -38,7 +38,7 @@ def jsonable_encoder(
         exclude_none=exclude_none,
         custom_encoder=custom_encoder,
     )
-    return enc.encode(obj)
+    return enc(obj)
 
 
 class Person:

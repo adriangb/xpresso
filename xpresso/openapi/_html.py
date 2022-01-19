@@ -59,7 +59,7 @@ def get_swagger_ui_html(
 
     if init_oauth:
         html += f"""
-        ui.initOAuth({json.dumps(encoder.encode(init_oauth))})
+        ui.initOAuth({json.dumps(encoder(init_oauth))})
         """
 
     html += """
