@@ -4,8 +4,8 @@ site_url: https://www.xpresso-api.dev
 
 theme:
   name: "material"
-  logo: assets/images/xpresso.png
-  favicon: assets/images/xpresso-favicon@32x32.ico
+  logo: assets/images/xpresso-cup.png
+  favicon: assets/images/xpresso-bean.png
   features:
     - navigation.expand
   custom_dir: docs/overrides
