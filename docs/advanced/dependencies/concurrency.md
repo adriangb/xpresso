@@ -66,7 +66,7 @@ And finally we pass `execute_dependencies_concurrently=True` to Operation:
 ```
 
 That's it!
-Now this endpoint will take ~100ms to execute instead of ~200ms.
+Now this endpoint will take ~0.1s to execute instead of 0.2s.
 
 !!! tip
     You can only enable or disable parallel execution for an entire Operation.
