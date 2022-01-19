@@ -10,14 +10,14 @@
       
       
       
-        <link rel="canonical" href="https://www.xpresso-api.dev/0.3.0/advanced/dependencies/responses/">
+        <link rel="canonical" href="https://www.xpresso-api.dev/0.3.0/advanced/dependencies/caching/">
       
       <link rel="icon" href="../../../assets/images/xpresso-bean.png">
       <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.1.7">
     
     
       
-        <title>Accessing Responses - Xpresso</title>
+        <title>Caching - Xpresso</title>
       
     
     
@@ -69,6 +69,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#dependency-caching" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -113,7 +118,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Accessing Responses
+              Caching
             
           </span>
         </div>
@@ -647,11 +652,21 @@
               
   
   
+    
   
-    <li class="md-nav__item">
-      <a href="../caching/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         Caching
       </a>
+      
     </li>
   
 
@@ -661,19 +676,11 @@
               
   
   
-    
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-      
-      
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../responses/" class="md-nav__link">
         Accessing Responses
       </a>
-      
     </li>
   
 
@@ -727,19 +734,147 @@
               </div>
             
             
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
           
           <div class="md-content" data-md-component="content">
             <article class="md-content__inner md-typeset">
               
                 
-<a href="https://github.com/adriangb/xpresso/blob/main/docs/advanced/dependencies/responses.md" title="Edit this page" class="md-content__button md-icon">
+<a href="https://github.com/adriangb/xpresso/blob/main/docs/advanced/dependencies/caching.md" title="Edit this page" class="md-content__button md-icon">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
 </a>
 
 
-  <h1>Accessing Responses</h1>
+<h1 id="dependency-caching">Dependency Caching</h1>
+<p>Xpresso has a dependency caching system.
+This allows re-using of already computed dependencies within a request response cycle.
+This is also what enables Xpresso to persist <code>"app"</code> scoped dependencies across requests (see <a href="../../../tutorial/dependencies/scopes/">Scopes</a>).
+By default, all dependencies are cached within their execution scope, but this can be disabled on a per-dependency basis with the <code>use_cache</code> argument to <code>Dependant</code>.</p>
+<p>First we are going to declare a placeholder dependency with no sub-dependencies.
+We are just going to compare instances, so there's nothing else needed in this dependency.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">xpresso</span> <span class="kn">import</span> <span class="n">App</span><span class="p">,</span> <span class="n">Dependant</span><span class="p">,</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">xpresso.typing</span> <span class="kn">import</span> <span class="n">Annotated</span>
 
 
+<span class="hll"><span class="k">class</span> <span class="nc">SharedDependency</span><span class="p">:</span>
+</span><span class="hll">    <span class="k">pass</span>
+</span>
+
+<span class="k">def</span> <span class="nf">dependency_1</span><span class="p">(</span><span class="n">shared</span><span class="p">:</span> <span class="n">SharedDependency</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SharedDependency</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">shared</span>
+
+
+<span class="k">def</span> <span class="nf">dependency_2</span><span class="p">(</span><span class="n">shared</span><span class="p">:</span> <span class="n">SharedDependency</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SharedDependency</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">shared</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">endpoint</span><span class="p">(</span>
+    <span class="n">shared1</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">SharedDependency</span><span class="p">,</span> <span class="n">Dependant</span><span class="p">(</span><span class="n">dependency_1</span><span class="p">)],</span>
+    <span class="n">shared2</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">SharedDependency</span><span class="p">,</span> <span class="n">Dependant</span><span class="p">(</span><span class="n">dependency_1</span><span class="p">)],</span>
+    <span class="n">shared3</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">SharedDependency</span><span class="p">,</span> <span class="n">Dependant</span><span class="p">(</span><span class="n">SharedDependency</span><span class="p">,</span> <span class="n">use_cache</span><span class="o">=</span><span class="kc">False</span><span class="p">)],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">assert</span> <span class="n">shared1</span> <span class="ow">is</span> <span class="n">shared2</span>
+    <span class="k">assert</span> <span class="n">shared1</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">shared3</span>
+
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">App</span><span class="p">(</span>
+    <span class="n">routes</span><span class="o">=</span><span class="p">[</span>
+        <span class="n">Path</span><span class="p">(</span>
+            <span class="s2">&quot;/shared&quot;</span><span class="p">,</span>
+            <span class="n">get</span><span class="o">=</span><span class="n">endpoint</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>Next we'll create two dependencies that depend on this dependency to test that sub-dependencies are shared:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">xpresso</span> <span class="kn">import</span> <span class="n">App</span><span class="p">,</span> <span class="n">Dependant</span><span class="p">,</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">xpresso.typing</span> <span class="kn">import</span> <span class="n">Annotated</span>
+
+
+<span class="k">class</span> <span class="nc">SharedDependency</span><span class="p">:</span>
+    <span class="k">pass</span>
+
+
+<span class="hll"><span class="k">def</span> <span class="nf">dependency_1</span><span class="p">(</span><span class="n">shared</span><span class="p">:</span> <span class="n">SharedDependency</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SharedDependency</span><span class="p">:</span>
+</span><span class="hll">    <span class="k">return</span> <span class="n">shared</span>
+</span>
+
+<span class="hll"><span class="k">def</span> <span class="nf">dependency_2</span><span class="p">(</span><span class="n">shared</span><span class="p">:</span> <span class="n">SharedDependency</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SharedDependency</span><span class="p">:</span>
+</span><span class="hll">    <span class="k">return</span> <span class="n">shared</span>
+</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">endpoint</span><span class="p">(</span>
+    <span class="n">shared1</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">SharedDependency</span><span class="p">,</span> <span class="n">Dependant</span><span class="p">(</span><span class="n">dependency_1</span><span class="p">)],</span>
+    <span class="n">shared2</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">SharedDependency</span><span class="p">,</span> <span class="n">Dependant</span><span class="p">(</span><span class="n">dependency_1</span><span class="p">)],</span>
+    <span class="n">shared3</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">SharedDependency</span><span class="p">,</span> <span class="n">Dependant</span><span class="p">(</span><span class="n">SharedDependency</span><span class="p">,</span> <span class="n">use_cache</span><span class="o">=</span><span class="kc">False</span><span class="p">)],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">assert</span> <span class="n">shared1</span> <span class="ow">is</span> <span class="n">shared2</span>
+    <span class="k">assert</span> <span class="n">shared1</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">shared3</span>
+
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">App</span><span class="p">(</span>
+    <span class="n">routes</span><span class="o">=</span><span class="p">[</span>
+        <span class="n">Path</span><span class="p">(</span>
+            <span class="s2">&quot;/shared&quot;</span><span class="p">,</span>
+            <span class="n">get</span><span class="o">=</span><span class="n">endpoint</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>Finally we create an endpoint that checks that the shared sub-dependencies are the same but the dependency declared with <code>use_cache=False</code> is not the same:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">xpresso</span> <span class="kn">import</span> <span class="n">App</span><span class="p">,</span> <span class="n">Dependant</span><span class="p">,</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">xpresso.typing</span> <span class="kn">import</span> <span class="n">Annotated</span>
+
+
+<span class="k">class</span> <span class="nc">SharedDependency</span><span class="p">:</span>
+    <span class="k">pass</span>
+
+
+<span class="k">def</span> <span class="nf">dependency_1</span><span class="p">(</span><span class="n">shared</span><span class="p">:</span> <span class="n">SharedDependency</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SharedDependency</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">shared</span>
+
+
+<span class="k">def</span> <span class="nf">dependency_2</span><span class="p">(</span><span class="n">shared</span><span class="p">:</span> <span class="n">SharedDependency</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SharedDependency</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">shared</span>
+
+
+<span class="hll"><span class="k">async</span> <span class="k">def</span> <span class="nf">endpoint</span><span class="p">(</span>
+</span><span class="hll">    <span class="n">shared1</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">SharedDependency</span><span class="p">,</span> <span class="n">Dependant</span><span class="p">(</span><span class="n">dependency_1</span><span class="p">)],</span>
+</span><span class="hll">    <span class="n">shared2</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">SharedDependency</span><span class="p">,</span> <span class="n">Dependant</span><span class="p">(</span><span class="n">dependency_1</span><span class="p">)],</span>
+</span><span class="hll">    <span class="n">shared3</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">SharedDependency</span><span class="p">,</span> <span class="n">Dependant</span><span class="p">(</span><span class="n">SharedDependency</span><span class="p">,</span> <span class="n">use_cache</span><span class="o">=</span><span class="kc">False</span><span class="p">)],</span>
+</span><span class="hll"><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span class="hll">    <span class="k">assert</span> <span class="n">shared1</span> <span class="ow">is</span> <span class="n">shared2</span>
+</span><span class="hll">    <span class="k">assert</span> <span class="n">shared1</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">shared3</span>
+</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">App</span><span class="p">(</span>
+    <span class="n">routes</span><span class="o">=</span><span class="p">[</span>
+        <span class="n">Path</span><span class="p">(</span>
+            <span class="s2">&quot;/shared&quot;</span><span class="p">,</span>
+            <span class="n">get</span><span class="o">=</span><span class="n">endpoint</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>You can test this by running the app and navigating to <a href="http://127.0.0.1:800/shared">http://127.0.0.1:800/shared</a>.
+You should get a <code>200 OK</code> response with no errors.</p>
 
               
             </article>
@@ -753,7 +888,7 @@
     <nav class="md-footer__inner md-grid" aria-label="Footer">
       
         
-        <a href="../caching/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Caching" rel="prev">
+        <a href="../concurrency/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Concurrency" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
           </div>
@@ -762,20 +897,20 @@
               <span class="md-footer__direction">
                 Previous
               </span>
-              Caching
+              Concurrency
             </div>
           </div>
         </a>
       
       
         
-        <a href="../registration/" class="md-footer__link md-footer__link--next" aria-label="Next: Provider Registration" rel="next">
+        <a href="../responses/" class="md-footer__link md-footer__link--next" aria-label="Next: Accessing Responses" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Next
               </span>
-              Provider Registration
+              Accessing Responses
             </div>
           </div>
           <div class="md-footer__button md-icon">

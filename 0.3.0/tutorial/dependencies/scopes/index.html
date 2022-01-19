@@ -650,8 +650,36 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../advanced/dependencies/concurrency/" class="md-nav__link">
+        Concurrency
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../advanced/dependencies/caching/" class="md-nav__link">
+        Caching
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../advanced/dependencies/responses/" class="md-nav__link">
-        Responses
+        Accessing Responses
       </a>
     </li>
   
@@ -665,7 +693,7 @@
   
     <li class="md-nav__item">
       <a href="../../../advanced/dependencies/registration/" class="md-nav__link">
-        Registration
+        Provider Registration
       </a>
     </li>
   
@@ -680,20 +708,6 @@
     <li class="md-nav__item">
       <a href="../../../advanced/dependencies/testing/" class="md-nav__link">
         Testing
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../advanced/dependencies/concurrency/" class="md-nav__link">
-        Concurrency
       </a>
     </li>
   
@@ -754,7 +768,7 @@ As you may have noticed, we are creating and tearing down the <code>httpx.AsyncC
 This is very inefficient!
 Really what we want to do is create the <code>httpx.AsyncClient</code> once, when our application starts up, and then use the same instance for each request, only tearing down the client when our app shuts down.</p>
 <p>To achieve this, we need to introduce <strong>scopes</strong>.
-Scopes let you control the "lifetime" of your dependency and are inspired by [pytest]'s fixture system.
+Scopes let you control the "lifetime" of your dependency and are inspired by <a href="https://docs.pytest.org/en/6.2.x/fixture.html">pytest</a>'s fixture system.
 In Pytest you may have used scopes like "session", "module" or "function".
 In Xpresso there are three scopes available:</p>
 <ol>

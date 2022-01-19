@@ -21,6 +21,11 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://www.xpresso-api.dev/0.3.0/advanced/dependencies/caching/</loc>
+         <lastmod>2022-01-19</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://www.xpresso-api.dev/0.3.0/advanced/dependencies/concurrency/</loc>
          <lastmod>2022-01-19</lastmod>
          <changefreq>daily</changefreq>
