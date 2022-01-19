@@ -16,7 +16,7 @@ from di.api.providers import DependencyProvider
 T = typing.TypeVar("T")
 
 
-Scope = Literal["app", "connection", "endpoint"]
+Scope = Literal["app", "connection", "operation"]
 
 
 class Dependant(di.Dependant[typing.Any]):
@@ -25,8 +25,8 @@ class Dependant(di.Dependant[typing.Any]):
     def __init__(
         self,
         call: typing.Optional[DependencyProvider] = None,
-        scope: Scope = "endpoint",
-        share: bool = True,
+        scope: Scope = "operation",
+        use_cache: bool = True,
         wire: bool = True,
         overrides: typing.Optional[
             typing.Mapping[str, DependantBase[typing.Any]]
@@ -35,7 +35,7 @@ class Dependant(di.Dependant[typing.Any]):
         super().__init__(
             call=call,
             scope=scope,
-            share=share,
+            use_cache=use_cache,
             wire=wire,
             overrides=overrides,
         )

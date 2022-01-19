@@ -37,8 +37,7 @@ def test_client_config_injection():
                 httpx.AsyncClient,
             )
         )
-        client = stack.enter_context(TestClient(app))
-
+        client = TestClient(app)
         response = client.get("/echo/url")
         assert response.status_code == 200, response.content
         assert response.json() == test_url + "/get"

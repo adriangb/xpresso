@@ -45,7 +45,7 @@ There are many more benefits to dependency injection, and you can go really deep
 
 Xpresso's dependency injection API is modeled after [FastAPI].
 It is implemented as a standalone package called [di].
-The simplest form of dependency injection is requesting a dependency in your path function.
+The simplest form of dependency injection is requesting a dependency in your endpoint function.
 For simple cases, all we need to do is add a type annotation:
 
 ```python hl_lines="6"
@@ -61,7 +61,7 @@ If you run the app (make a file called `example.py`, copy the source code above 
 ### What happened in the background?
 
 The dependency injection system ([di]) auto-wired the dependency on `httpx.AsyncClient`.
-This means that it recognized that our path function needed an instance of that class and so it created that class and injected it.
+This means that it recognized that our endpoint function needed an instance of that class and so it created that class and injected it.
 This works well for simple cases (classes that do not have any dependencies or where all of the parameters are themselves resolvable by [di]) and when it works, it may be all you need!
 
 ## Explicit dependencies with markers
@@ -80,7 +80,7 @@ This function will just create the client with customized parameters and return 
 
 Next, we'll create the **Marker** for our dependency.
 This is what the dependency injection system will look for.
-You can declare it in the path function's signature, but often it is convenient to declare Markers as a type alias to avoid cluttering the function signature:
+You can declare it in the endpoint function's signature, but often it is convenient to declare Markers as a type alias to avoid cluttering the function signature:
 
 ```python hl_lines="11"
 --8<-- "docs_src/tutorial/dependencies/tutorial_002.py"
@@ -90,7 +90,7 @@ You can declare it in the path function's signature, but often it is convenient 
     For simple cases like this, you can even use a lambda function: `Dependant(lambda: httpx.AsyncClient(...))`
     Just be concious of legibility!
 
-Since we are now specifying the `base_url` when we construct the `httpx.AsyncClient`, we can just use `"/get"` as the URL in our path function:
+Since we are now specifying the `base_url` when we construct the `httpx.AsyncClient`, we can just use `"/get"` as the URL in our endpoint function:
 
 ```python hl_lines="15"
 --8<-- "docs_src/tutorial/dependencies/tutorial_002.py"

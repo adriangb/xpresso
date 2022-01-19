@@ -32,7 +32,7 @@ def test_get_response() -> None:
         response.status_code = 405
 
     async def endpoint(
-        dep: Annotated[None, Dependant(dependency, scope="endpoint")]
+        dep: Annotated[None, Dependant(dependency, scope="operation")]
     ) -> Response:
         return Response(status_code=404)
 

@@ -34,7 +34,7 @@ from xpresso.exceptions import HTTPException
 from xpresso.responses import ResponseSpec
 
 __all__ = (
-    "APIRouter",
+    "Router",
     "Operation",
     "Path",
     "Mount",
@@ -76,7 +76,7 @@ class _OperationApp:
         xpresso_scope: asgi_scope_extension.xpressoASGIExtension = scope["extensions"][
             "xpresso"
         ]
-        async with xpresso_scope["container"].enter_scope("endpoint") as container:
+        async with xpresso_scope["container"].enter_scope("operation") as container:
             endpoint_return = await container.execute_async(
                 self.dependant,
                 values=values,
@@ -288,14 +288,14 @@ class Path(starlette.routing.Route):
 def _not_supported(method: str) -> typing.Callable[..., typing.Any]:
     def raise_error(*args: typing.Any, **kwargs: typing.Any) -> typing.NoReturn:
         raise NotImplementedError(
-            f"Use of APIRouter.{method} is deprecated."
-            " Use APIRouter(routes=[...]) instead."
+            f"Use of Router.{method} is deprecated."
+            " Use Router(routes=[...]) instead."
         )
 
     return raise_error
 
 
-class APIRouter(starlette.routing.Router):
+class Router(starlette.routing.Router):
     routes: typing.List[starlette.routing.BaseRoute]
 
     def __init__(

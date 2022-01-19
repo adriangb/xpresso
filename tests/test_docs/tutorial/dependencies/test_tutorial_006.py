@@ -1,6 +1,6 @@
 import httpx
 
-from docs_src.tutorial.dependencies.tutorial_004 import app
+from docs_src.tutorial.dependencies.tutorial_006 import app
 from xpresso import Dependant
 from xpresso.testclient import TestClient
 
@@ -18,7 +18,7 @@ def test_client_injection():
         ),
         httpx.AsyncClient,
     ):
-        client = TestClient(app)
-        response = client.get("/echo/url")
-        assert response.status_code == 200, response.content
-        assert response.json() == "https://httpbin.org/get"
+        with TestClient(app) as client:
+            response = client.get("/echo/url")
+            assert response.status_code == 200, response.content
+            assert response.json() == "https://httpbin.org/get"

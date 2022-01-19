@@ -33,7 +33,7 @@ from xpresso.binders import dependants as binder_dependants
 from xpresso.openapi import models
 from xpresso.openapi.constants import REF_PREFIX
 from xpresso.responses import JsonResponseSpec, ResponseSpec
-from xpresso.routing import APIRouter, Operation, Path
+from xpresso.routing import Operation, Path, Router
 from xpresso.security._base import SecurityBase
 from xpresso.security._dependants import Security
 
@@ -367,7 +367,7 @@ def get_operation(
 
 
 def get_paths_items(
-    router: APIRouter,
+    router: Router,
     model_name_map: ModelNameMap,
     components: Dict[str, Any],
     security_models: Mapping[Security, SecurityBase],
@@ -394,7 +394,7 @@ def get_paths_items(
 def genrate_openapi(
     version: str,
     info: models.Info,
-    router: APIRouter,
+    router: Router,
     security_models: Mapping[Security, SecurityBase],
 ) -> models.OpenAPI:
     model_name_map: ModelNameMap = {}

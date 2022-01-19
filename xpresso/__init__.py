@@ -32,7 +32,7 @@ from xpresso.datastructures import UploadFile
 from xpresso.dependencies.models import Dependant
 from xpresso.exceptions import HTTPException
 from xpresso.requests import Request
-from xpresso.routing import APIRouter, Operation, Path
+from xpresso.routing import Operation, Path, Router
 from xpresso.security._functions import Security
 
 __all__ = (
@@ -50,7 +50,7 @@ __all__ = (
     "Multipart",
     "Dependant",
     "App",
-    "APIRouter",
+    "Router",
     "UploadFile",
     "Security",
     "FromCookie",

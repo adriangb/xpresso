@@ -24,7 +24,7 @@ Start by importing `BaseModel` from Pydantic and declaring the fields of the mod
 --8<-- "docs_src/tutorial/body/tutorial_001.py"
 ```
 
-Then we declare add the `FromJson[...]` marker (which is syntactic sugar for `Annotated[..., Json()]`) to a paramter in our path function:
+Then we declare add the `FromJson[...]` marker (which is syntactic sugar for `Annotated[..., Json()]`) to a paramter in our endpoint function:
 
 ```python hl_lines="14"
 --8<-- "docs_src/tutorial/body/tutorial_001.py"

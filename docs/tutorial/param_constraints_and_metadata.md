@@ -60,13 +60,13 @@ Each `Example` object requires a `value`, but can also have a description, summa
 --8<-- "docs_src/tutorial/param_constraints_and_metadata/tutorial_002.py"
 ```
 
-Then we can make an alias for our type declaration to avoid clutter in our path function and enable re-use:
+Then we can make an alias for our type declaration to avoid clutter in our endpoint function and enable re-use:
 
 ```python hl_lines="16-22"
 --8<-- "docs_src/tutorial/param_constraints_and_metadata/tutorial_002.py"
 ```
 
-Finally we use this type alias in our path function signature:
+Finally we use this type alias in our endpoint function signature:
 
 ```python hl_lines="25"
 --8<-- "docs_src/tutorial/param_constraints_and_metadata/tutorial_002.py"

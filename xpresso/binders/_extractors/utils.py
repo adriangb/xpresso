@@ -4,7 +4,10 @@ from typing import Iterable, Sequence, Tuple, TypeVar
 from pydantic import BaseModel
 from pydantic.fields import (
     MAPPING_LIKE_SHAPES,
+    SHAPE_FROZENSET,
     SHAPE_LIST,
+    SHAPE_SEQUENCE,
+    SHAPE_SET,
     SHAPE_TUPLE,
     SHAPE_TUPLE_ELLIPSIS,
     ModelField,
@@ -24,7 +27,15 @@ def grouped(items: Sequence[T], n: int = 2) -> Iterable[Tuple[T, ...]]:
 
 
 def is_sequence_like(field: ModelField) -> bool:
-    return field.shape in (SHAPE_TUPLE, SHAPE_TUPLE_ELLIPSIS, SHAPE_LIST)
+    return field.shape in (
+        SHAPE_TUPLE,
+        SHAPE_TUPLE_ELLIPSIS,
+        SHAPE_LIST,
+        SHAPE_SET,
+        SHAPE_FROZENSET,
+        SHAPE_LIST,
+        SHAPE_SEQUENCE,
+    )
 
 
 def is_mapping_like(field: ModelField) -> bool:

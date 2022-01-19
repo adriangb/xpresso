@@ -25,14 +25,14 @@ from xpresso.exceptions import RequestValidationError
 from xpresso.openapi import models as openapi_models
 from xpresso.openapi._builder import SecurityModels, genrate_openapi
 from xpresso.openapi._html import get_swagger_ui_html
-from xpresso.routing import APIRouter, Path
+from xpresso.routing import Path, Router
 from xpresso.security._dependants import Security
 
 ExceptionHandler = typing.Callable[[Request, typing.Type[BaseException]], Response]
 
 
 class App(Starlette):
-    router: APIRouter
+    router: Router
     middleware_stack: asgi.ASGIApp
     openapi: typing.Optional[openapi_models.OpenAPI] = None
     _debug: bool
@@ -78,7 +78,7 @@ class App(Starlette):
         )
 
         self.container = container or BaseContainer(
-            scopes=("app", "connection", "endpoint")
+            scopes=("app", "connection", "operation")
         )
         register_framework_dependencies(self.container)
         if lifespan is not None:
@@ -106,9 +106,7 @@ class App(Starlette):
                     self.container = original_container
                     self._setup_run = False
 
-        self.router = APIRouter(
-            routes, lifespan=lifespan_ctx, dependencies=dependencies
-        )
+        self.router = Router(routes, lifespan=lifespan_ctx, dependencies=dependencies)
         self.user_middleware = [] if middleware is None else list(middleware)
         self.middleware_stack = self.build_middleware_stack()  # type: ignore
         self.add_exception_handler(RequestValidationError, validation_exception_handler)  # type: ignore
@@ -140,7 +138,7 @@ class App(Starlette):
         for route in visit_routes([self.router]):
             dependencies: typing.List[DependantBase[typing.Any]] = []
             for router in route.routers:
-                if isinstance(router, APIRouter):
+                if isinstance(router, Router):
                     dependencies.extend(router.dependencies)
             if isinstance(route.route, Path):
                 for operation in route.route.operations.values():
