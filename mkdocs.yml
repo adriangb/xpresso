@@ -53,10 +53,11 @@ nav:
   - Advanced Usage:
     - Binders: advanced/binders.md
     - Dependencies:
+      - Concurrency: "advanced/dependencies/concurrency.md"
+      - Caching: "advanced/dependencies/caching.md"
       - Accessing Responses: "advanced/dependencies/responses.md"
       - Provider Registration: "advanced/dependencies/registration.md"
       - Testing: "advanced/dependencies/testing.md"
-      - Concurrency: "advanced/dependencies/concurrency.md"
 
 markdown_extensions:
   - admonition
