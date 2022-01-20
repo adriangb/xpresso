@@ -33,7 +33,9 @@ from xpresso.binders import dependants as binder_dependants
 from xpresso.openapi import models
 from xpresso.openapi.constants import REF_PREFIX
 from xpresso.responses import JsonResponseSpec, ResponseSpec
-from xpresso.routing import Operation, Path, Router
+from xpresso.routing.operation import Operation
+from xpresso.routing.pathitem import Path
+from xpresso.routing.router import Router
 from xpresso.security._base import SecurityBase
 from xpresso.security._dependants import Security
 

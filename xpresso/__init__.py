@@ -4,7 +4,6 @@ from starlette.responses import Response
 from xpresso.applications import App
 from xpresso.binders._param_functions import (
     ByContentType,
-    ContentTypeDiscriminatedBody,
     CookieParam,
     ExtractField,
     ExtractRepeatedField,
@@ -32,7 +31,9 @@ from xpresso.datastructures import UploadFile
 from xpresso.dependencies.models import Dependant
 from xpresso.exceptions import HTTPException
 from xpresso.requests import Request
-from xpresso.routing import Operation, Path, Router
+from xpresso.routing.operation import Operation
+from xpresso.routing.pathitem import Path
+from xpresso.routing.router import Router
 from xpresso.security._functions import Security
 
 __all__ = (
@@ -70,5 +71,4 @@ __all__ = (
     "Request",
     "Response",
     "ByContentType",
-    "ContentTypeDiscriminatedBody",
 )

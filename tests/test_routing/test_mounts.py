@@ -2,7 +2,7 @@
 from typing import Any, Dict
 
 from xpresso import App, FromPath, Path
-from xpresso.routing import Mount
+from xpresso.routing.mount import Mount
 from xpresso.testclient import TestClient
 
 

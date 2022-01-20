@@ -25,7 +25,8 @@ from xpresso.exceptions import RequestValidationError
 from xpresso.openapi import models as openapi_models
 from xpresso.openapi._builder import SecurityModels, genrate_openapi
 from xpresso.openapi._html import get_swagger_ui_html
-from xpresso.routing import Path, Router
+from xpresso.routing.pathitem import Path
+from xpresso.routing.router import Router
 from xpresso.security._dependants import Security
 
 ExceptionHandler = typing.Callable[[Request, typing.Type[BaseException]], Response]

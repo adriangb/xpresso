@@ -11,9 +11,8 @@ from pydantic import BaseModel
 from starlette.responses import Response
 from starlette.testclient import TestClient
 
-from xpresso import ExtractField, FormField, FromFormData, FromJson, Json
+from xpresso import ExtractField, FormField, FromFormData, FromJson, Json, Path
 from xpresso.applications import App
-from xpresso.routing import Path
 
 Data = typing.List[typing.Tuple[str, str]]
 
