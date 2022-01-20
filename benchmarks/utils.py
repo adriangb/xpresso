@@ -32,7 +32,7 @@ def generate_dag(
         level_funcs: Dict[str, Callable[..., Any]] = funcs.copy()
         for node in range(nodes_per_level):
             name = f"{level}_{node}"
-            # use funcs and not level_funcs here to make sure we get some parallelization
+            # use funcs and not level_funcs here to make sure we get some concurrency
             deps = random.sample(
                 list(funcs.keys()),
                 k=min(len(funcs), dependencies_per_node),

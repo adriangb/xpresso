@@ -6,11 +6,11 @@ from xpresso import App, Dependant, Operation, Path
 
 
 def slow_dependency_1() -> None:
-    time.sleep(0.1)
+    time.sleep(1)
 
 
 async def slow_dependency_2() -> None:
-    await anyio.sleep(0.1)
+    await anyio.sleep(1)
 
 
 async def endpoint() -> None:
