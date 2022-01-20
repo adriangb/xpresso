@@ -56,8 +56,7 @@ nav:
       - Concurrency: "advanced/dependencies/concurrency.md"
       - Caching: "advanced/dependencies/caching.md"
       - Accessing Responses: "advanced/dependencies/responses.md"
-      - Provider Registration: "advanced/dependencies/registration.md"
-      - Testing: "advanced/dependencies/testing.md"
+      - Provider Registration and Testing: "advanced/dependencies/registration-and-testing.md"
 
 markdown_extensions:
   - admonition

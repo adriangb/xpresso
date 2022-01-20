@@ -13,7 +13,7 @@ def get_response(request: Request) -> Response:
     except KeyError:
         raise LookupError(
             "xpresso.responses.get_response was called"
-            " before the endpoint has finished executing"
+            " before the endpoint has finished executing or the endpoint raised an exception"
         )
 
 
