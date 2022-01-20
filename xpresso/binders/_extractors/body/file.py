@@ -82,10 +82,10 @@ class FileBodyExtractor(BodyExtractor):
 
     # These are implemented to work around pecularities of hashing bound methods on Python 3.7
     def __hash__(self) -> int:
-        return id(self)
+        return id(self)  # pragma: no covet
 
     def __eq__(self, __o: object) -> bool:
-        return self is __o
+        return self is __o  # pragma: no covet
 
 
 @dataclass(frozen=True)
