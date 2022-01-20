@@ -1,7 +1,7 @@
 
-# Dependency Concurrency
+# Dependency Execution Performance
 
-Xpresso's dependency injection system lets you mix and match sync and async dependencies, use dependencies with teardown and control parallelization of dependency execution.
+Xpresso's dependency injection system lets you mix and match sync and async dependencies, use dependencies with teardown and control concurrency of dependency execution.
 If you want to get the best performance out of your system, you should understand how all of these features interact and profile different arrangements until you find the one that performs the best for you.
 
 ## Sync vs. Async
@@ -39,14 +39,14 @@ The endpoint will still take ~200ms to return a result, but at least it won't bl
     There is an overhead to using `sync_to_thread`, hence why it is not the default.
     Do not blindly use it on every sync dependency, profile first!
 
-## Parallel execution
+## Concurrent execution
 
-Xpresso is capable of parallelizing execution of dependencies.
-For example, if you have a dependency that gets the current user from the database and another that (independently) makes an HTTP request to an authorization server to check if the user's credentials are still active, these can be executed in parallel.
+Xpresso is capable of enabling concurrent execution of dependencies.
+For example, if you have a dependency that gets the current user from the database and another that (independently) makes an HTTP request to an authorization server to check if the user's credentials are still active, these can be executed concurrently.
 If each dependency takes 100ms to execute, this means together they will only take ~100ms to execute instead of 200ms.
 The key is that there must be no interdependence between them and they must both be IO bound (including sync dependencies marked with `sync_to_thread`).
 
-To turn on parallel execution of dependencies, use the `execute_dependencies_concurrently` argument to `Operation`.
+To turn on concurrent execution of dependencies, use the `execute_dependencies_concurrently` argument to `Operation`.
 First we'll define two placeholder dependencies that do not depend on each other:
 
 ```python hl_lines="8-9 12-13"
@@ -69,7 +69,7 @@ That's it!
 Now this endpoint will take ~0.1s to execute instead of 0.2s.
 
 !!! tip
-    You can only enable or disable parallel execution for an entire Operation.
+    You can only enable or disable concurrent execution for an entire Operation.
     This can't be applied to groups of dependencies individually.
 
 !!! note
@@ -79,7 +79,7 @@ Now this endpoint will take ~0.1s to execute instead of 0.2s.
 
 !!! warning
     There is overhead to enabling this feature.
-    For simple endpoints that don't benefit from parallelization of dependency execution, this will likely _hurt_ performance.
+    For simple endpoints that don't benefit from concurrency of dependency execution, this will likely _hurt_ performance.
     Always profile before applying this option!
 
 !!! attention

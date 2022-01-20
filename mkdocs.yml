@@ -54,7 +54,7 @@ nav:
   - Advanced Usage:
     - Binders: advanced/binders.md
     - Dependencies:
-      - Concurrency: "advanced/dependencies/concurrency.md"
+      - Performance: "advanced/dependencies/performance.md"
       - Caching: "advanced/dependencies/caching.md"
       - Accessing Responses: "advanced/dependencies/responses.md"
       - Provider Registration and Testing: "advanced/dependencies/registration-and-testing.md"
