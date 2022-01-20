@@ -98,6 +98,7 @@ class App(Starlette):
                 try:
                     yield
                 finally:
+                    # make this cm reentrant for testing purposes
                     self.container = original_container
                     self._setup_run = False
 

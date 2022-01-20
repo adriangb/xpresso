@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from docs_src.advanced.lifespan import Config, app
+from docs_src.tutorial.lifespan import Config, app
 from xpresso import Dependant
 from xpresso.testclient import TestClient
 
