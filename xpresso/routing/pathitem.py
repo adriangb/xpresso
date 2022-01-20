@@ -14,7 +14,6 @@ from di.api.providers import DependencyProvider as Endpoint
 import xpresso.binders.dependants as param_dependants
 import xpresso.openapi.models as openapi_models
 from xpresso.dependencies.models import Dependant
-from xpresso.exceptions import HTTPException
 from xpresso.routing.operation import Operation
 
 
@@ -32,8 +31,6 @@ class _PathApp:
         receive: starlette.types.Receive,
         send: starlette.types.Send,
     ) -> typing.Awaitable[None]:
-        if scope["method"] not in self.operations:
-            raise HTTPException(status_code=405, detail="Method not allowed")
         return self.operations[scope["method"]].handle(scope, receive, send)
 
 
