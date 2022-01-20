@@ -130,7 +130,7 @@ class Operation(starlette.routing.BaseRoute):
         send: starlette.types.Send,
     ) -> None:
         if self._app is None:
-            raise RuntimeError("Operation cannot be used outside of a xpresso router")
+            raise RuntimeError("Operation cannot be used outside of a Xpresso App")
         return await self._app(scope, receive, send)
 
     def solve(
@@ -147,7 +147,7 @@ class Operation(starlette.routing.BaseRoute):
         flat = self.dependant.get_flat_subdependants()
         bodies = [dep for dep in flat if isinstance(dep, param_dependants.BodyBinder)]
         if len(bodies) > 1:
-            raise TypeError("There can only be 1 top level body per operation")
+            raise ValueError("There can only be 1 top level body per operation")
         executor: AsyncExecutorProtocol
         if self.execute_dependencies_concurrently:
             executor = ConcurrentAsyncExecutor()
@@ -164,7 +164,7 @@ class Operation(starlette.routing.BaseRoute):
         self, name: str, **path_params: str
     ) -> starlette.datastructures.URLPath:
         if path_params:
-            raise TypeError("Operations cannot have path parameters")
+            raise starlette.routing.NoMatchFound()
         if name != self.name:
             raise starlette.routing.NoMatchFound()
         return starlette.datastructures.URLPath("/")
