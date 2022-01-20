@@ -59,8 +59,7 @@ nav:
 
 markdown_extensions:
   - admonition
-  - pymdownx.highlight:
-      use_pygments: true
+  - pymdownx.highlight
   - pymdownx.snippets
   - pymdownx.superfences
 
