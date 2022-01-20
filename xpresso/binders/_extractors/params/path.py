@@ -15,7 +15,7 @@ from xpresso.binders._extractors.params.base import (
     get_basic_param_info,
 )
 from xpresso.binders._extractors.utils import grouped, is_mapping_like, is_sequence_like
-from xpresso.exceptions import RequestValidationError
+from xpresso.exceptions import RequestValidationError, WebSocketValidationError
 from xpresso.typing import Some
 
 
@@ -115,6 +115,12 @@ def get_extractor(style: str, explode: bool, field: ModelField) -> Callable[...,
     )
 
 
+ERRORS = {
+    "webscoket": WebSocketValidationError,
+    "http": RequestValidationError,
+}
+
+
 @dataclass(frozen=True)
 class PathParameterExtractor(ParameterExtractorBase):
     extractor: Callable[..., Any]
@@ -127,16 +133,11 @@ class PathParameterExtractor(ParameterExtractorBase):
         send: starlette.types.Send,
         connection: HTTPConnection,
     ) -> Any:
-        path_params: "Dict[str, str]" = scope.get("path_params", None)
-        if not path_params:
-            return await self.validate(None, scope, receive, send)
-        param_value: "Optional[str]" = path_params.get(self.name, None)
-        if param_value is None:
-            return await self.validate(None, scope, receive, send)
+        param_value: str = connection.path_params[self.name]  # type: ignore[assignment]
         try:
             extracted = self.extractor(name=self.name, value=param_value)
         except InvalidSerialization as exc:
-            raise RequestValidationError(
+            raise ERRORS[scope["type"]](
                 [ErrorWrapper(exc=exc, loc=("path", self.name))]
             )
         return await self.validate(Some(extracted), scope, receive, send)

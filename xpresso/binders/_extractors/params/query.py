@@ -13,7 +13,12 @@ from xpresso.binders._extractors.params.base import (
     ParameterExtractorBase,
     get_basic_param_info,
 )
-from xpresso.exceptions import RequestValidationError
+from xpresso.exceptions import RequestValidationError, WebSocketValidationError
+
+ERRORS = {
+    "webscoket": WebSocketValidationError,
+    "http": RequestValidationError,
+}
 
 
 @dataclass(frozen=True)
@@ -33,7 +38,7 @@ class QueryParameterExtractor(ParameterExtractorBase):
                 name=self.name, params=connection.query_params.multi_items()
             )
         except InvalidSerialization:
-            raise RequestValidationError(
+            raise ERRORS[scope["type"]](
                 [
                     ErrorWrapper(
                         exc=TypeError("Data is not a valid URL encoded query"),

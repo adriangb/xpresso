@@ -21,7 +21,7 @@ from xpresso.binders._extractors.params.base import (
     get_basic_param_info,
 )
 from xpresso.binders._extractors.utils import grouped, is_mapping_like, is_sequence_like
-from xpresso.exceptions import RequestValidationError
+from xpresso.exceptions import RequestValidationError, WebSocketValidationError
 from xpresso.typing import Some
 
 
@@ -68,6 +68,12 @@ def get_extractor(explode: bool, field: ModelField) -> Extractor:
     return lambda value: Some(value) if value is not None else None
 
 
+ERRORS = {
+    "webscoket": WebSocketValidationError,
+    "http": RequestValidationError,
+}
+
+
 @dataclass(frozen=True)
 class HeaderParameterExtractor(ParameterExtractorBase):
     extractor: Extractor
@@ -88,7 +94,7 @@ class HeaderParameterExtractor(ParameterExtractorBase):
         try:
             extracted = self.extractor(param_value)
         except InvalidSerialization as exc:
-            raise RequestValidationError(
+            raise ERRORS[scope["type"]](
                 [ErrorWrapper(exc=exc, loc=("header", self.name))]
             )
         return await self.validate(extracted, scope, receive, send)
