@@ -6,8 +6,6 @@ theme:
   name: "material"
   logo: assets/images/xpresso-cup.png
   favicon: assets/images/xpresso-bean.png
-  features:
-    - navigation.expand
   custom_dir: docs/overrides
   palette:
     - scheme: "default"
