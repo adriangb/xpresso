@@ -49,6 +49,7 @@ nav:
       - Shared Dependencies: "tutorial/dependencies/shared.md"
     - Application Lifespan: "tutorial/lifespan.md"
     - Routing: "tutorial/routing.md"
+    - CORS: tutorial/cors.md
   - Advanced Usage:
     - Binders: advanced/binders.md
     - Dependencies:
