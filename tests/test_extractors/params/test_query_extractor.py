@@ -1237,6 +1237,26 @@ def test_integer_array_nullable_items(
                 ]
             },
         ),
+        (
+            "form",
+            False,
+            {"param": ""},
+            422,
+            {
+                "detail": [
+                    {
+                        "loc": ["query", "param", "foo"],
+                        "msg": "field required",
+                        "type": "value_error.missing",
+                    },
+                    {
+                        "loc": ["query", "param", "bar"],
+                        "msg": "field required",
+                        "type": "value_error.missing",
+                    },
+                ]
+            },
+        ),
         # deepObject, True
         (
             "deepObject",
