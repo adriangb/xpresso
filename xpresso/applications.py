@@ -81,12 +81,6 @@ class App(Starlette):
             scopes=("app", "connection", "operation")
         )
         register_framework_dependencies(self.container)
-        if lifespan is not None:
-            solved_lifespan = self.container.solve(
-                Dependant(call=lifespan, scope="app")
-            )
-        else:
-            solved_lifespan = None
         self._setup_run = False
 
         @asynccontextmanager
@@ -96,9 +90,10 @@ class App(Starlette):
             original_container = self.container
             async with self.container.enter_scope("app") as container:
                 self.container = container
-                if solved_lifespan is not None:
+                if lifespan is not None:
                     await container.execute_async(
-                        solved_lifespan, executor=AsyncExecutor()
+                        self.container.solve(Dependant(call=lifespan, scope="app")),
+                        executor=AsyncExecutor(),
                     )
                 try:
                     yield
