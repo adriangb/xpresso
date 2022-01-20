@@ -8,7 +8,7 @@ if sys.version_info < (3, 8):
 else:
     from typing import Literal
 
-from pydantic import BaseConfig, BaseModel, Extra, Field, root_validator
+from pydantic import BaseConfig, BaseModel, Extra, Field
 from pydantic.networks import AnyUrl
 
 try:
@@ -130,14 +130,6 @@ class Example(BaseModel):
     description: Optional[str] = None
     value: Any = None
     external_value: Optional[str] = Field(default=None, alias="externalValue")
-
-    @root_validator
-    def value_or_external_value(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        if not (values.get("value", None) is None) ^ (
-            values.get("externalValue", None) is None
-        ):
-            raise ValueError("Must set *one* of value or externalValue")
-        return values
 
 
 class Encoding(BaseModel):
