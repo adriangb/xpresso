@@ -82,6 +82,10 @@ Now this endpoint will take ~0.1s to execute instead of 0.2s.
     For simple endpoints that don't benefit from parallelization of dependency execution, this will likely _hurt_ performance.
     Always profile before applying this option!
 
+!!! attention
+    Teardowns are never executed concurrently or in threads.
+    You should try to avoid doing expensive IO in teardowns, they are mean for error handling and cleaning up resources.
+
 [global interpreter lock]: https://realpython.com/python-gil/
 [Gunicorn]: https://gunicorn.org
 [graphlib]: https://docs.python.org/3/library/graphlib.html
