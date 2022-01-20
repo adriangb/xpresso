@@ -51,12 +51,13 @@ nav:
     - Routing: "tutorial/routing.md"
     - CORS: tutorial/cors.md
   - Advanced Usage:
-    - Binders: advanced/binders.md
+    - WebSockets: advanced/websockets.md
     - Dependencies:
       - Performance: "advanced/dependencies/performance.md"
       - Caching: "advanced/dependencies/caching.md"
       - Accessing Responses: "advanced/dependencies/responses.md"
       - Provider Registration and Testing: "advanced/dependencies/registration-and-testing.md"
+    - Binders: advanced/binders.md
 
 markdown_extensions:
   - admonition

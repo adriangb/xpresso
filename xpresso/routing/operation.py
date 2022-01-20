@@ -46,11 +46,17 @@ class _OperationApp:
         receive: starlette.types.Receive,
         send: starlette.types.Send,
     ) -> None:
-        request = starlette.requests.Request(scope=scope, receive=receive, send=send)
         values: typing.Dict[typing.Any, typing.Any] = {
-            starlette.requests.Request: request,
-            starlette.requests.HTTPConnection: request,
+            starlette.requests.Request: starlette.requests.Request(
+                scope=scope, receive=receive, send=send
+            ),
+            starlette.requests.HTTPConnection: starlette.requests.HTTPConnection(
+                scope=scope, receive=receive
+            ),
             starlette.background.BackgroundTasks: starlette.background.BackgroundTasks(),
+            starlette.types.Scope: scope,
+            starlette.types.Receive: receive,
+            starlette.types.Send: send,
         }
         xpresso_scope: asgi_scope_extension.xpressoASGIExtension = scope["extensions"][
             "xpresso"

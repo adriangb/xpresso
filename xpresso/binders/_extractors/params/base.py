@@ -2,6 +2,8 @@ import inspect
 import typing
 from dataclasses import dataclass
 
+import starlette.types
+import starlette.websockets
 from pydantic.error_wrappers import ErrorWrapper
 from pydantic.fields import ModelField
 
@@ -18,12 +20,21 @@ class ParameterExtractorBase(ParameterExtractor):
     name: str
     in_: typing.ClassVar[str]
 
-    def validate(self, values: typing.Optional[Some[typing.Any]]) -> typing.Any:
+    async def validate(
+        self,
+        values: typing.Optional[Some[typing.Any]],
+        scope: starlette.types.Scope,
+        receive: starlette.types.Receive,
+        send: starlette.types.Send,
+    ) -> typing.Any:
         """Validate after parsing. Only used by the top-level body"""
         if values is None:
             if self.field.required is False:
                 return self.field.get_default()
             else:
+                if scope["type"] == "websocket":
+                    ws = starlette.websockets.WebSocket(scope, receive, send)
+                    await ws.close()
                 raise RequestValidationError(
                     [
                         ErrorWrapper(
@@ -34,6 +45,10 @@ class ParameterExtractorBase(ParameterExtractor):
                 )
         val, errs = self.field.validate(values.value, {}, loc=self.loc)
         if errs:
+            if scope["type"] == "websocket":
+                ws = starlette.websockets.WebSocket(scope, receive, send)
+                await ws.close()
+                return
             if isinstance(errs, ErrorWrapper):
                 errs = [errs]
             errs = typing.cast(typing.List[ErrorWrapper], errs)

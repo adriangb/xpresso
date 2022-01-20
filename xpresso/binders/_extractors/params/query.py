@@ -2,6 +2,7 @@ import inspect
 from dataclasses import dataclass
 from typing import Any, ClassVar, Optional
 
+import starlette.types
 from pydantic.error_wrappers import ErrorWrapper
 from starlette.requests import HTTPConnection
 
@@ -20,7 +21,13 @@ class QueryParameterExtractor(ParameterExtractorBase):
     extractor: Extractor
     in_: ClassVar[str] = "query"
 
-    def extract(self, connection: HTTPConnection) -> Any:
+    async def extract(
+        self,
+        scope: starlette.types.Scope,
+        receive: starlette.types.Receive,
+        send: starlette.types.Send,
+        connection: HTTPConnection,
+    ) -> Any:
         try:
             extracted = self.extractor(
                 name=self.name, params=connection.query_params.multi_items()
@@ -34,7 +41,7 @@ class QueryParameterExtractor(ParameterExtractorBase):
                     )
                 ]
             )
-        return self.validate(extracted)
+        return await self.validate(extracted, scope, receive, send)
 
 
 @dataclass(frozen=True)

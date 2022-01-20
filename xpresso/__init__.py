@@ -34,7 +34,9 @@ from xpresso.requests import Request
 from xpresso.routing.operation import Operation
 from xpresso.routing.pathitem import Path
 from xpresso.routing.router import Router
+from xpresso.routing.websockets import WebSocketRoute
 from xpresso.security._functions import Security
+from xpresso.websockets import WebSocket
 
 __all__ = (
     "Operation",
@@ -71,4 +73,6 @@ __all__ = (
     "Request",
     "Response",
     "ByContentType",
+    "WebSocketRoute",
+    "WebSocket",
 )

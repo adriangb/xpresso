@@ -9,6 +9,7 @@ if sys.version_info < (3, 8):
 else:
     from typing import Protocol
 
+import starlette.types
 from pydantic.error_wrappers import ErrorWrapper
 from pydantic.fields import ModelField
 from starlette.requests import HTTPConnection
@@ -53,7 +54,7 @@ def collect_object(
 
 
 class Extractor(Protocol):
-    def __call__(self, value: str) -> Optional[Some[Any]]:
+    def __call__(self, value: Optional[str]) -> Optional[Some[Any]]:
         ...
 
 
@@ -71,16 +72,26 @@ def get_extractor(explode: bool, field: ModelField) -> Extractor:
 class HeaderParameterExtractor(ParameterExtractorBase):
     extractor: Extractor
     in_: ClassVar[str] = "header"
+    header_name: bytes
 
-    def extract(self, connection: HTTPConnection) -> Any:
-        param_value = connection.headers.get(self.name, None)
+    async def extract(
+        self,
+        scope: starlette.types.Scope,
+        receive: starlette.types.Receive,
+        send: starlette.types.Send,
+        connection: HTTPConnection,
+    ) -> Any:
+        param_value: "Optional[str]" = None
+        for name, value in scope["headers"]:
+            if name == self.header_name:
+                param_value = value.decode("latin-1")
         try:
             extracted = self.extractor(param_value)
         except InvalidSerialization as exc:
             raise RequestValidationError(
                 [ErrorWrapper(exc=exc, loc=("header", self.name))]
             )
-        return self.validate(extracted)
+        return await self.validate(extracted, scope, receive, send)
 
 
 @dataclass(frozen=True)
@@ -96,5 +107,9 @@ class HeaderParameterExtractorMarker(ParameterExtractorMarker):
             name = name.replace("_", "-")
         extractor = get_extractor(explode=self.explode, field=field)
         return HeaderParameterExtractor(
-            field=field, loc=loc, name=name, extractor=extractor
+            field=field,
+            loc=loc,
+            name=name,
+            extractor=extractor,
+            header_name=name.lower().encode("latin-1"),
         )

@@ -27,6 +27,7 @@ from xpresso.openapi._builder import SecurityModels, genrate_openapi
 from xpresso.openapi._html import get_swagger_ui_html
 from xpresso.routing.pathitem import Path
 from xpresso.routing.router import Router
+from xpresso.routing.websockets import WebSocketRoute
 from xpresso.security._dependants import Security
 
 ExceptionHandler = typing.Callable[[Request, typing.Type[BaseException]], Response]
@@ -119,7 +120,7 @@ class App(Starlette):
         self, scope: asgi.Scope, receive: asgi.Receive, send: asgi.Send
     ) -> None:
         self._setup()
-        if scope["type"] == "http":
+        if scope["type"] == "http" or scope["type"] == "websocket":
             extensions = scope.get("extensions", None) or {}
             xpresso_scope = extensions.get("xpresso", None)
             if xpresso_scope is None:
@@ -147,6 +148,14 @@ class App(Starlette):
                         ],
                         container=self.container,
                     )
+            if isinstance(route.route, WebSocketRoute):
+                route.route.solve(
+                    dependencies=[
+                        *dependencies,
+                        *route.route.dependencies,
+                    ],
+                    container=self.container,
+                )
 
     async def get_openapi(self) -> openapi_models.OpenAPI:
         return genrate_openapi(
