@@ -9,12 +9,12 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
 
-class xpressoError(Exception):
+class XpressoError(Exception):
     ...
 
 
 # This should be upstreamed
-class HTTPException(StarletteHTTPException, xpressoError):
+class HTTPException(StarletteHTTPException, XpressoError):
     def __init__(
         self,
         status_code: int,
@@ -26,15 +26,24 @@ class HTTPException(StarletteHTTPException, xpressoError):
 
 
 _RequestErrorModel: Type[BaseModel] = create_model("Request")  # type: ignore
+_WebSocketErrorModel: Type[BaseModel] = create_model("WebSocket")  # type: ignore
 
 
-class RequestValidationError(PydanticValidationError, xpressoError):
+class RequestValidationError(PydanticValidationError, XpressoError):
     raw_errors: List[ErrorWrapper]
 
     def __init__(
         self,
-        errors: typing.Optional[typing.List[ErrorWrapper]] = None,
+        errors: typing.Sequence[ErrorWrapper],
         status_code: int = HTTP_422_UNPROCESSABLE_ENTITY,
     ) -> None:
-        super().__init__(errors or [], _RequestErrorModel)
+        super().__init__(errors, _RequestErrorModel)
         self.status_code = status_code
+
+
+class WebSocketValidationError(PydanticValidationError, XpressoError):
+    def __init__(
+        self,
+        errors: typing.Sequence[ErrorWrapper],
+    ) -> None:
+        super().__init__(errors, _WebSocketErrorModel)

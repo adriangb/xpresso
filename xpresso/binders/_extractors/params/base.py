@@ -9,7 +9,7 @@ from pydantic.fields import ModelField
 
 from xpresso._utils.typing import model_field_from_param
 from xpresso.binders._extractors.api import ParameterExtractor
-from xpresso.exceptions import RequestValidationError
+from xpresso.exceptions import RequestValidationError, WebSocketValidationError
 from xpresso.typing import Some
 
 
@@ -35,6 +35,14 @@ class ParameterExtractorBase(ParameterExtractor):
                 if scope["type"] == "websocket":
                     ws = starlette.websockets.WebSocket(scope, receive, send)
                     await ws.close()
+                    raise WebSocketValidationError(
+                        [
+                            ErrorWrapper(
+                                ValueError(f"Missing required {self.in_} parameter"),
+                                loc=self.loc,
+                            )
+                        ]
+                    )
                 raise RequestValidationError(
                     [
                         ErrorWrapper(
@@ -45,13 +53,20 @@ class ParameterExtractorBase(ParameterExtractor):
                 )
         val, errs = self.field.validate(values.value, {}, loc=self.loc)
         if errs:
-            if scope["type"] == "websocket":
-                ws = starlette.websockets.WebSocket(scope, receive, send)
-                await ws.close()
-                return
             if isinstance(errs, ErrorWrapper):
                 errs = [errs]
             errs = typing.cast(typing.List[ErrorWrapper], errs)
+            if scope["type"] == "websocket":
+                ws = starlette.websockets.WebSocket(scope, receive, send)
+                await ws.close()
+                raise WebSocketValidationError(
+                    [
+                        ErrorWrapper(
+                            ValueError(f"Missing required {self.in_} parameter"),
+                            loc=self.loc,
+                        )
+                    ]
+                )
             raise RequestValidationError(errs)
         return val
 
