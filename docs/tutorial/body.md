@@ -82,7 +82,19 @@ For example, you can declare that a JSON body is a list of integers:
 You can also wrap an existing Pydantic model in a container, for example to receive a list of items:
 
 ```python hl_lines="14"
---8<-- "docs_src/tutorial/body/tutorial_004.py"
+--8<-- "docs_src/tutorial/body/tutorial_005.py"
 ```
+
+## Including examples
+
+You can add examples via the `examples` keyword to `Json()`, `FormData()` or `Multipart()`:
+
+```python hl_lines="15-18 22"
+--8<-- "docs_src/tutorial/body/tutorial_005.py"
+```
+
+The Swagger docs will now reflect this:
+
+![Swagger UI](body_002.png)
 
 [Pydantic]: https://pydantic-docs.helpmanual.io
