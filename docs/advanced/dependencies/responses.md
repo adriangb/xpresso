@@ -21,3 +21,6 @@ Here is an example of a dependency that logs the status code for every response 
 ```python hl_lines="11-21"
 --8<-- "docs_src/advanced/dependencies/tutorial_004.py"
 ```
+
+!!! note
+    If your dependency has the `"connection"` scope you will be able to get a copy of the request (like in the example above), but attempting to modify it or replace it will have no result since it was already sent to the client.
