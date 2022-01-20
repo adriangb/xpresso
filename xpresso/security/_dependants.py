@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional, Sequence, Union, cast
+from typing import Optional, Sequence, Union
 
 from di.api.providers import DependencyProviderType
 
@@ -28,11 +28,6 @@ class Security(Dependant):
             super().__init__(dependency, scope="app")
         self.scopes = frozenset(scopes or [])
 
-    def __hash__(self) -> int:
-        return hash((self._dependency, self.scopes))
-
-    def __eq__(self, o: object) -> bool:
-        if type(self) != type(o):
-            return False
-        o = cast(Security, o)
-        return (self._dependency, self.scopes) == (o._dependency, o.scopes)
+    @property
+    def cache_key(self) -> Union[DependencyProviderType[SecurityBase], SecurityBase]:
+        return self._dependency
