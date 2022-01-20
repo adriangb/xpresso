@@ -1361,4 +1361,4 @@ def test_deepObject_not_explode_is_not_allowed() -> None:
         ValueError, match="deepObject can only be used with explode=True"
     ):
         with TestClient(app):
-            pass
+            pass  # pragma: no cover
