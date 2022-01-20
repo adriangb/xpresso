@@ -102,7 +102,7 @@ Xpresso takes these ideas and refines them by:
 
 - Decoupling the dependency injection system from the request/response cycle, leading to an overall much more flexible and powerful dependency injection system, packaged up as the standalone [di] library. This is how Xpresso is able to provide [dependency injection into the application lifespan] and support for [multiple dependency scopes].
 - Making the extraction of data from requests an API available to other developers, enabling features like compatibility with libraries other than Pydantic or [MessagePack support] to be made available as 3rd party extensions instead of feature requests. All of this with full support for hooking into the OpenAPI documentation generation.
-- [Providing better support for `application/x-www-form-urlencoded` and `multipart/form-data` requests](https://xpresso-api.dev/tutorial/forms/) by describing them with dataclasses or [Pydantic] models. This includes support for advanced use cases like extracting JSON from a form field.
+- [Providing better support for `application/x-www-form-urlencoded` and `multipart/form-data` requests](https://xpresso-api.dev/latest/tutorial/forms/) by describing them with dataclasses or [Pydantic] models. This includes support for advanced use cases like extracting JSON from a form field.
 - Better performance by implementing [dependency resolution in Rust], [executing dependencies concurrently] and [controlling threading of sync dependencies on a per-dependency basis].
 - Allowing you to describe a single OpenAPI operation that accepts multiple content/types and extracting the right one based on headers
 - Giving you the ability to access and modify responses from within dependencies, allowing you to replace timing, tracing and logging middleware (which is routing ¨naive) with routing aware dependencies. No more middleware that accepts a regex pattern of paths!
@@ -122,4 +122,4 @@ Xpresso takes these ideas and refines them by:
 [executing dependencies concurrently]: https://xpresso-api.dev/latest/advanced/dependencies/performance/#concurrent-execution
 [controlling threading of sync dependencies on a per-dependency basis]: https://xpresso-api.dev/latest/advanced/dependencies/performance/#sync-vs-async
 [PEP 593]: https://www.python.org/dev/peps/pep-0593/
-[custom Binders]: https://xpresso-api.dev/advanced/binders/
+[custom Binders]: https://xpresso-api.dev/latest/advanced/binders/
