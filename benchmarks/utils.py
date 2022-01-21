@@ -16,7 +16,7 @@ def generate_dag(
     *,
     sync: bool = False,
     sleep: Tuple[float, float] = (0, 0),
-) -> Callable[..., int]:
+) -> Tuple[int, Callable[..., int]]:
     """Build a complex DAG of async dependencies"""
     sleep_func = time.sleep if sync else anyio.sleep
 
@@ -26,11 +26,13 @@ def generate_dag(
         else "async def func_{}({}): await sleep({});return 1"
     )
     globals = {**glbls, "sleep": sleep_func}
+    total = 0
 
     funcs: Dict[str, Callable[..., Any]] = {}
     for level in range(levels):
         level_funcs: Dict[str, Callable[..., Any]] = funcs.copy()
         for node in range(nodes_per_level):
+            total += 1
             name = f"{level}_{node}"
             # use funcs and not level_funcs here to make sure we get some concurrency
             deps = random.sample(
@@ -52,6 +54,7 @@ def generate_dag(
     params = ", ".join(
         [f"dep_{dep_name}: {make_depends('None', dep_name)}" for dep_name in deps]
     )
+    total += 1
     func_def = template.format(name, params, 0)
     exec(func_def, globals, funcs)
-    return funcs["func_final"]
+    return total, funcs["func_final"]

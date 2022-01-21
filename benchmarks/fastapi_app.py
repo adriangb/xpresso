@@ -2,6 +2,7 @@ from fastapi import Depends
 from fastapi import FastAPI as App
 from starlette.responses import Response
 
+from benchmarks.constants import DAG_SHAPE, DELAY, NO_DELAY
 from benchmarks.utils import generate_dag
 
 app = App()
@@ -20,7 +21,10 @@ async def simple() -> Response:
     return Response()
 
 
-dep_without_delays = generate_dag(make_depends, glbls, 3, 2, 2, sleep=(0, 0))
+dag_size, dep_without_delays = generate_dag(
+    make_depends, glbls, *DAG_SHAPE, sleep=NO_DELAY
+)
+print("/fast_deps dag size: ", dag_size)
 
 
 @app.router.get("/fast_deps")
@@ -31,12 +35,8 @@ async def fast_dependencies(
     return Response()
 
 
-# Establishing an asyncpg -> PostgreSQL connection takes ~75ms
-# Running query takes about 1ms
-# Hitting okta.com w/ httpx takes ~100ms
-# So we'll take a range of 1ms to 100ms as delays for async dependencies
-# And then make a medium sized DAG (3 levels, 2 deps per level, so 6 deps total)
-dep_with_delays = generate_dag(make_depends, glbls, 3, 2, 2, sleep=(1e-3, 1e-1))
+dag_size, dep_with_delays = generate_dag(make_depends, glbls, *DAG_SHAPE, sleep=DELAY)
+print("/slow_deps dag size: ", dag_size)
 
 
 @app.router.get("/slow_deps")
