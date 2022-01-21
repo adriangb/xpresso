@@ -17,7 +17,7 @@ from xpresso.testclient import TestClient
     "headers,status_code,json_response",
     [
         ({"Header": "123"}, 200, {"Header": "123"}),
-        ({"Header": "1,2,3"}, 200, {"Header": "1,2,3"}),
+        ({"Header": "1,2,3"}, 200, {"Header": "1"}),
         ({"Header": ""}, 200, {"Header": ""}),
     ],
 )
@@ -47,16 +47,8 @@ def test_scalar_string(
         ({"Header": "123"}, 200, {"Header": 123}),
         (
             {"Header": "1,2,3"},
-            422,
-            {
-                "detail": [
-                    {
-                        "loc": ["header", "header"],
-                        "msg": "value is not a valid integer",
-                        "type": "type_error.integer",
-                    }
-                ]
-            },
+            200,
+            {"Header": 1},
         ),
         (
             {"Header": ""},
@@ -111,6 +103,7 @@ def test_scalar_int(
     [
         ({"Header": "1,2"}, 200, {"Header": ["1", "2"]}),
         ({"Header": "1,2,"}, 200, {"Header": ["1", "2", ""]}),
+        ({"Header": "1, 2"}, 200, {"Header": ["1", "2"]}),
         ({"Header": ""}, 200, {"Header": []}),
         ({"Header": ","}, 200, {"Header": ["", ""]}),
         ({}, 200, {"Header": []}),
@@ -153,6 +146,7 @@ def test_array_string(
                 ]
             },
         ),
+        ({"Header": "1, 2"}, 200, {"Header": [1, 2]}),
         ({"Header": ""}, 200, {"Header": []}),
         (
             {"Header": ","},
@@ -200,6 +194,7 @@ def test_array_int(
     [
         # explode = True
         (True, {"Header": "foo=1,bar=2"}, 200, {"foo": 1, "bar": "2", "baz": "3"}),
+        (True, {"Header": "foo=1, bar=2"}, 200, {"foo": 1, "bar": "2", "baz": "3"}),
         (
             True,
             {"Header": "foo=1,bar=2,baz=4"},
@@ -284,6 +279,7 @@ def test_array_int(
         ),
         # explode = False
         (False, {"Header": "foo,1,bar,2"}, 200, {"foo": 1, "bar": "2", "baz": "3"}),
+        (False, {"Header": "foo, 1, bar, 2"}, 200, {"foo": 1, "bar": "2", "baz": "3"}),
         (
             False,
             {"Header": "foo,1,bar,2,baz,4"},

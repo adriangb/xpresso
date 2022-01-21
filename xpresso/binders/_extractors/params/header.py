@@ -25,10 +25,19 @@ from xpresso.exceptions import RequestValidationError, WebSocketValidationError
 from xpresso.typing import Some
 
 
+def collect_scalar(value: Optional[str]) -> Optional[Some[str]]:
+    if value is None:
+        return None
+    split = value.split(",")
+    if len(split) == 1:
+        return Some(split[0])
+    return Some(next(iter(split)))
+
+
 def collect_sequence(value: Optional[str]) -> Optional[Some[List[str]]]:
     if not value:
         return Some(cast(List[str], []))
-    return Some(value.split(","))
+    return Some([v.lstrip() for v in value.split(",")])
 
 
 def collect_object(
@@ -44,10 +53,12 @@ def collect_object(
             if len(split) == 1 or not field or field[0] == "=":
                 raise InvalidSerialization(f"invalid object style header: {value}")
             name, val = split
-            res[name] = val
+            res[name.lstrip()] = val
         return Some(res)
     try:
-        groups = cast(Iterable[Tuple[str, str]], grouped(value.split(",")))
+        groups = cast(
+            Iterable[Tuple[str, str]], grouped([v.lstrip() for v in value.split(",")])
+        )
     except ValueError:
         raise InvalidSerialization(f"invalid object style header: {value}")
     return Some(dict(groups))
@@ -65,7 +76,7 @@ def get_extractor(explode: bool, field: ModelField) -> Extractor:
     if is_mapping_like(field):
         return functools.partial(collect_object, explode)
     # single item
-    return lambda value: Some(value) if value is not None else None
+    return collect_scalar
 
 
 ERRORS = {
@@ -87,12 +98,21 @@ class HeaderParameterExtractor(ParameterExtractorBase):
         send: starlette.types.Send,
         connection: HTTPConnection,
     ) -> Any:
-        param_value: "Optional[str]" = None
+        # parse headers according to RFC 7230
+        # this means treating repeated headers and "," seperated ones the same
+        # so here we merge them all into one "," seperated string
+        # also note that whitespaces after a "," don't matter, so we .lstrip() as needed
+        header_values: "List[str]" = []
         for name, value in scope["headers"]:
             if name == self.header_name:
-                param_value = value.decode("latin-1")
+                header_values.append(value.decode("latin-1"))
+        header_value: "Optional[str]"
+        if header_values:
+            header_value = ",".join(header_values)
+        else:
+            header_value = None
         try:
-            extracted = self.extractor(param_value)
+            extracted = self.extractor(header_value)
         except InvalidSerialization as exc:
             raise ERRORS[scope["type"]](
                 [ErrorWrapper(exc=exc, loc=("header", self.name))]
