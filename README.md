@@ -106,6 +106,7 @@ Xpresso takes these ideas and refines them by:
 - Better performance by implementing [dependency resolution in Rust], [executing dependencies concurrently] and [controlling threading of sync dependencies on a per-dependency basis].
 - Allowing you to describe a single OpenAPI operation that accepts multiple content/types and extracting the right one based on headers
 - Giving you the ability to access and modify responses from within dependencies, allowing you to replace timing, tracing and logging middleware (which is routing ¨naive) with routing aware dependencies. No more middleware that accepts a regex pattern of paths!
+- Allowing dynamic building of security models triggered by lifespan events (you can load your Security model config from the enviroment at runtime).
 - Use of `Annotated` ([PEP 593]) instead of default values (`param: str = Query(...)`) which decouples the framework from Pydantic and enables a lot of the other features listed above and even allows you to make up your own markers to use if you make [custom Binders].
 
 [Starlette]: https://github.com/encode/starlette
