@@ -7,6 +7,7 @@ from docs_src.advanced.dependencies.tutorial_002 import app
 
 
 @pytest.mark.anyio
+@pytest.mark.parametrize("anyio_backend", ["asyncio"])
 @pytest.mark.slow
 async def test_get_slow_endpoint() -> None:
     # unforuntely it is pretty hard to actually time this in tests without making
