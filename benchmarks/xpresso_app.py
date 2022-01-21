@@ -4,8 +4,7 @@ from starlette.requests import Request
 from starlette.responses import Response
 
 from benchmarks.utils import generate_dag
-from xpresso import App, Dependant, Path
-from xpresso.routing import Operation
+from xpresso import App, Dependant, Operation, Path
 from xpresso.typing import Annotated
 
 
