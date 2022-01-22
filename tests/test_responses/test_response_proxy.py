@@ -83,7 +83,7 @@ def test_set_response() -> None:
             Path(
                 "/",
                 get=endpoint,
-                dependencies=[Dependant(dependency, scope="connection")],
+                dependencies=[Dependant(dependency, scope="operation")],
             )
         ]
     )
