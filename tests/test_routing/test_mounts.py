@@ -10,30 +10,45 @@ async def endpoint(number: FromPath[int]) -> int:
     return number + 1
 
 
-app = App(
-    routes=[
-        Mount(
-            path="/mount",
-            routes=[
-                Path(
-                    path="/{number}",
-                    get=endpoint,
-                )
-            ],
-        )
-    ]
-)
+def test_routing_for_mounted_path() -> None:
+    app = App(
+        routes=[
+            Mount(
+                path="/mount",
+                routes=[
+                    Path(
+                        path="/{number}",
+                        get=endpoint,
+                    )
+                ],
+            )
+        ]
+    )
 
-client = TestClient(app)
+    client = TestClient(app)
 
-
-def test_routing() -> None:
     resp = client.get("/mount/123")
     assert resp.status_code == 200, resp.content
     assert resp.json() == 124
 
 
-def test_openapi() -> None:
+def test_openapi_routing_for_mounted_path() -> None:
+    app = App(
+        routes=[
+            Mount(
+                path="/mount",
+                routes=[
+                    Path(
+                        path="/{number}",
+                        get=endpoint,
+                    )
+                ],
+            )
+        ]
+    )
+
+    client = TestClient(app)
+
     expected_openapi: Dict[str, Any] = {
         "openapi": "3.0.3",
         "info": {"title": "API", "version": "0.1.0"},
@@ -104,6 +119,64 @@ def test_openapi() -> None:
                 },
             }
         },
+    }
+
+    resp = client.get("/openapi.json")
+    assert resp.status_code == 200, resp.content
+    assert resp.json() == expected_openapi
+
+
+def test_xpresso_app_as_app_param_to_mount_routing() -> None:
+    # not a use case we advertise
+    # but we want to know what the behavior is
+    app = App(
+        routes=[
+            Mount(
+                path="/mount",
+                app=App(
+                    routes=[
+                        Path(
+                            path="/{number}",
+                            get=endpoint,
+                        )
+                    ]
+                ),
+            )
+        ]
+    )
+
+    client = TestClient(app)
+
+    resp = client.get("/mount/123")
+    assert resp.status_code == 200, resp.content
+    assert resp.json() == 124
+
+
+def test_xpresso_app_as_app_param_to_mount_openapi() -> None:
+    # not a use case we advertise
+    # but we want to know what the behavior is
+    app = App(
+        routes=[
+            Mount(
+                path="/mount",
+                app=App(
+                    routes=[
+                        Path(
+                            path="/{number}",
+                            get=endpoint,
+                        )
+                    ]
+                ),
+            )
+        ]
+    )
+
+    client = TestClient(app)
+
+    expected_openapi: Dict[str, Any] = {
+        "openapi": "3.0.3",
+        "info": {"title": "API", "version": "0.1.0"},
+        "paths": {},
     }
 
     resp = client.get("/openapi.json")
