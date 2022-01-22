@@ -23,7 +23,7 @@ class Dependant(di.Dependant[typing.Any]):
     def __init__(
         self,
         call: typing.Optional[DependencyProvider] = None,
-        scope: Scope = "operation",
+        scope: Scope = "connection",
         use_cache: bool = True,
         wire: bool = True,
         sync_to_thread: bool = False,

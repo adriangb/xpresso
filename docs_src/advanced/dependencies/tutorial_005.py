@@ -37,7 +37,7 @@ app = App(
         Path(
             path="/items/{item_name}",
             get=read_items,
-            dependencies=[Dependant(trace)],
+            dependencies=[Dependant(trace, scope="operation")],
         ),
     ]
 )

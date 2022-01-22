@@ -57,7 +57,7 @@ class _OperationApp:
             starlette.types.Receive: receive,
             starlette.types.Send: send,
         }
-        xpresso_scope: asgi_scope_extension.xpressoASGIExtension = scope["extensions"][
+        xpresso_scope: asgi_scope_extension.XpressoASGIExtension = scope["extensions"][
             "xpresso"
         ]
         async with xpresso_scope["container"].enter_scope("operation") as container:
@@ -139,7 +139,9 @@ class Operation(starlette.routing.BaseRoute):
     ) -> None:
         self.dependant = container.solve(
             JoinedDependant(
-                Dependant(self.endpoint, sync_to_thread=self.sync_to_thread),
+                Dependant(
+                    self.endpoint, scope="operation", sync_to_thread=self.sync_to_thread
+                ),
                 siblings=[*dependencies, *(self.dependencies or ())],
             )
         )

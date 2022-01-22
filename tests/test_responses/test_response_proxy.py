@@ -3,6 +3,7 @@
 import sys
 import typing
 
+import pytest
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 from starlette.testclient import TestClient
@@ -13,10 +14,12 @@ else:
     from typing import Annotated
 
 from xpresso import App, Dependant, Path
+from xpresso.exceptions import XpressoError
 from xpresso.responses import get_response, set_response
 
 
-def test_get_response() -> None:
+@pytest.mark.parametrize("scope", ["operation", "connection"])
+def test_get_response(scope: typing.Any) -> None:
     """ResponseProxy can be used to get the final Response from within a dependency"""
 
     def dependency(request: Request) -> typing.Generator[None, None, None]:
@@ -32,7 +35,7 @@ def test_get_response() -> None:
         response.status_code = 405
 
     async def endpoint(
-        dep: Annotated[None, Dependant(dependency, scope="operation")]
+        dep: Annotated[None, Dependant(dependency, scope=scope)]
     ) -> Response:
         return Response(status_code=404)
 
@@ -40,7 +43,7 @@ def test_get_response() -> None:
 
     with TestClient(app) as client:
         resp = client.get("/")
-    assert resp.status_code == 405
+    assert resp.status_code == (405 if scope == "operation" else 404)
 
 
 def test_get_response_connection_scope() -> None:
@@ -75,10 +78,43 @@ def test_set_response() -> None:
     async def endpoint() -> Response:
         return Response()
 
-    app = App([Path("/", get=endpoint, dependencies=[Dependant(dependency)])])
+    app = App(
+        [
+            Path(
+                "/",
+                get=endpoint,
+                dependencies=[Dependant(dependency, scope="connection")],
+            )
+        ]
+    )
 
     with TestClient(app) as client:
         resp = client.get("/")
 
     assert resp.status_code == 200, resp.content
     assert resp.json() == {"foo": "bar"}
+
+
+def test_set_response_operation_scope() -> None:
+    def dependency(request: Request) -> typing.Generator[None, None, None]:
+        yield
+        set_response(request, JSONResponse({"foo": "bar"}))
+
+    async def endpoint() -> Response:
+        return Response()
+
+    app = App(
+        [
+            Path(
+                "/",
+                get=endpoint,
+                dependencies=[Dependant(dependency, scope="connection")],
+            )
+        ]
+    )
+
+    client = TestClient(app)
+    with pytest.raises(
+        XpressoError, match='can only be used from "operation" scoped dependendencies'
+    ):
+        client.get("/")
