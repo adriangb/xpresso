@@ -3,7 +3,6 @@ import typing
 import starlette.applications
 import starlette.background
 import starlette.datastructures
-import starlette.exceptions
 import starlette.requests
 import starlette.responses
 import starlette.routing

@@ -1,14 +1,14 @@
 import typing
 from contextlib import asynccontextmanager
 
-import starlette.types as asgi
+import starlette.types
 from di import AsyncExecutor, BaseContainer
 from di.api.dependencies import DependantBase
 from di.api.providers import DependencyProviderType
 from starlette.applications import Starlette
 from starlette.datastructures import State
-from starlette.exceptions import HTTPException
 from starlette.middleware import Middleware
+from starlette.middleware.errors import ServerErrorMiddleware
 from starlette.requests import Request
 from starlette.responses import HTMLResponse, JSONResponse, Response
 from starlette.routing import BaseRoute
@@ -21,7 +21,8 @@ from xpresso.exception_handlers import (
     http_exception_handler,
     validation_exception_handler,
 )
-from xpresso.exceptions import RequestValidationError
+from xpresso.exceptions import HTTPException, RequestValidationError
+from xpresso.middleware.exceptions import ExceptionMiddleware
 from xpresso.openapi import models as openapi_models
 from xpresso.openapi._builder import SecurityModels, genrate_openapi
 from xpresso.openapi._html import get_swagger_ui_html
@@ -35,7 +36,7 @@ ExceptionHandler = typing.Callable[[Request, typing.Type[BaseException]], Respon
 
 class App(Starlette):
     router: Router
-    middleware_stack: asgi.ASGIApp
+    middleware_stack: starlette.types.ASGIApp
     openapi: typing.Optional[openapi_models.OpenAPI] = None
     _debug: bool
     state: State
@@ -116,8 +117,33 @@ class App(Starlette):
             description=description,
         )
 
+    def build_middleware_stack(self) -> starlette.types.ASGIApp:
+        debug = self.debug
+        error_handler = None
+        exception_handlers = {}
+
+        for key, value in self.exception_handlers.items():
+            if key in (500, Exception):
+                error_handler = value
+            else:
+                exception_handlers[key] = value
+
+        middleware = (
+            Middleware(ServerErrorMiddleware, handler=error_handler, debug=debug),
+            *self.user_middleware,
+            Middleware(ExceptionMiddleware, handlers=exception_handlers, debug=debug),
+        )
+
+        app = self.router
+        for cls, options in reversed(middleware):
+            app = cls(app=app, **options)
+        return app
+
     async def __call__(
-        self, scope: asgi.Scope, receive: asgi.Receive, send: asgi.Send
+        self,
+        scope: starlette.types.Scope,
+        receive: starlette.types.Receive,
+        send: starlette.types.Send,
     ) -> None:
         self._setup()
         if scope["type"] == "http" or scope["type"] == "websocket":

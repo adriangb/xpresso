@@ -1,9 +1,9 @@
 from typing import Optional
 
-from starlette.exceptions import HTTPException
 from starlette.requests import Request
 from starlette.status import HTTP_401_UNAUTHORIZED
 
+from xpresso.exceptions import HTTPException
 from xpresso.openapi.models import APIKey
 from xpresso.security._base import SecurityBase
 

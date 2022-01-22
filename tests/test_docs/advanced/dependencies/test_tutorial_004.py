@@ -5,7 +5,9 @@ from xpresso.testclient import TestClient
 
 def test_read_items_logging() -> None:
     log = StatusCodeLogFile()
-    with app.container.register_by_type(Dependant(lambda: log), StatusCodeLogFile):
+    with app.container.register_by_type(
+        Dependant(lambda: log, scope="connection"), StatusCodeLogFile
+    ):
         client = TestClient(app)
 
         resp = client.get("/items/foo")

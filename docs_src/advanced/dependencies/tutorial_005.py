@@ -1,25 +1,26 @@
-from typing import Generator, List
+from typing import Generator
+from uuid import UUID, uuid4
 
 from xpresso import App, Dependant, FromPath, HTTPException, Path, Request
 from xpresso.responses import get_response
-from xpresso.typing import Annotated
+
+CONTEXT_HEADER = "X-Request-Context"
 
 
-class StatusCodeLogFile(List[int]):
-    pass
-
-
-def log_response_status_code(
-    request: Request, log: Annotated[StatusCodeLogFile, Dependant(scope="connection")]
-) -> Generator[None, None, None]:
+def trace(request: Request) -> Generator[None, None, None]:
+    req_ctx = request.headers.get(CONTEXT_HEADER, None)
+    if req_ctx is not None:
+        ctx = UUID(req_ctx)
+    else:
+        ctx = uuid4()
     try:
         yield
     except HTTPException as exc:
-        log.append(exc.status_code)
+        exc.headers[CONTEXT_HEADER] = str(ctx)
         raise
     else:
         response = get_response(request)
-        log.append(response.status_code)
+        response.headers[CONTEXT_HEADER] = str(ctx)
 
 
 fake_items_db = {"foo": "Foo", "bar": "Bar"}
@@ -36,7 +37,7 @@ app = App(
         Path(
             path="/items/{item_name}",
             get=read_items,
-            dependencies=[Dependant(log_response_status_code, scope="connection")],
+            dependencies=[Dependant(trace)],
         ),
     ]
 )

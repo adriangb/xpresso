@@ -19,10 +19,10 @@ class HTTPException(StarletteHTTPException, XpressoError):
         self,
         status_code: int,
         detail: typing.Any = None,
-        headers: typing.Optional[typing.Dict[str, typing.Any]] = None,
+        headers: typing.Optional[typing.Dict[str, str]] = None,
     ) -> None:
         super().__init__(status_code=status_code, detail=detail)
-        self.headers = headers
+        self.headers = headers or {}
 
 
 _RequestErrorModel: Type[BaseModel] = create_model("Request")  # type: ignore
