@@ -14,6 +14,7 @@ from starlette.responses import HTMLResponse, JSONResponse, Response
 from starlette.routing import BaseRoute
 from starlette.routing import Route as StarletteRoute
 
+from xpresso._utils.asgi_scope_extension import XpressoASGIExtension
 from xpresso._utils.routing import visit_routes
 from xpresso.dependencies.models import Dependant
 from xpresso.dependencies.utils import register_framework_dependencies
@@ -148,13 +149,19 @@ class App(Starlette):
         self._setup()
         if scope["type"] == "http" or scope["type"] == "websocket":
             extensions = scope.get("extensions", None) or {}
+            scope["extensions"] = extensions
             xpresso_scope = extensions.get("xpresso", None)
             if xpresso_scope is None:
                 async with self.container.enter_scope("connection") as container:
-                    extensions["xpresso"] = {"container": container}
-                    scope["extensions"] = extensions
-                    return await super().__call__(scope, receive, send)
-        return await super().__call__(scope, receive, send)
+                    xpresso_asgi_extension: XpressoASGIExtension = {
+                        "container": container,
+                        "response_sent": False,
+                    }
+                    extensions["xpresso"] = xpresso_asgi_extension
+                    await super().__call__(scope, receive, send)
+                    xpresso_asgi_extension["response_sent"] = True
+                    return
+        await super().__call__(scope, receive, send)
 
     def _setup(self) -> None:
         if self._setup_run:

@@ -71,7 +71,7 @@ class _OperationApp:
             else:
                 response = self.response_factory(self.response_encoder(endpoint_return))
             xpresso_scope["response"] = response
-        await xpresso_scope["response"](scope, receive, send)
+        await response(scope, receive, send)
 
 
 class Operation(starlette.routing.BaseRoute):

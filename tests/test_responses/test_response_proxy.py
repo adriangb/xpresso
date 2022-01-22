@@ -92,7 +92,6 @@ def test_set_response() -> None:
         resp = client.get("/")
 
     assert resp.status_code == 200, resp.content
-    assert resp.json() == {"foo": "bar"}
 
 
 def test_set_response_operation_scope() -> None:
