@@ -1,12 +1,12 @@
 from typing import Any, Mapping, Optional, Union
 
 from pydantic import BaseModel, Field
-from starlette.requests import Request
 from starlette.responses import Response
 
 from xpresso._utils.asgi_scope_extension import XpressoASGIExtension
 from xpresso.exceptions import XpressoError
 from xpresso.openapi.models import Example, Header
+from xpresso.requests import Request
 
 
 def get_response(request: Request) -> Response:

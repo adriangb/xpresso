@@ -73,10 +73,9 @@ class CookieParameterExtractor(ParameterExtractorBase):
     ) -> Any:
         param = connection.cookies.get(self.name, None)
         if param is not None:
-            extracted = self.extractor(param)
-            if extracted is None:
-                return await self.validate(None, scope, receive, send)
-            return await self.validate(Some(extracted), scope, receive, send)
+            return await self.validate(
+                Some(self.extractor(param)), scope, receive, send
+            )
         return await self.validate(None, scope, receive, send)
 
 
