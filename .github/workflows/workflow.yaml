@@ -106,7 +106,6 @@ jobs:
     name: 🚀 PyPi Release 📦
     runs-on: ubuntu-latest
     needs: ["test", "lint"]
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python
@@ -114,6 +113,8 @@ jobs:
       - name: Install and configure Poetry
         uses: snok/install-poetry@v1.3.0
       - name: Release on PyPi
+        id: pypi
+        continue-on-error: true
         run: |
           PACKAGE_VERSION=$(poetry version -s)
           echo "package_version=$PACKAGE_VERSION" >> $GITHUB_ENV
@@ -122,6 +123,7 @@ jobs:
           poetry publish --build
       - name: 🚀 Create GitHub Release 😺
         uses: ncipollo/release-action@v1
+        if: steps.pypi.outcome != 'success'
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ env.package_version }}
