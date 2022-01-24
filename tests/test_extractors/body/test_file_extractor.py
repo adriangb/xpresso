@@ -5,7 +5,16 @@ import pytest
 from starlette.responses import Response
 from starlette.testclient import TestClient
 
-from xpresso import App, ExtractField, File, FromFile, FromFormData, Path, UploadFile
+from xpresso import (
+    App,
+    ExtractField,
+    File,
+    FromFile,
+    FromFormData,
+    Path,
+    Request,
+    UploadFile,
+)
 from xpresso.typing import Annotated
 
 
@@ -155,3 +164,16 @@ def test_content_type_validation(
                 }
             ]
         }
+
+
+def test_consume() -> None:
+    async def test(
+        body: Annotated[bytes, File(consume=False)], request: Request
+    ) -> None:
+        assert body == await request.body()
+
+    app = App([Path("/", post=test)])
+
+    with TestClient(app) as client:
+        resp = client.post("/", json="test")
+    assert resp.status_code == 200

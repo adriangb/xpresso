@@ -23,6 +23,7 @@ from xpresso.typing import Some
 class FileBodyExtractor(BodyExtractor):
     field: ModelField
     media_type_validator: MediaTypeValidator
+    consume: bool
 
     def matches_media_type(self, media_type: typing.Optional[str]) -> bool:
         return self.media_type_validator.matches(media_type)
@@ -31,9 +32,12 @@ class FileBodyExtractor(BodyExtractor):
         media_type = request.headers.get("content-type", None)
         self.media_type_validator.validate(media_type, loc=("body",))
         if self.field.type_ is bytes:
-            data = await stream_to_bytes(request.stream())
-            if data is None:
-                return validate_data(Some(b""), field=self.field, loc=("body",))
+            if self.consume:
+                data = await stream_to_bytes(request.stream())
+                if data is None:
+                    return validate_data(Some(b""), field=self.field, loc=("body",))
+            else:
+                data = await request.body()
             return validate_data(Some(data), field=self.field, loc=("body",))
         # create an UploadFile from the body's stream
         file: UploadFile = self.field.type_(  # use the field type to allow users to subclass UploadFile
@@ -92,6 +96,7 @@ class FileBodyExtractor(BodyExtractor):
 class FileBodyExtractorMarker(BodyExtractorMarker):
     media_type: typing.Optional[str]
     enforce_media_type: bool
+    consume: bool
 
     def register_parameter(self, param: inspect.Parameter) -> BodyExtractor:
         field = model_field_from_param(param)
@@ -102,4 +107,5 @@ class FileBodyExtractorMarker(BodyExtractorMarker):
         return FileBodyExtractor(
             field=field,
             media_type_validator=media_type_validator,
+            consume=self.consume,
         )

@@ -177,10 +177,12 @@ def Json(
     description: typing.Optional[str] = None,
     decoder: Decoder = json.loads,
     enforce_media_type: bool = True,
+    consume: bool = True,
 ) -> param_dependants.BodyBinderMarker:
     extractor = JsonBodyExtractorMarker(
         decoder=decoder,
         enforce_media_type=enforce_media_type,
+        consume=consume,
     )
     openapi = OpenAPIJsonMarker(
         description=description,
@@ -199,10 +201,12 @@ def File(
     examples: typing.Optional[typing.Dict[str, Example]] = None,
     description: typing.Optional[str] = None,
     format: Literal["binary", "base64"] = "binary",
+    consume: bool = True,
 ) -> param_dependants.BodyBinderMarker:
     extractor = FileBodyExtractorMarker(
         media_type=media_type,
         enforce_media_type=enforce_media_type,
+        consume=consume,
     )
     openapi = OpenAPIFileMarker(
         description=description,

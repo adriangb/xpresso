@@ -9,7 +9,7 @@ else:
 from pydantic import BaseModel
 from starlette.testclient import TestClient
 
-from xpresso import App, FromJson, Json, Path, Response
+from xpresso import App, FromJson, Json, Path, Request, Response
 
 
 class InnerModel(BaseModel):
@@ -154,4 +154,15 @@ def test_nullable() -> None:
         resp = client.post(
             "/", data=b"null", headers={"content-type": "application/json"}
         )
+    assert resp.status_code == 200
+
+
+def test_consume() -> None:
+    async def test(body: Annotated[str, Json(consume=False)], request: Request) -> None:
+        assert f'"{body}"' == (await request.body()).decode()
+
+    app = App([Path("/", post=test)])
+
+    with TestClient(app) as client:
+        resp = client.post("/", json="test")
     assert resp.status_code == 200
