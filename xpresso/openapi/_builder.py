@@ -143,7 +143,7 @@ def get_request_body(
     model_name_map: ModelNameMap,
     schemas: Dict[str, Any],
 ) -> models.RequestBody:
-    if dependant.openapi:
+    if dependant.openapi and dependant.openapi.include_in_schema:
         return dependant.openapi.get_openapi(
             model_name_map=model_name_map, schemas=schemas
         )

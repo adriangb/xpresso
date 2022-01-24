@@ -27,6 +27,7 @@ class OpenAPIFileBody(OpenAPIBody):
     format: Literal["binary", "base64"]
     required: bool
     nullable: bool
+    include_in_schema: bool
 
     def get_schema(
         self, model_name_map: ModelNameMap, schemas: Schemas
@@ -73,6 +74,7 @@ class OpenAPIFileMarker(OpenAPIBodyMarker):
         typing.Dict[str, typing.Union[openapi_models.Example, typing.Any]]
     ]
     format: Literal["binary", "base64"]
+    include_in_schema: bool
 
     def register_parameter(self, param: inspect.Parameter) -> OpenAPIBody:
         field = model_field_from_param(param)
@@ -88,4 +90,5 @@ class OpenAPIFileMarker(OpenAPIBodyMarker):
             format=self.format,
             required=required,
             nullable=field.allow_none,
+            include_in_schema=self.include_in_schema,
         )

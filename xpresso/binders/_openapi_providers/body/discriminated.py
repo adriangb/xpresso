@@ -26,6 +26,7 @@ class OpenAPIContentTypeDiscriminated(OpenAPIBody):
     sub_body_providers: typing.Mapping[str, OpenAPIBody]
     description: typing.Optional[str]
     required: typing.Optional[bool]
+    include_in_schema = True
 
     def get_openapi(
         self, model_name_map: ModelNameMap, schemas: Schemas
@@ -77,8 +78,9 @@ class OpenAPIContentTypeDiscriminatedMarker(OpenAPIBodyMarker):
                 raise TypeError(f"Type annotation is missing body marker: {arg}")
             sub_body_openapi = marker.openapi_marker
             provider = sub_body_openapi.register_parameter(sub_body_param)
-            media_type = provider.get_media_type()
-            sub_body_providers[media_type] = provider
+            if provider.include_in_schema:
+                media_type = provider.get_media_type()
+                sub_body_providers[media_type] = provider
         return OpenAPIContentTypeDiscriminated(
             sub_body_providers=sub_body_providers,
             description=self.description,

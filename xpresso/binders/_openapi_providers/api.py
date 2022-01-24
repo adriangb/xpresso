@@ -16,6 +16,8 @@ Schemas = Dict[str, Any]
 
 
 class OpenAPIBody(Protocol):
+    include_in_schema: bool
+
     def get_openapi(
         self, model_name_map: ModelNameMap, schemas: Schemas
     ) -> models.RequestBody:

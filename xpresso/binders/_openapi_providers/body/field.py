@@ -18,6 +18,7 @@ from xpresso.openapi import models
 @dataclass(frozen=True)
 class FieldOpenAPIBase(OpenAPIBody):
     name: str
+    include_in_schema: bool
     field_openapi: OpenAPIBody
 
     def get_encoding(self) -> typing.Optional[models.Encoding]:
@@ -51,6 +52,7 @@ class OpenAPIRepeatedField(FieldOpenAPIBase):
 @dataclass(frozen=True)
 class OpenAPIFieldMarkerBase(OpenAPIBodyMarker):
     alias: typing.Optional[str]
+    include_in_schema: bool
     cls: typing.ClassVar[
         typing.Union[typing.Type[OpenAPIRepeatedField], typing.Type[OpenAPIField]]
     ]
@@ -71,7 +73,11 @@ class OpenAPIFieldMarkerBase(OpenAPIBodyMarker):
             )
         field_openapi = field_marker.register_parameter(param)
         name = self.alias or model_field_from_param(param).alias
-        return self.cls(name=name, field_openapi=field_openapi)
+        return self.cls(
+            name=name,
+            field_openapi=field_openapi,
+            include_in_schema=self.include_in_schema,
+        )
 
 
 class OpenAPIFieldMarker(OpenAPIFieldMarkerBase):

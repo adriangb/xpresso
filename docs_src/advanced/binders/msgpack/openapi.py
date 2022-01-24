@@ -5,6 +5,8 @@ from xpresso.openapi import models
 
 
 class OpenAPIBodyMsgPack(OpenAPIBody):
+    include_in_schema: bool = True
+
     def get_media_type(self) -> str:
         return "application/x-msgpack"
 

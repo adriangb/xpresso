@@ -23,6 +23,7 @@ class OpenAPIJsonBody(OpenAPIBody):
     examples: typing.Optional[typing.Mapping[str, openapi_models.Example]]
     field: ModelField
     required: bool
+    include_in_schema: bool
 
     def get_schema(
         self, model_name_map: ModelNameMap, schemas: Schemas
@@ -76,6 +77,7 @@ class OpenAPIJsonMarker(OpenAPIBodyMarker):
     examples: typing.Optional[
         typing.Dict[str, typing.Union[openapi_models.Example, typing.Any]]
     ]
+    include_in_schema: bool
 
     def register_parameter(self, param: inspect.Parameter) -> OpenAPIBody:
         examples = parse_examples(self.examples) if self.examples else None
@@ -89,4 +91,5 @@ class OpenAPIJsonMarker(OpenAPIBodyMarker):
             examples=examples,
             field=field,
             required=required,
+            include_in_schema=self.include_in_schema,
         )

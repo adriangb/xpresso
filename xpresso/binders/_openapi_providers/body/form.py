@@ -35,6 +35,7 @@ class OpenAPIFormDataBody(OpenAPIBody):
     ]
     required: bool
     nullable: bool
+    include_in_schema: bool
 
     def get_schema(
         self, model_name_map: ModelNameMap, schemas: Schemas
@@ -93,6 +94,7 @@ class OpenAPIFormDataMarker(OpenAPIBodyMarker):
         "multipart/form-data",
         "application/x-www-form-urlencoded",
     ]
+    include_in_schema: bool
 
     def register_parameter(self, param: inspect.Parameter) -> OpenAPIBody:
         form_data_field = model_field_from_param(param)
@@ -118,15 +120,17 @@ class OpenAPIFormDataMarker(OpenAPIBodyMarker):
                     alias=None,
                     style="form",
                     explode=True,
+                    include_in_schema=True,
                 )
             else:
                 field_openapi = marker.openapi_marker
             provider = field_openapi.register_parameter(field_param)
             field_name = provider.get_field_name()
-            field_openapi_providers[field_name] = provider
-            field = model_field_from_param(field_param)
-            if field.required is not False:
-                required_fields.append(field_name)
+            if provider.include_in_schema:
+                field_openapi_providers[field_name] = provider
+                field = model_field_from_param(field_param)
+                if field.required is not False:
+                    required_fields.append(field_name)
         examples = parse_examples(self.examples) if self.examples else None
         return OpenAPIFormDataBody(
             field_openapi_providers=field_openapi_providers,
@@ -136,4 +140,5 @@ class OpenAPIFormDataMarker(OpenAPIBodyMarker):
             media_type=self.media_type,
             required=required,
             nullable=form_data_field.allow_none,
+            include_in_schema=self.include_in_schema,
         )

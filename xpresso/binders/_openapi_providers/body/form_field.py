@@ -23,6 +23,7 @@ class OpenAPIFormField(OpenAPIBody):
     explode: bool
     name: str
     field: ModelField
+    include_in_schema: bool
 
     def get_field_name(self) -> str:
         return self.name
@@ -60,6 +61,7 @@ class OpenAPIFormFieldMarker(OpenAPIBodyMarker):
     alias: typing.Optional[str]
     style: str
     explode: bool
+    include_in_schema: bool
 
     def register_parameter(self, param: inspect.Parameter) -> OpenAPIBody:
         field = model_field_from_param(param)
@@ -70,4 +72,5 @@ class OpenAPIFormFieldMarker(OpenAPIBodyMarker):
             explode=self.explode,
             name=name,
             field=field,
+            include_in_schema=self.include_in_schema,
         )
