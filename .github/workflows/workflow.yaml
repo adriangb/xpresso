@@ -114,6 +114,7 @@ jobs:
         uses: snok/install-poetry@v1.3.0
       - name: Release on PyPi
         continue-on-error: true  # allow pushes to main that don't release
+        id: pypi
         run: |
           PACKAGE_VERSION=$(poetry version -s)
           echo "package_version=$PACKAGE_VERSION" >> $GITHUB_ENV
@@ -121,7 +122,6 @@ jobs:
           poetry config pypi-token.pypi "${{ secrets.PYPI_TOKEN }}"
           poetry publish --build
       - name: 🚀 Create GitHub Release 😺
-        continue-on-error: true  # allow pushes to main that don't release
         uses: ncipollo/release-action@v1
         if: steps.pypi.outcome == 'success'
         with:
