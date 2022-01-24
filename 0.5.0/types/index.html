@@ -866,7 +866,7 @@ Xpresso uses <code>Annotated</code> extensively since it provides a composable, 
 When FastAPI was first released, this was the only way to add runtime metadata to a parameter in Python.
 But now there is a better way to do this!
 In Xpresso this same declaration would look like <code>param: FromHeader[str]</code> or <code>param: Annotated[str, HeaderParam()]</code> (the former is just syntactic sugar for the latter).
-As you see more usages of <code>Annoated</code> you will get used to it.
+As you see more usages of <code>Annotated</code> you will get used to it.
 But for now all you need to know is that <code>param: Annotated[str, HeaderParam()]</code> is pretty much equivalent to <code>param: str = Header()</code> in FastAPI.</p>
 <p>One of the main advantages to using <code>Annotated</code> is composability: multiple tools/libraries can include metadata together without conflict.
 For example, we can included information for both Xpresso and Pydantic using <code>param: Annotated[str, Path(), Field(min_length=1)</code>.
