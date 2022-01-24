@@ -51,10 +51,11 @@ class OpenAPIBodyMarker(Protocol):
 class OpenAPIParameter(Protocol):
     in_: str
     name: str
+    include_in_schema: bool
 
     def get_openapi(
         self, model_name_map: ModelNameMap, schemas: Schemas
-    ) -> Optional[models.ConcreteParameter]:
+    ) -> models.ConcreteParameter:
         raise NotImplementedError
 
     def __eq__(self, o: object) -> bool:

@@ -129,12 +129,12 @@ def get_parameters(
 ) -> Optional[List[models.ConcreteParameter]]:
     parameters: List[models.ConcreteParameter] = []
     for dependant in deps:
-        if dependant.openapi:
-            param_model = dependant.openapi.get_openapi(
-                model_name_map=model_name_map, schemas=schemas
+        if dependant.openapi and dependant.openapi.include_in_schema:
+            parameters.append(
+                dependant.openapi.get_openapi(
+                    model_name_map=model_name_map, schemas=schemas
+                )
             )
-            if param_model:
-                parameters.append(param_model)
     return parameters or None
 
 

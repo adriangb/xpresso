@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Optional
 
 from pydantic.schema import field_schema, get_flat_models_from_field, get_model_name_map
 
@@ -15,9 +14,7 @@ from xpresso.openapi.constants import REF_PREFIX
 class OpenAPIPathParameter(OpenAPIParameterBase):
     def get_openapi(
         self, model_name_map: ModelNameMap, schemas: Schemas
-    ) -> Optional[openapi_models.ConcreteParameter]:
-        if not self.include_in_schema:
-            return None
+    ) -> openapi_models.ConcreteParameter:
         model_name_map.update(
             get_model_name_map(
                 get_flat_models_from_field(
