@@ -24,7 +24,7 @@ If you've used FastAPI, you may be used to declaring things like `param: str = H
 When FastAPI was first released, this was the only way to add runtime metadata to a parameter in Python.
 But now there is a better way to do this!
 In Xpresso this same declaration would look like `param: FromHeader[str]` or `param: Annotated[str, HeaderParam()]` (the former is just syntactic sugar for the latter).
-As you see more usages of `Annoated` you will get used to it.
+As you see more usages of `Annotated` you will get used to it.
 But for now all you need to know is that `param: Annotated[str, HeaderParam()]` is pretty much equivalent to `param: str = Header()` in FastAPI.
 
 One of the main advantages to using `Annotated` is composability: multiple tools/libraries can include metadata together without conflict.
