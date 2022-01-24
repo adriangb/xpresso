@@ -65,6 +65,7 @@ def QueryParam(
     examples: typing.Optional[typing.Dict[str, Example]] = None,
     description: typing.Optional[str] = None,
     deprecated: typing.Optional[bool] = None,
+    include_in_schema: bool = True,
 ) -> param_dependants.ParameterBinderMarker:
     extractor = QueryParameterExtractorMarker(
         alias=alias,
@@ -78,6 +79,7 @@ def QueryParam(
         explode=explode,
         examples=examples,
         deprecated=deprecated,
+        include_in_schema=include_in_schema,
     )
     return param_dependants.ParameterBinderMarker(
         in_="query",
@@ -94,6 +96,7 @@ def PathParam(
     examples: typing.Optional[typing.Dict[str, Example]] = None,
     description: typing.Optional[str] = None,
     deprecated: typing.Optional[bool] = None,
+    include_in_schema: bool = True,
 ) -> param_dependants.ParameterBinderMarker:
     extractor = PathParameterExtractorMarker(
         alias=alias,
@@ -107,6 +110,7 @@ def PathParam(
         explode=explode,
         examples=examples,
         deprecated=deprecated,
+        include_in_schema=include_in_schema,
     )
     return param_dependants.ParameterBinderMarker(
         in_="path",
@@ -123,6 +127,7 @@ def HeaderParam(
     examples: typing.Optional[typing.Dict[str, Example]] = None,
     description: typing.Optional[str] = None,
     deprecated: typing.Optional[bool] = None,
+    include_in_schema: bool = True,
 ) -> param_dependants.ParameterBinderMarker:
     extractor = HeaderParameterExtractorMarker(
         alias=alias,
@@ -136,6 +141,7 @@ def HeaderParam(
         style="simple",
         examples=examples,
         deprecated=deprecated,
+        include_in_schema=include_in_schema,
     )
     return param_dependants.ParameterBinderMarker(
         in_="header",
@@ -151,6 +157,7 @@ def CookieParam(
     examples: typing.Optional[typing.Dict[str, Example]] = None,
     description: typing.Optional[str] = None,
     deprecated: typing.Optional[bool] = None,
+    include_in_schema: bool = True,
 ) -> param_dependants.ParameterBinderMarker:
     extractor = CookieParameterExtractorMarker(
         alias=alias,
@@ -163,6 +170,7 @@ def CookieParam(
         explode=explode,
         examples=examples,
         deprecated=deprecated,
+        include_in_schema=include_in_schema,
     )
     return param_dependants.ParameterBinderMarker(
         in_="cookie",

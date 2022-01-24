@@ -41,6 +41,7 @@ class OpenAPIParameterBase(OpenAPIParameter):
     explode: bool
     description: typing.Optional[str]
     deprecated: typing.Optional[bool]
+    include_in_schema: bool
     examples: Examples = field(compare=False)
     field: ModelField = field(compare=False)
 
@@ -52,6 +53,7 @@ class OpenAPIParameterMarkerBase(OpenAPIParameterMarker):
     explode: bool
     description: typing.Optional[str]
     deprecated: typing.Optional[bool]
+    include_in_schema: bool
     examples: Examples
     in_: typing.ClassVar[str]
     cls: typing.ClassVar[typing.Type[OpenAPIParameterBase]]
@@ -74,5 +76,6 @@ class OpenAPIParameterMarkerBase(OpenAPIParameterMarker):
             explode=self.explode,
             description=self.description,
             deprecated=self.deprecated,
+            include_in_schema=self.include_in_schema,
             examples=parse_examples(self.examples) if self.examples else None,
         )

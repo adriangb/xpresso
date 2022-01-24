@@ -508,3 +508,26 @@ def test_nullable() -> None:
         resp = client.get("/openapi.json")
     assert resp.status_code == 200, resp.content
     assert resp.json() == expected_openapi
+
+
+def test_include_in_schema() -> None:
+    async def endpoint(
+        cookie: Annotated[str, CookieParam(include_in_schema=False)]
+    ) -> None:
+        ...
+
+    app = App([Path("/", get=endpoint)])
+
+    client = TestClient(app)
+
+    expected_openapi: typing.Dict[str, typing.Any] = {
+        "openapi": "3.0.3",
+        "info": {"title": "API", "version": "0.1.0"},
+        "paths": {
+            "/": {"get": {"responses": {"200": {"description": "Successful Response"}}}}
+        },
+    }
+
+    resp = client.get("/openapi.json")
+    assert resp.status_code == 200, resp.content
+    assert resp.json() == expected_openapi

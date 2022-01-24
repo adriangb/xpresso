@@ -52,7 +52,7 @@ class OpenAPIParameter(Protocol):
 
     def get_openapi(
         self, model_name_map: ModelNameMap, schemas: Schemas
-    ) -> models.ConcreteParameter:
+    ) -> Optional[models.ConcreteParameter]:
         raise NotImplementedError
 
     def __eq__(self, o: object) -> bool:
