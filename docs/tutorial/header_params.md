@@ -10,8 +10,8 @@ Header parameters are declared the same way as `Query` and `Path` parameters:
 
 Headers names are usually composed of several words separated by hyphens (`"-"`).
 But Python veriable names cannot contain hyphens.
-Since Xpresso automatically derives the header names from the parameter names, this creates a problem.
-To get around this, Xpresso automatically converts parameter name underscores (`"_"`) to hyphens (`"-"`).
+Since XPresso automatically derives the header names from the parameter names, this creates a problem.
+To get around this, XPresso automatically converts parameter name underscores (`"_"`) to hyphens (`"-"`).
 This is controlled using the `convert_underscores` parameter to `HeaderParam(...)`:
 
 ```python
@@ -19,7 +19,7 @@ This is controlled using the `convert_underscores` parameter to `HeaderParam(...
 ```
 
 !!! tip "Tip"
-    The import `from Xpresso.typing import Annotated` is just a convenience import.
+    The import `from XPresso.typing import Annotated` is just a convenience import.
     All it does is import `Annotated` from `typing` if your Python version is >= 3.9 and [typing_extensions] otherwise.
     But if you are already using Python >= 3.9, you can just replace that with `from typing import Annotated`.
 

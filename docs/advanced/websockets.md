@@ -1,6 +1,6 @@
 # WebSockets
 
-Xpresso supports [WebSockets] via [Starlette's WebSocket support].
+XPresso supports [WebSockets] via [Starlette's WebSocket support].
 The only functionality added on top of Starlette's is the ability to inject HTTP parameters like headers:
 
 ```python

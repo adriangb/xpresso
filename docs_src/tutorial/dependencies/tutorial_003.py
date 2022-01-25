@@ -12,7 +12,9 @@ class HttpBinConfigModel(BaseSettings):
         env_prefix = "HTTPBIN_"
 
 
-HttpBinConfig = Annotated[HttpBinConfigModel, Dependant(lambda: HttpBinConfigModel())]
+HttpBinConfig = Annotated[
+    HttpBinConfigModel, Dependant(lambda: HttpBinConfigModel())
+]
 
 
 def get_client(config: HttpBinConfig) -> httpx.AsyncClient:

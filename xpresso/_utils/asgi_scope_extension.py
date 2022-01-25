@@ -10,10 +10,10 @@ from di import BaseContainer
 from starlette.responses import Response
 
 
-class _XpressoASGIExtension(TypedDict):
+class _XPressoASGIExtension(TypedDict):
     container: BaseContainer
     response_sent: bool
 
 
-class XpressoASGIExtension(_XpressoASGIExtension, total=False):
+class XPressoASGIExtension(_XPressoASGIExtension, total=False):
     response: Response

@@ -14,7 +14,7 @@ from starlette.responses import HTMLResponse, JSONResponse, Response
 from starlette.routing import BaseRoute
 from starlette.routing import Route as StarletteRoute
 
-from xpresso._utils.asgi_scope_extension import XpressoASGIExtension
+from xpresso._utils.asgi_scope_extension import XPressoASGIExtension
 from xpresso._utils.routing import visit_routes
 from xpresso.dependencies.models import Dependant
 from xpresso.dependencies.utils import register_framework_dependencies
@@ -153,7 +153,7 @@ class App(Starlette):
             xpresso_scope = extensions.get("xpresso", None)
             if xpresso_scope is None:
                 async with self.container.enter_scope("connection") as container:
-                    xpresso_asgi_extension: XpressoASGIExtension = {
+                    xpresso_asgi_extension: XPressoASGIExtension = {
                         "container": container,
                         "response_sent": False,
                     }

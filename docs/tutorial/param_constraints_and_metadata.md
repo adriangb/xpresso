@@ -5,7 +5,7 @@
 Query, Path, Header and Cookie parameters benefit from Pydantic's rich validation and schema generation.
 You can attach extra validation and schema metadata using Pydantic's `Field()`.
 For in depth information on the topic, see [Pydantic]'s docs.
-But here is a quick example of how this can work in Xpresso.
+But here is a quick example of how this can work in XPresso.
 First, import `Field` from Pydantic and `Annotated` from `typing` (Python >= 3.9), `typing_extensions` (Python <= 3.9) or `xpresso.typing` (any Python version):
 
 ```python hl_lines="1 4"
@@ -13,13 +13,13 @@ First, import `Field` from Pydantic and `Annotated` from `typing` (Python >= 3.9
 ```
 
 !!! tip "Tip"
-    The import `from Xpresso.typing import Annotated` is just a convenience import.
+    The import `from XPresso.typing import Annotated` is just a convenience import.
     All it does is import `Annotated` from `typing` if your Python version is >= 3.9 and [typing_extensions] otherwise.
     But if you are already using Python >= 3.9, you can just replace that with `from typing import Annotated`.
 
 Now use `Field()` inside of `Annotated[...]` to attach validation and schema customization metadata to the `price` field:
 
-```python hl_lines="10-19"
+```python hl_lines="14-25"
 --8<-- "docs_src/tutorial/param_constraints_and_metadata/tutorial_001.py"
 ```
 
@@ -56,19 +56,19 @@ First, we'll declare our examples.
 Examples are a dictionary with example names as keys and `Example` objects as values.
 Each `Example` object requires a `value`, but can also have a description, summary and other metadata.
 
-```python hl_lines="11-14"
+```python hl_lines="15-18"
 --8<-- "docs_src/tutorial/param_constraints_and_metadata/tutorial_002.py"
 ```
 
 Then we can make an alias for our type declaration to avoid clutter in our endpoint function and enable re-use:
 
-```python hl_lines="16-22"
+```python hl_lines="20-26"
 --8<-- "docs_src/tutorial/param_constraints_and_metadata/tutorial_002.py"
 ```
 
 Finally we use this type alias in our endpoint function signature:
 
-```python hl_lines="25"
+```python hl_lines="29"
 --8<-- "docs_src/tutorial/param_constraints_and_metadata/tutorial_002.py"
 ```
 

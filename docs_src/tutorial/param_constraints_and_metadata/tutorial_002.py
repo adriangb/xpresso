@@ -5,7 +5,11 @@ from xpresso import App, Path, QueryParam
 from xpresso.openapi.models import Example
 from xpresso.typing import Annotated
 
-fake_items_db = [{"item_name": "Foo"}, {"item_name": "Bar"}, {"item_name": "Baz"}]
+fake_items_db = [
+    {"item_name": "Foo"},
+    {"item_name": "Bar"},
+    {"item_name": "Baz"},
+]
 
 
 prefix_examples = {

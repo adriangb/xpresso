@@ -5,7 +5,9 @@ from xpresso.typing import Annotated
 
 
 async def read_items(
-    some_header: Annotated[str, HeaderParam(convert_underscores=False)]
+    some_header: Annotated[
+        str, HeaderParam(convert_underscores=False)
+    ]
 ) -> Dict[str, Optional[str]]:
     return {"some_header": some_header}
 

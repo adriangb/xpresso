@@ -26,4 +26,6 @@ def create_app() -> App:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    return App(routes=[Path("/", get=main)], middleware=[cors_middleware])
+    return App(
+        routes=[Path("/", get=main)], middleware=[cors_middleware]
+    )

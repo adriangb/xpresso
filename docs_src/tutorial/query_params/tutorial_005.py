@@ -11,7 +11,9 @@ class Filter(BaseModel):
     skip: int = 0
 
 
-async def read_items(filter: FromQuery[Optional[Filter]]) -> Optional[Filter]:
+async def read_items(
+    filter: FromQuery[Optional[Filter]],
+) -> Optional[Filter]:
     return filter
 
 

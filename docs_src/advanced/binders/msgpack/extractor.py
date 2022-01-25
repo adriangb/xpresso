@@ -29,12 +29,16 @@ class MsgPackBodyExtractor(BodyExtractor):
 
 
 class MsgPackBodyExtractorMarker(BodyExtractorMarker):
-    def register_parameter(self, param: inspect.Parameter) -> BodyExtractor:
+    def register_parameter(
+        self, param: inspect.Parameter
+    ) -> BodyExtractor:
         # get the first paramater to Annotated, which should be our actual type
         model = next(iter(get_args(param.annotation)))
         if not issubclass(model, BaseModel):
             # You may want more rigourous checks here
             # Or you may want to accept non-Pydantic models
             # We do the easiest thing here
-            raise TypeError("MessagePack model must be a Pydantic model")
+            raise TypeError(
+                "MessagePack model must be a Pydantic model"
+            )
         return MsgPackBodyExtractor(model)

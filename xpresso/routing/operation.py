@@ -57,7 +57,7 @@ class _OperationApp:
             starlette.types.Receive: receive,
             starlette.types.Send: send,
         }
-        xpresso_scope: asgi_scope_extension.XpressoASGIExtension = scope["extensions"][
+        xpresso_scope: asgi_scope_extension.XPressoASGIExtension = scope["extensions"][
             "xpresso"
         ]
         async with xpresso_scope["container"].enter_scope("operation") as container:
@@ -129,7 +129,7 @@ class Operation(starlette.routing.BaseRoute):
         send: starlette.types.Send,
     ) -> None:
         if self._app is None:
-            raise RuntimeError("Operation cannot be used outside of a Xpresso App")
+            raise RuntimeError("Operation cannot be used outside of a XPresso App")
         return await self._app(scope, receive, send)
 
     def solve(

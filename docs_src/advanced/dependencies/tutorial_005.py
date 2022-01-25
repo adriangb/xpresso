@@ -1,7 +1,14 @@
 from typing import Generator
 from uuid import UUID, uuid4
 
-from xpresso import App, Dependant, FromPath, HTTPException, Path, Request
+from xpresso import (
+    App,
+    Dependant,
+    FromPath,
+    HTTPException,
+    Path,
+    Request,
+)
 from xpresso.responses import get_response
 
 CONTEXT_HEADER = "X-Request-Context"

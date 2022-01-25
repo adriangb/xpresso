@@ -14,7 +14,7 @@ To receive multiple files, see the [multipart/form-data documentation].
 
 ## As bytes
 
-Xpresso can read the entire file into memory if you'd like:
+XPresso can read the entire file into memory if you'd like:
 
 ```python
 --8<-- "docs_src/tutorial/file_as_bytes.py"

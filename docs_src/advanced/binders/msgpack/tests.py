@@ -52,7 +52,9 @@ def test_openapi_schema() -> None:
                             "description": "Successful Response",
                             "content": {
                                 "application/json": {
-                                    "schema": {"$ref": "#/components/schemas/Item"}
+                                    "schema": {
+                                        "$ref": "#/components/schemas/Item"
+                                    }
                                 }
                             },
                         },
@@ -70,7 +72,10 @@ def test_openapi_schema() -> None:
                     "requestBody": {
                         "content": {
                             "application/x-msgpack": {
-                                "schema": {"type": "string", "format": "binary"}
+                                "schema": {
+                                    "type": "string",
+                                    "format": "binary",
+                                }
                             }
                         }
                     },
@@ -97,11 +102,17 @@ def test_openapi_schema() -> None:
                             "title": "Location",
                             "type": "array",
                             "items": {
-                                "oneOf": [{"type": "string"}, {"type": "integer"}]
+                                "oneOf": [
+                                    {"type": "string"},
+                                    {"type": "integer"},
+                                ]
                             },
                         },
                         "msg": {"title": "Message", "type": "string"},
-                        "type": {"title": "Error Type", "type": "string"},
+                        "type": {
+                            "title": "Error Type",
+                            "type": "string",
+                        },
                     },
                 },
                 "HTTPValidationError": {
@@ -111,7 +122,9 @@ def test_openapi_schema() -> None:
                         "detail": {
                             "title": "Detail",
                             "type": "array",
-                            "items": {"$ref": "#/components/schemas/ValidationError"},
+                            "items": {
+                                "$ref": "#/components/schemas/ValidationError"
+                            },
                         }
                     },
                 },

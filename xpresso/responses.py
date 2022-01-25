@@ -3,8 +3,8 @@ from typing import Any, Mapping, Optional, Union
 from pydantic import BaseModel, Field
 from starlette.responses import Response
 
-from xpresso._utils.asgi_scope_extension import XpressoASGIExtension
-from xpresso.exceptions import XpressoError
+from xpresso._utils.asgi_scope_extension import XPressoASGIExtension
+from xpresso.exceptions import XPressoError
 from xpresso.openapi.models import Example, Header
 from xpresso.requests import Request
 
@@ -20,9 +20,9 @@ def get_response(request: Request) -> Response:
 
 
 def set_response(request: Request, response: Response) -> None:
-    xpresso_scope: XpressoASGIExtension = request.scope["extensions"]["xpresso"]
+    xpresso_scope: XPressoASGIExtension = request.scope["extensions"]["xpresso"]
     if xpresso_scope["response_sent"]:
-        raise XpressoError(
+        raise XPressoError(
             'set_response() can only be used from "operation" scoped dependendencies'
         )
     xpresso_scope["response"] = response  # type: ignore[assignment]
