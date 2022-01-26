@@ -206,9 +206,21 @@ class Link(BaseModel):
     server: Optional[Server] = None
 
 
+class ResponseHeader(BaseModel):
+    description: Optional[str] = None
+    deprecated: Optional[bool] = None
+    # Serialization rules for simple scenarios
+    style: HeaderParamStyles = "simple"
+    explode: bool = False
+    schema_: Optional[Union[Schema, Reference]] = Field(None, alias="schema")
+    examples: Optional[Dict[str, Union[Example, Reference]]] = None
+    # Serialization rules for more complex scenarios
+    content: Optional[Dict[str, MediaType]] = None
+
+
 class Response(BaseModel):
     description: str
-    headers: Optional[Dict[str, Union[Header, Reference]]] = None
+    headers: Optional[Dict[str, Union[ResponseHeader, Reference]]] = None
     content: Optional[Dict[str, MediaType]] = None
     links: Optional[Dict[str, Union[Link, Reference]]] = None
 

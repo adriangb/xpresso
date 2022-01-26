@@ -5,7 +5,7 @@ from starlette.responses import Response
 
 from xpresso._utils.asgi_scope_extension import XpressoASGIExtension
 from xpresso.exceptions import XpressoError
-from xpresso.openapi.models import Example, Header
+from xpresso.openapi.models import Example, ResponseHeader
 from xpresso.requests import Request
 
 
@@ -32,7 +32,7 @@ class ResponseSpec(BaseModel):
     description: str
     model: Any = None
     media_type: Optional[str] = None
-    headers: Optional[Mapping[str, Union[Header, str]]] = None
+    headers: Optional[Mapping[str, Union[ResponseHeader, str]]] = None
     examples: Optional[Mapping[str, Union[Example, Any]]] = None
 
 
