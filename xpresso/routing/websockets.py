@@ -42,7 +42,7 @@ class _WebSocketRoute:
             starlette.types.Receive: receive,
             starlette.types.Send: send,
         }
-        xpresso_scope: asgi_scope_extension.XPressoASGIExtension = scope["extensions"][
+        xpresso_scope: asgi_scope_extension.XpressoASGIExtension = scope["extensions"][
             "xpresso"
         ]
         async with xpresso_scope["container"].enter_scope("operation") as container:

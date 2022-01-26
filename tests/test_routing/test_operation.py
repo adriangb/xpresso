@@ -71,11 +71,11 @@ def test_usage_outside_of_xpresso() -> None:
     # error triggered with lifespan
     with TestClient(app) as client:
         with pytest.raises(
-            RuntimeError, match=r"cannot be used outside of a XPresso App"
+            RuntimeError, match=r"cannot be used outside of a Xpresso App"
         ):
             client.get("/")
 
     # error triggered without lifespan
     client = TestClient(app)
-    with pytest.raises(RuntimeError, match=r"cannot be used outside of a XPresso App"):
+    with pytest.raises(RuntimeError, match=r"cannot be used outside of a Xpresso App"):
         client.get("/")

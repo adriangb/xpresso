@@ -14,7 +14,7 @@ else:
     from typing import Annotated
 
 from xpresso import App, Dependant, Path
-from xpresso.exceptions import XPressoError
+from xpresso.exceptions import XpressoError
 from xpresso.responses import get_response, set_response
 
 
@@ -114,6 +114,6 @@ def test_set_response_operation_scope() -> None:
 
     client = TestClient(app)
     with pytest.raises(
-        XPressoError, match='can only be used from "operation" scoped dependendencies'
+        XpressoError, match='can only be used from "operation" scoped dependendencies'
     ):
         client.get("/")
