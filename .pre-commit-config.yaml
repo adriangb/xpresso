@@ -16,16 +16,42 @@ repos:
       entry: poetry lock --no-update
       files: ^pyproject.toml|poetry.lock$
       pass_filenames: false
-    - id: isort
-      name: isort
+    - id: isort-source
+      name: isort-source
       language: system
-      entry: poetry run isort
+      entry: poetry run isort ./xpresso
       types: [python]
-    - id: black
-      name: black
+      pass_filenames: false
+    - id: isort-tests
+      name: isort-tests
       language: system
-      entry: poetry run black
+      entry: poetry run isort ./tests
       types: [python]
+      pass_filenames: false
+    - id: isort-docs
+      name: isort-docs
+      language: system
+      entry: poetry run isort -l 70 ./docs_src
+      types: [python]
+      pass_filenames: false
+    - id: blacken-source
+      name: blacken-source
+      language: system
+      entry: poetry run black ./xpresso
+      types: [python]
+      pass_filenames: false
+    - id: blacken-tests
+      name: blacken-tests
+      language: system
+      entry: poetry run black ./tests
+      types: [python]
+      pass_filenames: false
+    - id: blacken-docs
+      name: blacken-docs
+      language: system
+      entry: poetry run black -l 70 ./docs_src
+      types: [python]
+      pass_filenames: false
     - id: flake8
       name: flake8
       language: system

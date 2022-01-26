@@ -5,7 +5,7 @@ For example, you may have a Security dependency that enforces access but does no
 
 You may also want a dependency to apply to all of the operations of a Path, or even all of the Paths managed by a Router (including mounted routers).
 
-For these use cases, Xpresso lets you add dependencies directly to the Operation, Path or Router.
+For these use cases, XPresso lets you add dependencies directly to the Operation, Path or Router.
 
 As an example, let's create a very basic authorization system.
 We'll have an array query parameter called `roles` that contains the roles the user making the request can act as.
@@ -16,19 +16,19 @@ We'll have an array query parameter called `roles` that contains the roles the u
 
 First we'll make a factory function that, given a set of roles, creates a function that enforces those roles and returns a 403 response if any are missing:
 
-```python hl_lines="6-14"
+```python hl_lines="14-26"
 --8<-- "docs_src/tutorial/dependencies/tutorial_007.py"
 ```
 
 Next we'll declare a couple of endpoints, one to delete an item and one to get an item:
 
-```python hl_lines="17-18 21-22"
+```python hl_lines="29-30 33-34"
 --8<-- "docs_src/tutorial/dependencies/tutorial_007.py"
 ```
 
 Finally, we create our App and add dependencies to the App, Path and Operations:
 
-```python hl_lines="25-38"
+```python hl_lines="37-52"
 --8<-- "docs_src/tutorial/dependencies/tutorial_007.py"
 ```
 

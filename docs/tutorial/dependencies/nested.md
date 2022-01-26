@@ -1,7 +1,7 @@
 # Nested dependencies
 
 Dependencies can have sub-dependencies, which in turn can have more sub-dependencies, creating a nested structure of dependencies.
-Xpresso supports arbitrarily deep nesting of dependencies and will organize them so that each dependency only gets executed once all of its sub-dependencies have already been executed.
+XPresso supports arbitrarily deep nesting of dependencies and will organize them so that each dependency only gets executed once all of its sub-dependencies have already been executed.
 
 !!! tip "Tip"
     The technical term for this sort of structure is a [Directed Acyclic Graph] (DAG for short).
@@ -18,13 +18,13 @@ We'll start by declaring a Pydantic model using [Pydantic's config management sy
 
 `pydantic.BaseSettings` subclasses are actually a great example of things that cannot be auto-wired by the dependency injection system (in this case, it is for various technical reasons that are not relevant to this tutorial). But we can easily tell the dependency injection system to just build the class with no parameters by default:
 
-```python hl_lines="15"
+```python hl_lines="16"
 --8<-- "docs_src/tutorial/dependencies/tutorial_003.py"
 ```
 
 The last thing we need to do is add the dependency to `get_client()` and use the config inside of `get_client()`:
 
-```python hl_lines="18-19"
+```python hl_lines="20-21"
 --8<-- "docs_src/tutorial/dependencies/tutorial_003.py"
 ```
 

@@ -11,9 +11,9 @@ This URL has two simple query parameters:
 - `skip`: value of `1`
 - `limit`: value of `2`
 
-In Xpresso, these are extracted using `FromQuery[...]`, which is an alias for `Annoated[..., QueryParam()]`.
+In XPresso, these are extracted using `FromQuery[...]`, which is an alias for `Annoated[..., QueryParam()]`.
 Since they are part of the URL, they are always received as strings.
-But just like with path parameters, Xpresso can extract them and parse them into Python types and data structrues:
+But just like with path parameters, XPresso can extract them and parse them into Python types and data structrues:
 
 ```python
 --8<-- "docs_src/tutorial/query_params/tutorial_001.py"
@@ -88,7 +88,7 @@ To accept repeated query parameters and extract them into a list, just pass the 
 
 ## Object query parameters
 
-For advanced use cases, Xpresso also supports object-valued query parameters.
+For advanced use cases, XPresso also supports object-valued query parameters.
 These can be extracted into a Pydantic model or a dictionary (including support for free-form query parameters).
 
 ```python
@@ -103,7 +103,7 @@ Now if you navigate to [http://127.0.0.1:8000/items/?prefix=Ba&limit=1](http://1
 
 ## Customizing deserialization
 
-Xpresso supports the full [OpenAPI parameter serialization spec].
+XPresso supports the full [OpenAPI parameter serialization spec].
 For example, let's change the example above so that the paramters get serialized as `?filter[prefix]=Ba&filter[limit]=1`:
 
 ```python

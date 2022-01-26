@@ -1,6 +1,6 @@
 # Forms
 
-To extract forms in Xpresso, you start by declaring a data structure to unpack the form into.
+To extract forms in XPresso, you start by declaring a data structure to unpack the form into.
 The fields of the datastructure correspond to the fields of the form data.
 The datastructure can be almost anything, including dataclasses, pydantic models and regular Python classes.
 
@@ -16,7 +16,7 @@ This request extracts a `application/x-www-form-urlencoded` request into a `Form
 
 ## Form serialization
 
-Xpresso fully supports the [OpenAPI parameter serialization] standard.
+XPresso fully supports the [OpenAPI parameter serialization] standard.
 You can customize how extraction ocurrs using the `style` and `explode` keyword arguments to `FormField()`:
 
 ```python

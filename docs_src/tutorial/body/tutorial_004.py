@@ -11,7 +11,9 @@ class Item(BaseModel):
     tax: Optional[float] = None
 
 
-async def create_receipt(items: FromJson[List[Item]]) -> Dict[str, float]:
+async def create_receipt(
+    items: FromJson[List[Item]],
+) -> Dict[str, float]:
     return {item.name: item.price + (item.tax or 0) for item in items}
 
 

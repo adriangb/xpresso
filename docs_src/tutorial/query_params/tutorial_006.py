@@ -13,7 +13,9 @@ class Filter(BaseModel):
 
 
 async def read_items(
-    filter: Annotated[Optional[Filter], QueryParam(style="deepObject")]
+    filter: Annotated[
+        Optional[Filter], QueryParam(style="deepObject")
+    ]
 ) -> Optional[Filter]:
     return filter
 

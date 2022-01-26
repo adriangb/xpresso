@@ -18,7 +18,9 @@ app = App(
             get=Operation(
                 endpoint=slow_endpoint,
                 sync_to_thread=True,
-                dependencies=[Dependant(slow_dependency, sync_to_thread=True)],
+                dependencies=[
+                    Dependant(slow_dependency, sync_to_thread=True)
+                ],
             ),
         )
     ]

@@ -3,7 +3,7 @@
 Up until now we've only seen dependencies that return a value directly.
 But often you'll want to do some work (like creating a database connection), **yield** that thing (the connection object) and then do some more work to **teardown** that thing (for example closing the connection).
 
-Xpresso lets you declare this type of execution using **context manager dependencies**.
+XPresso lets you declare this type of execution using **context manager dependencies**.
 
 These are dependencies that use the **yield** keyword **once** to give back control and then wait until they get back control to run their **teardown**.
 
@@ -13,13 +13,13 @@ These are dependencies that use the **yield** keyword **once** to give back cont
 We can apply this concept to our `httpx.AsyncClient` example to clean up the client after we are done using it.
 All we have to do is change our function to be a context manager like function (an async one in this case) and then use `httpx.AsyncClient`'s context manager within the function:
 
-```python hl_lines="20-22"
+```python hl_lines="22-26"
 --8<-- "docs_src/tutorial/dependencies/tutorial_004.py"
 ```
 
 !!! check
     Did you notice that we also converted `get_client()` from a `def` function to an `async def` function?
-    Making changes like this is super easy using Xpresso's dependency injection system!
+    Making changes like this is super easy using XPresso's dependency injection system!
     It decouples you from execution so that you can mix and match sync and async dependencies without worrying about `await`ing from a sync dependency and other complexities of cooperative concurrency.
 
 !!! tip "Tip"

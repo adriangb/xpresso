@@ -7,7 +7,10 @@ from xpresso.typing import Annotated
 
 @dataclass(frozen=True)
 class FormDataModel:
-    tags: Annotated[List[str], FormEncodedField(style="spaceDelimited", explode=False)]
+    tags: Annotated[
+        List[str],
+        FormEncodedField(style="spaceDelimited", explode=False),
+    ]
 
 
 async def echo_tags(form: FromFormData[FormDataModel]) -> List[str]:

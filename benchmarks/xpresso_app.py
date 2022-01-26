@@ -37,11 +37,15 @@ async def fast_dependencies(
     return Response()
 
 
-dag_size, dep_with_delays = generate_dag(make_depends, glbls, *DAG_SHAPE, sleep=DELAY)
+dag_size, dep_with_delays = generate_dag(
+    make_depends, glbls, *DAG_SHAPE, sleep=DELAY
+)
 print("/slow_deps dag size: ", dag_size)
 
 
-async def slow_dependencies(_: Annotated[int, Dependant(dep_with_delays)]) -> Response:
+async def slow_dependencies(
+    _: Annotated[int, Dependant(dep_with_delays)]
+) -> Response:
     """An endpoint with dependencies that simulate IO"""
     return Response()
 
@@ -52,7 +56,10 @@ app = App(
         Path("/fast_deps", get=fast_dependencies),
         Path(
             "/slow_deps",
-            get=Operation(slow_dependencies, execute_dependencies_concurrently=True),
+            get=Operation(
+                slow_dependencies,
+                execute_dependencies_concurrently=True,
+            ),
         ),
     ]
 )

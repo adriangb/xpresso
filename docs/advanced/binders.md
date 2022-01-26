@@ -1,11 +1,11 @@
 # Binders
 
-One of the core principles of Xpresso is that the framework does not get any special treatment.
+One of the core principles of XPresso is that the framework does not get any special treatment.
 While it is not always possible (or worth it) to make everything customizable, by ensuring that we do not special case our own implementations we allow you, the developer, to have the ability to implement things that would otherwise have to be feature requests.
-This way everyone wins: we have less features to mantain, less edge cases to test and you get to make Xpresso work for your use case.
+This way everyone wins: we have less features to mantain, less edge cases to test and you get to make XPresso work for your use case.
 
 Binders are a great example of this philosophy.
-They are how Xpresso interally processes request bodies, forms and parameters (cookies, headers, etc.).
+They are how XPresso interally processes request bodies, forms and parameters (cookies, headers, etc.).
 It is also how most of the OpenAPI documentation is generated.
 In fact, all of `FromQuery`/`QueryParam(...)`, `FromMultipart`/`Multipart(...)` and others are just a particular implementation of a Binder.
 

@@ -1,6 +1,11 @@
 import inspect
 
-from xpresso.binders.api import ModelNameMap, OpenAPIBody, OpenAPIBodyMarker, Schemas
+from xpresso.binders.api import (
+    ModelNameMap,
+    OpenAPIBody,
+    OpenAPIBodyMarker,
+    Schemas,
+)
 from xpresso.openapi import models
 
 
@@ -13,7 +18,9 @@ class OpenAPIBodyMsgPack(OpenAPIBody):
     def get_media_type_object(
         self, model_name_map: ModelNameMap, schemas: Schemas
     ) -> models.MediaType:
-        return models.MediaType(schema=self.get_schema(model_name_map, schemas))
+        return models.MediaType(
+            schema=self.get_schema(model_name_map, schemas)
+        )
 
     def get_schema(
         self, model_name_map: ModelNameMap, schemas: Schemas
@@ -36,5 +43,7 @@ class OpenAPIBodyMsgPack(OpenAPIBody):
 
 
 class OpenAPIBodyMarkerMsgPack(OpenAPIBodyMarker):
-    def register_parameter(self, param: inspect.Parameter) -> OpenAPIBody:
+    def register_parameter(
+        self, param: inspect.Parameter
+    ) -> OpenAPIBody:
         return OpenAPIBodyMsgPack()

@@ -5,7 +5,9 @@ from xpresso.typing import Annotated
 
 
 async def read_items(
-    items: Annotated[List[int], PathParam(explode=True, style="matrix")]
+    items: Annotated[
+        List[int], PathParam(explode=True, style="matrix")
+    ]
 ) -> List[int]:
     return items
 

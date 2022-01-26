@@ -1,6 +1,6 @@
 # Accessing Responses from Dependencies
 
-Xpresso gives you the ability to access and even modify responses from within dependencies.
+XPresso gives you the ability to access and even modify responses from within dependencies.
 You will be able to:
 
 - Get a reference to the response returned by the endpoint function
@@ -20,7 +20,7 @@ Further, modifying the response or calling `set_response()` will only work from 
 
 Here is an example of a dependency that logs the status code for every response on a path:
 
-```python hl_lines="12-22"
+```python hl_lines="19-30"
 --8<-- "docs_src/advanced/dependencies/tutorial_004.py"
 ```
 
@@ -32,6 +32,6 @@ The main advantage of using the `"connection"` scope is reduced latency for the 
 If you need to modify the response, use the `"operation"` scope.
 Here's an example of a simple request/context tracing system:
 
-```python hl_lines="11-26"
+```python hl_lines="17-30"
 --8<-- "docs_src/advanced/dependencies/tutorial_005.py"
 ```

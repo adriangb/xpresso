@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://www.xpresso-api.dev"><img src="https://www.xpresso-api.dev/xpresso-with-title.png" alt="Xpresso"></a>
+  <a href="https://www.xpresso-api.dev"><img src="https://github.com/adriangb/xpresso/raw/logos/docs/assets/images/xpresso-title.png" alt="XPresso"></a>
 </p>
 
 <p align="center">
@@ -17,7 +17,7 @@
 </a>
 </p>
 
-Xpresso is an ASGI web framework built on top of [Starlette], [Pydantic] and [di], with heavy inspiration from [FastAPI].
+XPresso is an ASGI web framework built on top of [Starlette], [Pydantic] and [di], with heavy inspiration from [FastAPI].
 
 Some of the standout features are:
 
@@ -90,17 +90,17 @@ For more examples, tutorials and reference materials, see our [documentation].
 
 ## Inspiration and relationship to other frameworks
 
-Xpresso is mainly inspired by FastAPI.
-FastAPI pioneered several ideas that are core to Xpresso's approach:
+XPresso is mainly inspired by FastAPI.
+FastAPI pioneered several ideas that are core to XPresso's approach:
 
 - Leverage Pydantic for JSON parsing, validation and schema generation.
 - Leverage Starlette for routing and other low level web framework functionality.
 - Provide a simple but powerful dependency injection system.
 - Use that dependency injection system to provide extraction of request bodies, forms, query parameters, etc.
 
-Xpresso takes these ideas and refines them by:
+XPresso takes these ideas and refines them by:
 
-- Decoupling the dependency injection system from the request/response cycle, leading to an overall much more flexible and powerful dependency injection system, packaged up as the standalone [di] library. This is how Xpresso is able to provide [dependency injection into the application lifespan] and support for [multiple dependency scopes].
+- Decoupling the dependency injection system from the request/response cycle, leading to an overall much more flexible and powerful dependency injection system, packaged up as the standalone [di] library. This is how XPresso is able to provide [dependency injection into the application lifespan] and support for [multiple dependency scopes].
 - Making the extraction of data from requests an API available to other developers, enabling features like compatibility with libraries other than Pydantic or [MessagePack support] to be made available as 3rd party extensions instead of feature requests. All of this with full support for hooking into the OpenAPI documentation generation.
 - [Providing better support for `application/x-www-form-urlencoded` and `multipart/form-data` requests](https://xpresso-api.dev/latest/tutorial/forms/) by describing them with dataclasses or [Pydantic] models. This includes support for advanced use cases like extracting JSON from a form field.
 - Better performance by implementing [dependency resolution in Rust], [executing dependencies concurrently] and [controlling threading of sync dependencies on a per-dependency basis].

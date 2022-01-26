@@ -31,7 +31,9 @@ class UserUploadMetadata(BaseModel):
     nbytes: int
 
 
-async def upload_data(form: FromMultipart[FormDataModel]) -> UserUploadMetadata:
+async def upload_data(
+    form: FromMultipart[FormDataModel],
+) -> UserUploadMetadata:
     nbytes = 0
     for file in form.files:
         nbytes += len(await file.read())

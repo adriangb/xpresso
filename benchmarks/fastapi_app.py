@@ -35,7 +35,9 @@ async def fast_dependencies(
     return Response()
 
 
-dag_size, dep_with_delays = generate_dag(make_depends, glbls, *DAG_SHAPE, sleep=DELAY)
+dag_size, dep_with_delays = generate_dag(
+    make_depends, glbls, *DAG_SHAPE, sleep=DELAY
+)
 print("/slow_deps dag size: ", dag_size)
 
 

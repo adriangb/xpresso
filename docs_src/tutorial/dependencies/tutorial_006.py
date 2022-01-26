@@ -15,16 +15,21 @@ class HttpBinConfigModel(BaseSettings):
 
 
 HttpBinConfig = Annotated[
-    HttpBinConfigModel, Dependant(lambda: HttpBinConfigModel(), scope="app")
+    HttpBinConfigModel,
+    Dependant(lambda: HttpBinConfigModel(), scope="app"),
 ]
 
 
-async def get_client(config: HttpBinConfig) -> AsyncGenerator[httpx.AsyncClient, None]:
+async def get_client(
+    config: HttpBinConfig,
+) -> AsyncGenerator[httpx.AsyncClient, None]:
     async with httpx.AsyncClient(base_url=config.url) as client:
         yield client
 
 
-HttpbinClient = Annotated[httpx.AsyncClient, Dependant(get_client, scope="app")]
+HttpbinClient = Annotated[
+    httpx.AsyncClient, Dependant(get_client, scope="app")
+]
 
 
 async def echo_url(client: HttpbinClient) -> str:

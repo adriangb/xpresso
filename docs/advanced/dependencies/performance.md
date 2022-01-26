@@ -1,7 +1,7 @@
 
 # Dependency Execution Performance
 
-Xpresso's dependency injection system lets you mix and match sync and async dependencies, use dependencies with teardown and control concurrency of dependency execution.
+XPresso's dependency injection system lets you mix and match sync and async dependencies, use dependencies with teardown and control concurrency of dependency execution.
 If you want to get the best performance out of your system, you should understand how all of these features interact and profile different arrangements until you find the one that performs the best for you.
 
 ## Sync vs. Async
@@ -14,7 +14,7 @@ This means that **sync dependencies will block the event loop**: a single sync d
 
 Fortunately, this is not a problem for many sync dependencies: if you are just loading a config from environment variables or otherwise not doing IO, your sync dependency won't "block" the event loop and your app will run fine.
 When you really need to start worrying about things is if you are doing database IO with a synchronous database client or something like that.
-For these cases, Xpresso provides a `sync_to_thread` argument to `Dependant` as well as `Operation`.
+For these cases, XPresso provides a `sync_to_thread` argument to `Dependant` as well as `Operation`.
 This will move execution of this dependency or endpoint function into a thread so that it can do IO concurrently and not block your application.
 For example, let's make a sync endpoint and sync dependencies that call `time.sleep()` to simulate some sort of blocking IO:
 
@@ -24,7 +24,7 @@ For example, let's make a sync endpoint and sync dependencies that call `time.sl
 
 All we have to do is pass `sync_to_thread=True` in the right place to signal that the endpoint function or dependency should be executed in a thread:
 
-```python hl_lines="18-22"
+```python hl_lines="18-23"
 --8<-- "docs_src/advanced/dependencies/tutorial_001.py"
 ```
 
@@ -41,7 +41,7 @@ The endpoint will still take ~200ms to return a result, but at least it won't bl
 
 ## Concurrent execution
 
-Xpresso is capable of enabling concurrent execution of dependencies.
+XPresso is capable of enabling concurrent execution of dependencies.
 For example, if you have a dependency that gets the current user from the database and another that (independently) makes an HTTP request to an authorization server to check if the user's credentials are still active, these can be executed concurrently.
 If each dependency takes 100ms to execute, this means together they will only take ~100ms to execute instead of 200ms.
 The key is that there must be no interdependence between them and they must both be IO bound (including sync dependencies marked with `sync_to_thread`).

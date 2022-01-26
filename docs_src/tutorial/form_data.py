@@ -3,7 +3,14 @@ from typing import List
 
 from pydantic import BaseModel
 
-from xpresso import App, ExtractField, FromFormData, FromFormField, FromJson, Path
+from xpresso import (
+    App,
+    ExtractField,
+    FromFormData,
+    FromFormField,
+    FromJson,
+    Path,
+)
 
 
 class JsonModel(BaseModel):
@@ -17,7 +24,9 @@ class FormDataModel:
     json_data: ExtractField[FromJson[JsonModel]]
 
 
-async def compare_json_to_form(form: FromFormData[FormDataModel]) -> bool:
+async def compare_json_to_form(
+    form: FromFormData[FormDataModel],
+) -> bool:
     return form.json_data.foo in form.tags
 
 
