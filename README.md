@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://www.xpresso-api.dev"><img src="https://github.com/adriangb/xpresso/raw/logos/docs/assets/images/xpresso-title.png" alt="XPresso"></a>
+  <a href="https://www.xpresso-api.dev"><img src="https://github.com/adriangb/xpresso/raw/main/docs/assets/images/xpresso-title.png" alt="XPresso"></a>
 </p>
 
 <p align="center">
