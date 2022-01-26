@@ -106,6 +106,7 @@ jobs:
           then
               pip install ${PYDANTIC_VERSION}
           fi
+          make test
       - name: Export Coverage Report
         run: pip install "coverage[toml]" && coverage xml
       - name: Upload code coverage
