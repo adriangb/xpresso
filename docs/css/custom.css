@@ -18,10 +18,6 @@ a.internal-link::after {
     box-shadow: 5px 5px 10px #999;
 }
 
-[data-md-color-scheme="slate"] {
-    --md-hue: 30;
-    --md-default-bg-color: hsla(var(--md-hue), 12%, 12%, 1);
-}
 
 [data-md-color-scheme="default"] {
     --md-default-bg-color: rgb(255, 250, 245);
