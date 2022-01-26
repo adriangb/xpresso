@@ -32,8 +32,59 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ["3.7", "3.8", "3.9", "3.10"]
+        os: []
+        python-version: []
+        starlette-version: []
+        pydantic-version: []
+        include:
+          # test python versions
+          - python: "3.7"
+            os: ubuntu-latest
+            starlette-version: "lockfile"
+            pydantic-version: "lockfile"
+          - python: "3.8"
+            os: ubuntu-latest
+            starlette-version: "lockfile"
+            pydantic-version: "lockfile"
+          - python: "3.9"
+            os: ubuntu-latest
+            starlette-version: "lockfile"
+            pydantic-version: "lockfile"
+          - python: "3.10"
+            os: ubuntu-latest
+            starlette-version: "lockfile"
+            pydantic-version: "lockfile"
+          # test OSs
+          - python: "3.x"
+            os: macos-latest
+            starlette-version: "lockfile"
+            pydantic-version: "lockfile"
+          - python: "3.x"
+            os: windows-latest
+            starlette-version: "lockfile"
+            pydantic-version: "lockfile"
+          # test Starlette
+          - python: "3.x"
+            os: ubuntu-latest
+            starlette-version: "starlette==0.17.1"
+            pydantic-version: "lockfile"
+          - python: "3.x"
+            os: ubuntu-latest
+            starlette-version: "starlette==0.18.0"
+            pydantic-version: "lockfile"
+          - python: "3.x"
+            os: ubuntu-latest
+            starlette-version: "git+https://github.com/encode/starlette.git"
+            pydantic-version: "lockfile"
+          # test Pydantic
+          - python: "3.x"
+            os: ubuntu-latest
+            starlette-version: "lockfile"
+            pydantic-version: "pydantic==1.9.0"
+          - python: "3.x"
+            os: ubuntu-latest
+            starlette-version: "lockfile"
+            pydantic-version: "git+https://github.com/samuelcolvin/pydantic.git"
     defaults:
       run:
         shell: bash
@@ -46,7 +97,19 @@ jobs:
       - name: Install and configure Poetry
         uses: snok/install-poetry@v1.3.0
       - name: Test
-        run: make test
+        env:
+          STARLETTE: ${{ matrix.starlette-version }}
+          PYDANTIC_VERSION: ${{ matrix.pydantic-version }}
+        run: |
+          make init
+          if [ "$STARLETTE_VERSION" != "lockfile" ]
+          then
+              pip install ${STARLETTE}
+          fi
+          if [ "$PYDANTIC_VERSION" != "lockfile" ]
+          then
+              pip install ${PYDANTIC_VERSION}
+          fi
       - name: Export Coverage Report
         run: pip install "coverage[toml]" && coverage xml
       - name: Upload code coverage
