@@ -1,4 +1,4 @@
-from typing import Any, Mapping, Optional, Union
+from typing import Any, Iterable, Mapping, Optional, Union
 
 from pydantic import BaseModel, Field
 from starlette.responses import Response
@@ -49,3 +49,6 @@ class FileResponseSpec(ResponseSpec):
 class HTMLResponseSpec(ResponseSpec):
     model: Any = Field(default=str)
     media_type: str = "text/html"
+
+
+Responses = Mapping[Union[int, str], Union[Iterable[ResponseSpec], ResponseSpec]]

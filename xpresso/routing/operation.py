@@ -21,7 +21,7 @@ import xpresso.openapi.models as openapi_models
 from xpresso.dependencies.models import Dependant
 from xpresso.encoders.api import Encoder
 from xpresso.encoders.json import JsonableEncoder
-from xpresso.responses import ResponseSpec
+from xpresso.responses import Responses
 
 
 class _OperationApp:
@@ -88,12 +88,7 @@ class Operation(starlette.routing.BaseRoute):
         operation_id: typing.Optional[bool] = None,
         servers: typing.Optional[typing.Sequence[openapi_models.Server]] = None,
         external_docs: typing.Optional[openapi_models.ExternalDocumentation] = None,
-        responses: typing.Optional[
-            typing.Mapping[
-                typing.Union[int, str],
-                typing.Union[ResponseSpec, typing.Iterable[ResponseSpec]],
-            ]
-        ] = None,
+        responses: typing.Optional[Responses] = None,
         # xpresso params
         name: typing.Optional[str] = None,
         dependencies: typing.Optional[typing.Sequence[Dependant]] = None,
