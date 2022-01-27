@@ -34,6 +34,8 @@ class _PathApp:
 
 
 class Path(starlette.routing.Route):
+    include_in_schema: bool
+
     def __init__(
         self,
         path: str,
