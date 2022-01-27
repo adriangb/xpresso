@@ -1,7 +1,7 @@
 # Application Lifespan
 
-XPresso supports lifespan context managers from [Starlette].
-This is the only way to handle startup/shutdown; there are no startup/shutdown events in XPresso.
+Xpresso supports lifespan context managers from [Starlette].
+This is the only way to handle startup/shutdown; there are no startup/shutdown events in Xpresso.
 
 The main difference vs. Starlette is that the lifespan context manager is allowed to depend on `"app"` scoped dependencies (see [Dependency Scopes]):
 

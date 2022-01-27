@@ -3,8 +3,8 @@
 We've already seen one way of telling the dependency injection system how to wire a dependency that it can't auto-wire in the form of [Markers].
 
 There are however other situations where Markers may not be the answer.
-For these situations, XPresso offers **provider registration** which lets you dynamically bind a provider to a dependency.
-When you register a provider, you completely replace the original provider (if any) in XPresso's directed acyclic graph of dependencies.
+For these situations, Xpresso offers **provider registration** which lets you dynamically bind a provider to a dependency.
+When you register a provider, you completely replace the original provider (if any) in Xpresso's directed acyclic graph of dependencies.
 This means that any sub-dependencies of the original provider (if any) will not be executed.
 This also means that the provider you are registering can itself have sub-dependencies.
 Those will get treated just like any other dependency, all of the same rules apply.

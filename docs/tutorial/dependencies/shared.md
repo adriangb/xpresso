@@ -5,7 +5,7 @@ For example, you may have a Security dependency that enforces access but does no
 
 You may also want a dependency to apply to all of the operations of a Path, or even all of the Paths managed by a Router (including mounted routers).
 
-For these use cases, XPresso lets you add dependencies directly to the Operation, Path or Router.
+For these use cases, Xpresso lets you add dependencies directly to the Operation, Path or Router.
 
 As an example, let's create a very basic authorization system.
 We'll have an array query parameter called `roles` that contains the roles the user making the request can act as.

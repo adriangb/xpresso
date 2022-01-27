@@ -1,4 +1,4 @@
-# Getting started: a minimal XPresso app
+# Getting started: a minimal Xpresso app
 
 Start by making a file called `main.py` and fill out the following code:
 
@@ -27,9 +27,9 @@ You can also navigate to [http://localhost:8000/docs](http://localhost:8000/docs
 
 !!! info "Info"
     Swagger UI is a collection of HTML and scripts that serve as a frontend to an OpenAPI specification.
-    Swagger gives you an interactive UI where you can send requests and get responses from your backend, all based on the OpenAPI specification that XPresso automatically builds for you.
+    Swagger gives you an interactive UI where you can send requests and get responses from your backend, all based on the OpenAPI specification that Xpresso automatically builds for you.
 
-Since we didn't give XPresso much info on the endpoint function's return value (it is implicitly `None`) and there is no request body, there isn't much information in OpenAPI.
-In later chapters, you will see how we can give XPresso more information.
+Since we didn't give Xpresso much info on the endpoint function's return value (it is implicitly `None`) and there is no request body, there isn't much information in OpenAPI.
+In later chapters, you will see how we can give Xpresso more information.
 
 [Swagger UI]: https://swagger.io/tools/swagger-ui/

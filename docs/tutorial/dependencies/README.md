@@ -1,6 +1,6 @@
 # Dependency Injection
 
-XPresso has a built in [Dependency Injection] system.
+Xpresso has a built in [Dependency Injection] system.
 You do not need to know what Dependency Injection is or be an expert in design patterns to get started.
 
 ## Background
@@ -41,9 +41,9 @@ This already gives us a lot of flexibility:
 
 There are many more benefits to dependency injection, and you can go really deep into the topic if you'd like, but for now this is enough background.
 
-## Dependency Injection in XPresso
+## Dependency Injection in Xpresso
 
-XPresso's dependency injection API is modeled after [FastAPI].
+Xpresso's dependency injection API is modeled after [FastAPI].
 It is implemented as a standalone package called [di].
 The simplest form of dependency injection is requesting a dependency in your endpoint function.
 For simple cases, all we need to do is add a type annotation:

@@ -1,7 +1,7 @@
 # Nested dependencies
 
 Dependencies can have sub-dependencies, which in turn can have more sub-dependencies, creating a nested structure of dependencies.
-XPresso supports arbitrarily deep nesting of dependencies and will organize them so that each dependency only gets executed once all of its sub-dependencies have already been executed.
+Xpresso supports arbitrarily deep nesting of dependencies and will organize them so that each dependency only gets executed once all of its sub-dependencies have already been executed.
 
 !!! tip "Tip"
     The technical term for this sort of structure is a [Directed Acyclic Graph] (DAG for short).

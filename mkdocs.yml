@@ -1,4 +1,4 @@
-site_name: "XPresso"
+site_name: "Xpresso"
 site_description: Developer centric, performant and extensible ASGI framework
 site_url: https://www.xpresso-api.dev
 
@@ -28,7 +28,7 @@ repo_url: https://github.com/adriangb/xpresso
 edit_uri: "blob/main/docs/"
 
 nav:
-  - XPresso: "README.md"
+  - Xpresso: "README.md"
   - Python Types: "types.md"
   - Tutorial:
     - Minimal App: "tutorial/minimal_app.md"

@@ -1,8 +1,8 @@
 # Dependency Caching
 
-XPresso has a dependency caching system.
+Xpresso has a dependency caching system.
 This allows re-using of already computed dependencies within a request response cycle.
-This is also what enables XPresso to persist `"app"` scoped dependencies across requests (see [Scopes]).
+This is also what enables Xpresso to persist `"app"` scoped dependencies across requests (see [Scopes]).
 By default, all dependencies are cached within their execution scope, but this can be disabled on a per-dependency basis with the `use_cache` argument to `Dependant`.
 
 First we are going to declare a placeholder dependency with no sub-dependencies.

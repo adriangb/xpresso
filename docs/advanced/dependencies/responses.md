@@ -1,6 +1,6 @@
 # Accessing Responses from Dependencies
 
-XPresso gives you the ability to access and even modify responses from within dependencies.
+Xpresso gives you the ability to access and even modify responses from within dependencies.
 You will be able to:
 
 - Get a reference to the response returned by the endpoint function
