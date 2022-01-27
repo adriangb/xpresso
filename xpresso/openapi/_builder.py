@@ -377,8 +377,12 @@ def get_paths_items(
     paths: Dict[str, models.PathItem] = {}
     for visited_route in visit_routes([router]):
         if isinstance(visited_route.route, Path):
+            if not visited_route.route.include_in_schema:
+                continue
             operations: Dict[str, models.Operation] = {}
             for method, operation in visited_route.route.operations.items():
+                if not operation.include_in_schema:
+                    continue
                 operations[method.lower()] = get_operation(
                     operation,
                     model_name_map=model_name_map,
