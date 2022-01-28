@@ -11,6 +11,7 @@ import starlette.status
 import starlette.types
 
 from xpresso.dependencies.models import Dependant
+from xpresso.responses import Responses
 
 
 def _not_supported(method: str) -> typing.Callable[..., typing.Any]:
@@ -38,14 +39,18 @@ class Router(starlette.routing.Router):
             ]
         ] = None,
         dependencies: typing.Optional[typing.List[Dependant]] = None,
+        tags: typing.Optional[typing.List[str]] = None,
+        responses: typing.Optional[Responses] = None,
     ) -> None:
-        self.dependencies = dependencies or []
         super().__init__(  # type: ignore
             routes=list(routes),
             redirect_slashes=redirect_slashes,
             default=default,  # type: ignore
             lifespan=lifespan,  # type: ignore
         )
+        self.dependencies = list(dependencies or [])
+        self.tags = list(tags or [])
+        self.responses = dict(responses or {})
 
     mount = _not_supported("mount")
     host = _not_supported("host")

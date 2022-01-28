@@ -101,15 +101,15 @@ class Operation(starlette.routing.BaseRoute):
     ) -> None:
         self._app: typing.Optional[starlette.types.ASGIApp] = None
         self.endpoint = endpoint
-        self.tags = tags
+        self.tags = list(tags or [])
         self.summary = summary
         self.description = description
         self.deprecated = deprecated
         self.operation_id = operation_id
-        self.servers = servers
+        self.servers = list(servers or [])
         self.external_docs = external_docs
         self.responses = dict(responses or {})
-        self.dependencies = dependencies or []
+        self.dependencies = list(dependencies or [])
         self.execute_dependencies_concurrently = execute_dependencies_concurrently
         self.response_factory = response_factory
         self.response_encoder = response_encoder

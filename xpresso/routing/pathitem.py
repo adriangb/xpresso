@@ -13,6 +13,7 @@ from di.api.providers import DependencyProvider as Endpoint
 import xpresso.binders.dependants as param_dependants
 import xpresso.openapi.models as openapi_models
 from xpresso.dependencies.models import Dependant
+from xpresso.responses import Responses
 from xpresso.routing.operation import Operation
 
 
@@ -60,16 +61,20 @@ class Path(starlette.routing.Route):
         parameters: typing.Optional[
             typing.Sequence[param_dependants.ParameterBinderMarker]
         ] = None,
+        responses: typing.Optional[Responses] = None,
+        tags: typing.Optional[typing.Iterable[str]] = None,
     ) -> None:
         if not path.startswith("/"):
             raise ValueError("Routed paths must start with '/'")
         self.path = path
         self.redirect_slashes = redirect_slashes
-        self.dependencies = dependencies or []
+        self.dependencies = list(dependencies or [])
         self.summary = summary
         self.description = description
-        self.servers = servers
-        self.parameters = parameters
+        self.servers = list(servers or [])
+        self.parameters = list(parameters or [])
+        self.tags = list(tags or [])
+        self.responses = dict(responses or {})
 
         operations: typing.Dict[str, Operation] = {}
         if get:

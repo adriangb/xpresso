@@ -66,7 +66,8 @@ class App(Starlette):
         description: typing.Optional[str] = None,
         version: str = "0.1.0",
         openapi_url: typing.Optional[str] = "/openapi.json",
-        docs_url: typing.Optional[str] = "/docs"
+        docs_url: typing.Optional[str] = "/docs",
+        servers: typing.Optional[typing.Iterable[openapi_models.Server]] = None,
     ) -> None:
         routes = list(routes or [])
         routes.extend(
@@ -117,6 +118,7 @@ class App(Starlette):
             version=version,
             description=description,
         )
+        self.servers = servers
 
     def build_middleware_stack(self) -> starlette.types.ASGIApp:
         debug = self.debug
@@ -194,6 +196,7 @@ class App(Starlette):
         return genrate_openapi(
             version=self.openapi_version,
             info=self.openapi_info,
+            servers=self.servers,
             router=self.router,
             security_models=await self.gather_security_models(),
         )

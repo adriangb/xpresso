@@ -32,7 +32,7 @@ from xpresso._utils.routing import visit_routes
 from xpresso.binders import dependants as binder_dependants
 from xpresso.openapi import models
 from xpresso.openapi.constants import REF_PREFIX
-from xpresso.responses import JsonResponseSpec, ResponseSpec
+from xpresso.responses import JsonResponseSpec, Responses, ResponseSpec
 from xpresso.routing.operation import Operation
 from xpresso.routing.pathitem import Path
 from xpresso.routing.router import Router
@@ -229,11 +229,12 @@ def merge_response_models(
 
 def get_responses(
     route: Operation,
+    response_specs: Responses,
     model_name_map: ModelNameMap,
     schemas: Dict[str, Any],
 ) -> Dict[str, models.Response]:
     responses: Dict[str, models.Response] = {}
-    for status_code, response in route.responses.items():
+    for status_code, response in response_specs.items():
         status = str(status_code)
         if (
             status in responses
@@ -292,16 +293,19 @@ def get_operation(
     model_name_map: ModelNameMap,
     components: Dict[str, Any],
     security_models: Mapping[Security, SecurityBase],
+    parent_tags: List[str],
+    parent_responses: Responses,
 ) -> models.Operation:
     data: Dict[str, Any] = {
-        "tags": list(route.tags) if route.tags else None,
+        "tags": [*route.tags, *parent_tags] or None,
         "summary": route.summary,
+        "description": route.description,
         "deprecated": route.deprecated,
-        "servers": route.servers,
+        "servers": route.servers or None,
         "external_docs": route.external_docs,
     }
     docstring = getattr(route.endpoint, "__doc__", None)
-    if docstring:
+    if docstring and not data["description"]:
         data["description"] = docstring
     schemas: Dict[str, Any] = {}
     route_dependant = route.dependant
@@ -340,7 +344,13 @@ def get_operation(
             ],
             security_schemes,
         )
-    data["responses"] = get_responses(route, model_name_map, schemas)
+    response_specs = {**parent_responses, **route.responses}
+    data["responses"] = get_responses(
+        route,
+        response_specs=response_specs,
+        model_name_map=model_name_map,
+        schemas=schemas,
+    )
     if not data["responses"]:
         data["responses"] = {"200": {"description": "Successful Response"}}
     if schemas:
@@ -388,10 +398,13 @@ def get_paths_items(
                     model_name_map=model_name_map,
                     components=components,
                     security_models=security_models,
+                    parent_tags=visited_route.tags,
+                    parent_responses=visited_route.responses,
                 )
             paths[visited_route.path] = models.PathItem(
                 description=visited_route.route.description,
                 summary=visited_route.route.summary,
+                servers=visited_route.route.servers or None,
                 **operations,  # type: ignore[arg-type]
             )  # type: ignore  # for Pylance
     return paths
@@ -400,6 +413,7 @@ def get_paths_items(
 def genrate_openapi(
     version: str,
     info: models.Info,
+    servers: Optional[Iterable[models.Server]],
     router: Router,
     security_models: Mapping[Security, SecurityBase],
 ) -> models.OpenAPI:
@@ -411,4 +425,5 @@ def genrate_openapi(
         info=info,
         paths=paths,  # type: ignore[arg-type]
         components=models.Components(**components) if components else None,
+        servers=list(servers) if servers else None,
     )

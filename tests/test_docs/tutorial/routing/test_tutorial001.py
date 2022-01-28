@@ -1,6 +1,6 @@
 from typing import Any, Dict
 
-from docs_src.tutorial.routing import app
+from docs_src.tutorial.routing.tutorial_001 import app
 from xpresso.testclient import TestClient
 
 

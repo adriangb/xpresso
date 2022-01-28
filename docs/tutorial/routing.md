@@ -12,7 +12,7 @@ All of these are meant to work with Starlette.
 You can for example use Starlette's `Mount` or `Host` within an Xpresso `Router` and then include `Path`s and `Operation`s inside of that `Mount` or `Host` and everything will just work:
 
 ```python
---8<-- "docs_src/tutorial/routing.py"
+--8<-- "docs_src/tutorial/routing/tutorial_001.py"
 ```
 
 !!! note
@@ -20,5 +20,26 @@ You can for example use Starlette's `Mount` or `Host` within an Xpresso `Router`
     They are completely unmodified.
 
 See [Starlette's routing docs] for more general information on Starlette's routing system.
+
+## Customizing OpenAPI schemas for Operation and Path
+
+`Operation`, `Path` and `Router` let you customize their OpenAPI schema.
+You can add descriptions, tags and detailed response information:
+
+- Add tags via the `tags` parameter
+- Exclude a specific Operation from the schema via the `include_in_schema` parameter
+- Add a summary for the Operation via the `summary` parameter
+- Add a description for the Operation via the `description` parameter (by default the endpoint function's docstring)
+- Mark the operation as deprecated via the `deprecated` parameter
+- Customize responses via the `responses` parameter
+
+```python
+--8<-- "docs_src/tutorial/routing/tutorial_002.py"
+```
+
+!!! note "Note"
+    Tags accumulate, responses accumulate with Operation responses overwriting Path responses and Path responses overwriting Router responses.
+    Servers on the other hand overwrite each other.
+    That is, a `servers` array on an Operation will overwrite _all_ servers specified on the Path, Router or App.
 
 [Starlette's routing docs]: https://www.starlette.io/routing/
