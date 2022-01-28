@@ -37,6 +37,10 @@ You can add descriptions, tags and detailed response information:
 --8<-- "docs_src/tutorial/routing/tutorial_002.py"
 ```
 
+This will look something like this:
+
+![Swagger UI](routing_002.png)
+
 !!! note "Note"
     Tags accumulate, responses accumulate with Operation responses overwriting Path responses and Path responses overwriting Router responses.
     Servers on the other hand overwrite each other.
