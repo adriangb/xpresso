@@ -2,132 +2,132 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://www.xpresso-api.dev/0.6.6/</loc>
-         <lastmod>2022-01-27</lastmod>
+         <lastmod>2022-01-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://www.xpresso-api.dev/0.6.6/types/</loc>
-         <lastmod>2022-01-27</lastmod>
+         <lastmod>2022-01-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://www.xpresso-api.dev/0.6.6/advanced/binders/</loc>
-         <lastmod>2022-01-27</lastmod>
+         <lastmod>2022-01-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://www.xpresso-api.dev/0.6.6/advanced/websockets/</loc>
-         <lastmod>2022-01-27</lastmod>
+         <lastmod>2022-01-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://www.xpresso-api.dev/0.6.6/advanced/dependencies/caching/</loc>
-         <lastmod>2022-01-27</lastmod>
+         <lastmod>2022-01-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://www.xpresso-api.dev/0.6.6/advanced/dependencies/performance/</loc>
-         <lastmod>2022-01-27</lastmod>
+         <lastmod>2022-01-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://www.xpresso-api.dev/0.6.6/advanced/dependencies/registration-and-testing/</loc>
-         <lastmod>2022-01-27</lastmod>
+         <lastmod>2022-01-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://www.xpresso-api.dev/0.6.6/advanced/dependencies/responses/</loc>
-         <lastmod>2022-01-27</lastmod>
+         <lastmod>2022-01-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://www.xpresso-api.dev/0.6.6/tutorial/body/</loc>
-         <lastmod>2022-01-27</lastmod>
+         <lastmod>2022-01-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://www.xpresso-api.dev/0.6.6/tutorial/cookie_params/</loc>
-         <lastmod>2022-01-27</lastmod>
+         <lastmod>2022-01-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://www.xpresso-api.dev/0.6.6/tutorial/cors/</loc>
-         <lastmod>2022-01-27</lastmod>
+         <lastmod>2022-01-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://www.xpresso-api.dev/0.6.6/tutorial/files/</loc>
-         <lastmod>2022-01-27</lastmod>
+         <lastmod>2022-01-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://www.xpresso-api.dev/0.6.6/tutorial/forms/</loc>
-         <lastmod>2022-01-27</lastmod>
+         <lastmod>2022-01-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://www.xpresso-api.dev/0.6.6/tutorial/header_params/</loc>
-         <lastmod>2022-01-27</lastmod>
+         <lastmod>2022-01-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://www.xpresso-api.dev/0.6.6/tutorial/lifespan/</loc>
-         <lastmod>2022-01-27</lastmod>
+         <lastmod>2022-01-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://www.xpresso-api.dev/0.6.6/tutorial/minimal_app/</loc>
-         <lastmod>2022-01-27</lastmod>
+         <lastmod>2022-01-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://www.xpresso-api.dev/0.6.6/tutorial/param_constraints_and_metadata/</loc>
-         <lastmod>2022-01-27</lastmod>
+         <lastmod>2022-01-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://www.xpresso-api.dev/0.6.6/tutorial/path_params/</loc>
-         <lastmod>2022-01-27</lastmod>
+         <lastmod>2022-01-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://www.xpresso-api.dev/0.6.6/tutorial/query_params/</loc>
-         <lastmod>2022-01-27</lastmod>
+         <lastmod>2022-01-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://www.xpresso-api.dev/0.6.6/tutorial/routing/</loc>
-         <lastmod>2022-01-27</lastmod>
+         <lastmod>2022-01-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://www.xpresso-api.dev/0.6.6/tutorial/dependencies/</loc>
-         <lastmod>2022-01-27</lastmod>
+         <lastmod>2022-01-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://www.xpresso-api.dev/0.6.6/tutorial/dependencies/http-params/</loc>
-         <lastmod>2022-01-27</lastmod>
+         <lastmod>2022-01-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://www.xpresso-api.dev/0.6.6/tutorial/dependencies/lifecycle/</loc>
-         <lastmod>2022-01-27</lastmod>
+         <lastmod>2022-01-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://www.xpresso-api.dev/0.6.6/tutorial/dependencies/nested/</loc>
-         <lastmod>2022-01-27</lastmod>
+         <lastmod>2022-01-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://www.xpresso-api.dev/0.6.6/tutorial/dependencies/scopes/</loc>
-         <lastmod>2022-01-27</lastmod>
+         <lastmod>2022-01-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://www.xpresso-api.dev/0.6.6/tutorial/dependencies/shared/</loc>
-         <lastmod>2022-01-27</lastmod>
+         <lastmod>2022-01-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
 </urlset>
