@@ -45,6 +45,7 @@ class App(Starlette):
         typing.Union[int, typing.Type[Exception]], ExceptionHandler
     ]
     user_middleware: typing.Sequence[Middleware]
+    container: BaseContainer
 
     def __init__(
         self,
