@@ -125,14 +125,14 @@ class Router:
 
         return self._default(scope, receive, send)
 
-    async def __call__(
+    def __call__(
         self,
         scope: starlette.types.Scope,
         receive: starlette.types.Receive,
         send: starlette.types.Send,
-    ) -> None:
+    ) -> typing.Awaitable[None]:
 
         if "router" not in scope:
             scope["router"] = self
 
-        await self._app(scope, receive, send)  # type: ignore
+        return self._app(scope, receive, send)  # type: ignore
