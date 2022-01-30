@@ -1,14 +1,9 @@
 import typing
 
-import starlette.applications
-import starlette.background
-import starlette.datastructures
-import starlette.exceptions
-import starlette.requests
-import starlette.responses
-import starlette.routing
-import starlette.status
-import starlette.types
+from starlette.applications import Starlette
+from starlette.routing import BaseRoute
+from starlette.routing import Router as StarletteRouter
+from starlette.types import ASGIApp
 
 from xpresso.dependencies.models import Dependant
 from xpresso.responses import Responses
@@ -24,19 +19,17 @@ def _not_supported(method: str) -> typing.Callable[..., typing.Any]:
     return raise_error
 
 
-class Router(starlette.routing.Router):
-    routes: typing.List[starlette.routing.BaseRoute]
+class Router(StarletteRouter):
+    routes: typing.List[BaseRoute]
 
     def __init__(
         self,
-        routes: typing.Sequence[starlette.routing.BaseRoute],
+        routes: typing.Sequence[BaseRoute],
         *,
         redirect_slashes: bool = True,
-        default: typing.Optional[starlette.types.ASGIApp] = None,
+        default: typing.Optional[ASGIApp] = None,
         lifespan: typing.Optional[
-            typing.Callable[
-                [starlette.applications.Starlette], typing.AsyncContextManager[None]
-            ]
+            typing.Callable[[Starlette], typing.AsyncContextManager[None]]
         ] = None,
         dependencies: typing.Optional[typing.List[Dependant]] = None,
         tags: typing.Optional[typing.List[str]] = None,
