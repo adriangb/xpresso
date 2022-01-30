@@ -1,19 +1,17 @@
 import typing
 
-import starlette.applications
-import starlette.background
-import starlette.datastructures
-import starlette.requests
-import starlette.responses
-import starlette.routing
-import starlette.status
-import starlette.types
 from di import AsyncExecutor, BaseContainer, ConcurrentAsyncExecutor
 from di.api.dependencies import DependantBase
 from di.api.executor import AsyncExecutorProtocol
 from di.api.providers import DependencyProvider as Endpoint
 from di.api.solved import SolvedDependant
 from di.dependant import JoinedDependant
+from starlette.background import BackgroundTasks
+from starlette.datastructures import URLPath
+from starlette.requests import HTTPConnection, Request
+from starlette.responses import JSONResponse, Response
+from starlette.routing import BaseRoute, NoMatchFound, get_name
+from starlette.types import ASGIApp, Receive, Scope, Send
 
 import xpresso._utils.asgi_scope_extension as asgi_scope_extension
 import xpresso.binders.dependants as param_dependants
@@ -31,7 +29,7 @@ class _OperationApp:
         self,
         dependant: SolvedDependant[typing.Any],
         executor: AsyncExecutorProtocol,
-        response_factory: typing.Callable[[typing.Any], starlette.responses.Response],
+        response_factory: typing.Callable[[typing.Any], Response],
         response_encoder: Encoder,
     ) -> None:
         self.dependant = dependant
@@ -41,21 +39,18 @@ class _OperationApp:
 
     async def __call__(
         self,
-        scope: starlette.types.Scope,
-        receive: starlette.types.Receive,
-        send: starlette.types.Send,
+        scope: Scope,
+        receive: Receive,
+        send: Send,
     ) -> None:
+        request = Request(scope=scope, receive=receive, send=send)
         values: typing.Dict[typing.Any, typing.Any] = {
-            starlette.requests.Request: starlette.requests.Request(
-                scope=scope, receive=receive, send=send
-            ),
-            starlette.requests.HTTPConnection: starlette.requests.HTTPConnection(
-                scope=scope, receive=receive
-            ),
-            starlette.background.BackgroundTasks: starlette.background.BackgroundTasks(),
-            starlette.types.Scope: scope,
-            starlette.types.Receive: receive,
-            starlette.types.Send: send,
+            Request: request,
+            HTTPConnection: request,
+            BackgroundTasks: BackgroundTasks(),
+            Scope: scope,
+            Receive: receive,
+            Send: send,
         }
         xpresso_scope: asgi_scope_extension.XpressoASGIExtension = scope["extensions"][
             "xpresso"
@@ -66,7 +61,7 @@ class _OperationApp:
                 values=values,
                 executor=self.executor,
             )
-            if isinstance(endpoint_return, starlette.responses.Response):
+            if isinstance(endpoint_return, Response):
                 response = endpoint_return
             else:
                 response = self.response_factory(self.response_encoder(endpoint_return))
@@ -74,7 +69,7 @@ class _OperationApp:
         await response(scope, receive, send)
 
 
-class Operation(starlette.routing.BaseRoute):
+class Operation(BaseRoute):
     def __init__(
         self,
         endpoint: Endpoint,
@@ -93,13 +88,11 @@ class Operation(starlette.routing.BaseRoute):
         name: typing.Optional[str] = None,
         dependencies: typing.Optional[typing.Sequence[Dependant]] = None,
         execute_dependencies_concurrently: bool = False,
-        response_factory: typing.Callable[
-            [typing.Any], starlette.responses.Response
-        ] = starlette.responses.JSONResponse,
+        response_factory: typing.Callable[[typing.Any], Response] = JSONResponse,
         response_encoder: Encoder = JsonableEncoder(),
         sync_to_thread: bool = True,
     ) -> None:
-        self._app: typing.Optional[starlette.types.ASGIApp] = None
+        self._app: typing.Optional[ASGIApp] = None
         self.endpoint = endpoint
         self.tags = list(tags or [])
         self.summary = summary
@@ -114,14 +107,14 @@ class Operation(starlette.routing.BaseRoute):
         self.response_factory = response_factory
         self.response_encoder = response_encoder
         self.include_in_schema = include_in_schema
-        self.name: str = starlette.routing.get_name(endpoint) if name is None else name  # type: ignore
+        self.name: str = get_name(endpoint) if name is None else name  # type: ignore
         self.sync_to_thread = sync_to_thread
 
     async def handle(
         self,
-        scope: starlette.types.Scope,
-        receive: starlette.types.Receive,
-        send: starlette.types.Send,
+        scope: Scope,
+        receive: Receive,
+        send: Send,
     ) -> None:
         if self._app is None:
             raise RuntimeError("Operation cannot be used outside of a Xpresso App")
@@ -156,14 +149,12 @@ class Operation(starlette.routing.BaseRoute):
             response_factory=self.response_factory,
         )
 
-    def url_path_for(
-        self, name: str, **path_params: str
-    ) -> starlette.datastructures.URLPath:
+    def url_path_for(self, name: str, **path_params: str) -> URLPath:
         if path_params:
-            raise starlette.routing.NoMatchFound()
+            raise NoMatchFound()
         if name != self.name:
-            raise starlette.routing.NoMatchFound()
-        return starlette.datastructures.URLPath("/")
+            raise NoMatchFound()
+        return URLPath("/")
 
     def __eq__(self, __o: object) -> bool:
         return isinstance(__o, type(self)) and self.endpoint is __o.endpoint
