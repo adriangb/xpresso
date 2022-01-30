@@ -135,4 +135,4 @@ class Router:
         if "router" not in scope:
             scope["router"] = self
 
-        return self._app(scope, receive, send)  # type: ignore
+        return self._app(scope, receive, send)  # type: ignore[call-arg,misc,arg-type]
