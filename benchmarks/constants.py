@@ -7,4 +7,4 @@
 NO_DELAY = (0, 0)
 DELAY = (1e-3, 1e-1)
 
-DAG_SHAPE = (50, 15, 15)
+DAG_SHAPE = (3, 2, 2)
