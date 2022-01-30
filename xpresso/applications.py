@@ -42,7 +42,7 @@ ExceptionHandlers = typing.Mapping[
 
 def _include_error_middleware(
     debug: bool,
-    user_middleware: typing.Sequence[Middleware],
+    user_middleware: typing.Iterable[Middleware],
     exception_handlers: ExceptionHandlers,
 ) -> typing.Sequence[Middleware]:
     # user's exception handlers come last so that they can override
@@ -68,8 +68,21 @@ def _include_error_middleware(
 
 
 class App:
+    __slots__ = (
+        "router",
+        "openapi",
+        "state",
+        "container",
+        "openapi_version",
+        "openapi_info",
+        "servers",
+        "_lifespan_ctx",
+        "_debug",
+        "_setup_run",
+    )
+
     router: Router
-    openapi: typing.Optional[openapi_models.OpenAPI] = None
+    openapi: typing.Optional[openapi_models.OpenAPI]
     state: State
     container: BaseContainer
 
@@ -142,6 +155,7 @@ class App:
             description=description,
         )
         self.servers = servers
+        self.openapi = None
 
     async def _lifespan(
         self,
