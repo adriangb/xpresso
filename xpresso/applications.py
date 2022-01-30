@@ -1,3 +1,4 @@
+import traceback
 import typing
 from contextlib import asynccontextmanager
 
@@ -5,7 +6,6 @@ import starlette.types
 from di import AsyncExecutor, BaseContainer
 from di.api.dependencies import DependantBase
 from di.api.providers import DependencyProviderType
-from starlette.applications import Starlette
 from starlette.datastructures import State
 from starlette.middleware import Middleware
 from starlette.middleware.errors import ServerErrorMiddleware
@@ -32,19 +32,45 @@ from xpresso.routing.router import Router
 from xpresso.routing.websockets import WebSocketRoute
 from xpresso.security._dependants import Security
 
-ExceptionHandler = typing.Callable[[Request, typing.Type[BaseException]], Response]
+ExceptionHandler = typing.Callable[
+    [Request, Exception], typing.Union[Response, typing.Awaitable[Response]]
+]
+ExceptionHandlers = typing.Mapping[
+    typing.Union[typing.Type[Exception], int], ExceptionHandler
+]
 
 
-class App(Starlette):
+def _include_error_middleware(
+    debug: bool,
+    user_middleware: typing.Sequence[Middleware],
+    exception_handlers: ExceptionHandlers,
+) -> typing.Sequence[Middleware]:
+    # user's exception handlers come last so that they can override
+    # the default exception handlers
+    exception_handlers = {
+        RequestValidationError: validation_exception_handler,
+        HTTPException: http_exception_handler,
+        **exception_handlers,
+    }
+
+    error_handler = None
+    for key, value in exception_handlers.items():
+        if key in (500, Exception):
+            error_handler = value
+        else:
+            exception_handlers[key] = value
+
+    return (
+        Middleware(ServerErrorMiddleware, handler=error_handler, debug=debug),
+        *user_middleware,
+        Middleware(ExceptionMiddleware, handlers=exception_handlers, debug=debug),
+    )
+
+
+class App:
     router: Router
-    middleware_stack: starlette.types.ASGIApp
     openapi: typing.Optional[openapi_models.OpenAPI] = None
-    _debug: bool
     state: State
-    exception_handlers: typing.Mapping[
-        typing.Union[int, typing.Type[Exception]], ExceptionHandler
-    ]
-    user_middleware: typing.Sequence[Middleware]
     container: BaseContainer
 
     def __init__(
@@ -55,12 +81,7 @@ class App(Starlette):
         dependencies: typing.Optional[typing.List[Dependant]] = None,
         debug: bool = False,
         middleware: typing.Optional[typing.Sequence[Middleware]] = None,
-        exception_handlers: typing.Optional[
-            typing.Dict[
-                typing.Union[int, typing.Type[Exception]],
-                ExceptionHandler,
-            ]
-        ] = None,
+        exception_handlers: typing.Optional[ExceptionHandlers] = None,
         lifespan: typing.Optional[DependencyProviderType[None]] = None,
         openapi_version: str = "3.0.3",
         title: str = "API",
@@ -70,19 +91,6 @@ class App(Starlette):
         docs_url: typing.Optional[str] = "/docs",
         servers: typing.Optional[typing.Iterable[openapi_models.Server]] = None,
     ) -> None:
-        routes = list(routes or [])
-        routes.extend(
-            self._get_doc_routes(
-                openapi_url=openapi_url,
-                docs_url=docs_url,
-            )
-        )
-        self._debug = debug
-        self.state = State()
-        self.exception_handlers = (
-            {} if exception_handlers is None else dict(exception_handlers)
-        )
-
         self.container = container or BaseContainer(
             scopes=("app", "connection", "operation")
         )
@@ -90,7 +98,7 @@ class App(Starlette):
         self._setup_run = False
 
         @asynccontextmanager
-        async def lifespan_ctx(app: Starlette) -> typing.AsyncGenerator[None, None]:
+        async def lifespan_ctx() -> typing.AsyncGenerator[None, None]:
             self._setup()
             self._setup_run = True
             original_container = self.container
@@ -108,11 +116,25 @@ class App(Starlette):
                     self.container = original_container
                     self._setup_run = False
 
-        self.router = Router(routes, lifespan=lifespan_ctx, dependencies=dependencies)
-        self.user_middleware = [] if middleware is None else list(middleware)
-        self.middleware_stack = self.build_middleware_stack()  # type: ignore
-        self.add_exception_handler(RequestValidationError, validation_exception_handler)  # type: ignore
-        self.add_exception_handler(HTTPException, http_exception_handler)  # type: ignore
+        self._lifespan_ctx = lifespan_ctx
+
+        self._debug = debug
+        self.state = State()
+
+        routes = list(routes or [])
+        routes.extend(
+            self._get_doc_routes(
+                openapi_url=openapi_url,
+                docs_url=docs_url,
+            )
+        )
+        middleware = _include_error_middleware(
+            debug=debug,
+            user_middleware=middleware or (),
+            exception_handlers=exception_handlers or {},
+        )
+        self.router = Router(routes, dependencies=dependencies, middleware=middleware)
+
         self.openapi_version = openapi_version
         self.openapi_info = openapi_models.Info(
             title=title,
@@ -121,27 +143,32 @@ class App(Starlette):
         )
         self.servers = servers
 
-    def build_middleware_stack(self) -> starlette.types.ASGIApp:
-        debug = self.debug
-        error_handler = None
-        exception_handlers = {}
-
-        for key, value in self.exception_handlers.items():
-            if key in (500, Exception):
-                error_handler = value
+    async def _lifespan(
+        self,
+        scope: starlette.types.Scope,
+        receive: starlette.types.Receive,
+        send: starlette.types.Send,
+    ) -> None:
+        """
+        Handle ASGI lifespan messages, which allows us to manage application
+        startup and shutdown events.
+        """
+        started = False
+        await receive()
+        try:
+            async with self._lifespan_ctx():
+                await send({"type": "lifespan.startup.complete"})
+                started = True
+                await receive()
+        except BaseException:
+            exc_text = traceback.format_exc()
+            if started:
+                await send({"type": "lifespan.shutdown.failed", "message": exc_text})
             else:
-                exception_handlers[key] = value
-
-        middleware = (
-            Middleware(ServerErrorMiddleware, handler=error_handler, debug=debug),
-            *self.user_middleware,
-            Middleware(ExceptionMiddleware, handlers=exception_handlers, debug=debug),
-        )
-
-        app = self.router
-        for cls, options in reversed(middleware):
-            app = cls(app=app, **options)
-        return app
+                await send({"type": "lifespan.startup.failed", "message": exc_text})
+            raise
+        else:
+            await send({"type": "lifespan.shutdown.complete"})
 
     async def __call__(
         self,
@@ -150,7 +177,9 @@ class App(Starlette):
         send: starlette.types.Send,
     ) -> None:
         self._setup()
-        if scope["type"] == "http" or scope["type"] == "websocket":
+        scope["app"] = self
+        scope_type = scope["type"]
+        if scope_type == "http" or scope_type == "websocket":
             extensions = scope.get("extensions", None) or {}
             scope["extensions"] = extensions
             xpresso_scope = extensions.get("xpresso", None)
@@ -161,10 +190,13 @@ class App(Starlette):
                         "response_sent": False,
                     }
                     extensions["xpresso"] = xpresso_asgi_extension
-                    await super().__call__(scope, receive, send)
+                    await self.router(scope, receive, send)
                     xpresso_asgi_extension["response_sent"] = True
                     return
-        await super().__call__(scope, receive, send)
+        elif scope_type == "lifespan":
+            await self._lifespan(scope, receive, send)
+            return
+        await self.router(scope, receive, send)
 
     def _setup(self) -> None:
         if self._setup_run:
@@ -247,7 +279,7 @@ class App(Starlette):
             openapi_url = openapi_url
 
             async def swagger_ui_html(req: Request) -> HTMLResponse:
-                root_path: str = req.scope.get("root_path", "").rstrip("/")
+                root_path: str = req.scope.get("root_path", "").rstrip("/")  # type: ignore  # for Pylance
                 full_openapi_url = root_path + openapi_url  # type: ignore[operator]
                 return get_swagger_ui_html(
                     openapi_url=full_openapi_url,

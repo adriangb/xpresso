@@ -1,31 +1,31 @@
 import typing
 
-import starlette.applications
-import starlette.background
-import starlette.datastructures
-import starlette.exceptions
-import starlette.requests
-import starlette.responses
+import starlette.middleware
 import starlette.routing
-import starlette.status
 import starlette.types
+from starlette.datastructures import URL, URLPath
+from starlette.exceptions import HTTPException
+from starlette.responses import PlainTextResponse, RedirectResponse
+from starlette.routing import Match, NoMatchFound
+from starlette.websockets import WebSocketClose
 
 from xpresso.dependencies.models import Dependant
 from xpresso.responses import Responses
 
 
-def _not_supported(method: str) -> typing.Callable[..., typing.Any]:
-    def raise_error(*args: typing.Any, **kwargs: typing.Any) -> typing.NoReturn:
-        raise NotImplementedError(
-            f"Use of Router.{method} is deprecated."
-            " Use Router(routes=[...]) instead."
-        )
+class Router:
+    __slots__ = (
+        "routes",
+        "_app",
+        "dependencies",
+        "tags",
+        "responses",
+        "_redirect_slashes",
+        "_default",
+    )
 
-    return raise_error
-
-
-class Router(starlette.routing.Router):
-    routes: typing.List[starlette.routing.BaseRoute]
+    routes: typing.Sequence[starlette.routing.BaseRoute]
+    _app: starlette.types.ASGIApp
 
     def __init__(
         self,
@@ -33,30 +33,106 @@ class Router(starlette.routing.Router):
         *,
         redirect_slashes: bool = True,
         default: typing.Optional[starlette.types.ASGIApp] = None,
-        lifespan: typing.Optional[
-            typing.Callable[
-                [starlette.applications.Starlette], typing.AsyncContextManager[None]
-            ]
-        ] = None,
         dependencies: typing.Optional[typing.List[Dependant]] = None,
         tags: typing.Optional[typing.List[str]] = None,
         responses: typing.Optional[Responses] = None,
+        middleware: typing.Optional[
+            typing.Sequence[starlette.middleware.Middleware]
+        ] = None,
     ) -> None:
-        super().__init__(  # type: ignore
-            routes=list(routes),
-            redirect_slashes=redirect_slashes,
-            default=default,  # type: ignore
-            lifespan=lifespan,  # type: ignore
-        )
         self.dependencies = list(dependencies or [])
         self.tags = list(tags or [])
         self.responses = dict(responses or {})
+        self._redirect_slashes = redirect_slashes
+        self._default = self._not_found if default is None else default
+        self.routes = tuple(routes)
 
-    mount = _not_supported("mount")
-    host = _not_supported("host")
-    add_route = _not_supported("add_route")
-    add_websocket_route = _not_supported("add_websocket_route")
-    route = _not_supported("route")
-    websocket_route = _not_supported("websocket_route")
-    add_event_handler = _not_supported("add_event_handler")
-    on_event = _not_supported("on_event")
+        self._app = self._find_route  # type: ignore[assignment,misc]
+        if middleware is not None:
+            for cls, options in reversed(middleware):  # type: ignore
+                self._app = cls(app=self._app, **options)  # type: ignore[assignment,misc]
+
+    def __eq__(self, other: typing.Any) -> bool:
+        return isinstance(other, Router) and self.routes == other.routes
+
+    async def _not_found(
+        self,
+        scope: starlette.types.Scope,
+        receive: starlette.types.Receive,
+        send: starlette.types.Send,
+    ) -> None:
+        if scope["type"] == "websocket":
+            websocket_close = WebSocketClose()
+            await websocket_close(scope, receive, send)
+            return
+
+        # If we're running inside a starlette application then raise an
+        # exception, so that the configurable exception handler can deal with
+        # returning the response. For plain ASGI apps, just return the response.
+        if "app" in scope:
+            raise HTTPException(status_code=404)
+        else:
+            response = PlainTextResponse("Not Found", status_code=404)
+        await response(scope, receive, send)
+
+    def url_path_for(self, name: str, **path_params: typing.Any) -> URLPath:
+        for route in self.routes:
+            try:
+                return route.url_path_for(name, **path_params)
+            except NoMatchFound:
+                pass
+        raise NoMatchFound()
+
+    def _find_route(
+        self,
+        scope: starlette.types.Scope,
+        receive: starlette.types.Receive,
+        send: starlette.types.Send,
+    ) -> typing.Awaitable[None]:
+        partial = None
+
+        for route in self.routes:
+            # Determine if any route matches the incoming scope,
+            # and hand over to the matching route if found.
+            match, child_scope = route.matches(scope)
+            if match == Match.FULL:
+                scope.update(child_scope)
+                return route.handle(scope, receive, send)
+            elif match == Match.PARTIAL and partial is None:
+                partial = route
+                partial_scope = child_scope
+
+        if partial is not None:
+            #  Handle partial matches. These are cases where an endpoint is
+            # able to handle the request, but is not a preferred option.
+            # We use this in particular to deal with "405 Method Not Allowed".
+            scope.update(partial_scope)  # type: ignore  # partial_scope is always bound if partial is not None
+            return partial.handle(scope, receive, send)
+
+        if scope["type"] == "http" and self._redirect_slashes and scope["path"] != "/":
+            redirect_scope = dict(scope)
+            if scope["path"].endswith("/"):
+                redirect_scope["path"] = redirect_scope["path"].rstrip("/")
+            else:
+                redirect_scope["path"] = redirect_scope["path"] + "/"
+
+            for route in self.routes:
+                match, child_scope = route.matches(redirect_scope)
+                if match != Match.NONE:
+                    redirect_url = URL(scope=redirect_scope)
+                    response = RedirectResponse(url=str(redirect_url))
+                    return response(scope, receive, send)
+
+        return self._default(scope, receive, send)
+
+    async def __call__(
+        self,
+        scope: starlette.types.Scope,
+        receive: starlette.types.Receive,
+        send: starlette.types.Send,
+    ) -> None:
+
+        if "router" not in scope:
+            scope["router"] = self
+
+        await self._app(scope, receive, send)  # type: ignore

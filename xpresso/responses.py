@@ -41,7 +41,7 @@ def get_response(request: Request) -> Response:
 
 
 def set_response(request: Request, response: Response) -> None:
-    xpresso_scope: XpressoASGIExtension = request.scope["extensions"]["xpresso"]
+    xpresso_scope: XpressoASGIExtension = request.scope["extensions"]["xpresso"]  # type: ignore  # for Pylance
     if xpresso_scope["response_sent"]:
         raise XpressoError(
             'set_response() can only be used from "operation" scoped dependendencies'

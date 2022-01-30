@@ -8,18 +8,20 @@ from xpresso.responses import Responses
 from xpresso.routing.pathitem import Path
 from xpresso.routing.router import Router as XpressoRouter
 
+Router = typing.Union[StarletteRouter, XpressoRouter]
+
 
 @dataclass(frozen=True)
 class VisitedRoute:
     path: str
-    routers: typing.List[StarletteRouter]
+    routers: typing.List[Router]
     route: BaseRoute
     tags: typing.List[str]
     responses: Responses
 
 
 def visit_routes(
-    routers: typing.List[StarletteRouter],
+    routers: typing.List[Router],
     path: typing.Optional[str] = None,
     tags: typing.Optional[typing.List[str]] = None,
     responses: typing.Optional[Responses] = None,
@@ -29,16 +31,18 @@ def visit_routes(
     responses = responses or {}
     router = next(iter(reversed(routers)), None)
     assert router is not None
-    for route in typing.cast(typing.Iterable[BaseRoute], router.routes):
-        if isinstance(route, Mount) and isinstance(route.app, StarletteRouter):
+    for route in typing.cast(typing.Iterable[BaseRoute], router.routes):  # type: ignore  # for Pylance
+        if isinstance(route, Mount) and isinstance(
+            route.app, (StarletteRouter, XpressoRouter)
+        ):
             child_tags = tags
             child_responses = responses
             if isinstance(route.app, XpressoRouter):
                 child_tags = child_tags + route.app.tags
                 child_responses = {**child_responses, **route.app.responses}
             yield from visit_routes(
-                routers=routers + [route.app],
-                path=path + route.path,
+                routers=routers + [route.app],  # type: ignore  # for Pylance
+                path=path + route.path,  # type: ignore  # for Pylance
                 tags=child_tags,
                 responses=child_responses,
             )
