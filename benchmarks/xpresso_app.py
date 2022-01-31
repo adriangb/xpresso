@@ -1,13 +1,13 @@
-from typing import Any, Dict
+from typing import Any, Dict, Mapping, Union, List
 
-from starlette.requests import Request
-from starlette.responses import Response
+from starlette.routing import BaseRoute, Route
 
-from benchmarks.constants import DAG_SHAPE, DELAY, NO_DELAY
-from benchmarks.utils import generate_dag
-from xpresso import App, Dependant, Operation, Path
+from xpresso import App, Dependant, Operation, Path, Request, Response, Router
+from xpresso.routing.mount import Mount
 from xpresso.typing import Annotated
 
+from benchmarks.constants import DAG_SHAPE, DELAY, NO_DELAY, ROUTING_PATHS
+from benchmarks.utils import generate_dag
 
 def make_depends(type_: str, provider: str) -> str:
     return f"Annotated[{type_}, Dependant({provider})]"
@@ -19,7 +19,7 @@ glbls: Dict[str, Any] = {
 }
 
 
-async def simple(request: Request) -> Response:
+def simple(request: Request) -> Response:
     """An endpoint that does the minimal amount of work"""
     return Response()
 
@@ -30,7 +30,7 @@ dag_size, dep_without_delays = generate_dag(
 print("/fast_deps dag size: ", dag_size)
 
 
-async def fast_dependencies(
+def fast_dependencies(
     _: Annotated[int, Dependant(dep_without_delays)]
 ) -> Response:
     """An endpoint with dependencies that execute instantly"""
@@ -43,11 +43,25 @@ dag_size, dep_with_delays = generate_dag(
 print("/slow_deps dag size: ", dag_size)
 
 
-async def slow_dependencies(
+def slow_dependencies(
     _: Annotated[int, Dependant(dep_with_delays)]
 ) -> Response:
     """An endpoint with dependencies that simulate IO"""
     return Response()
+
+
+Paths = Mapping[str, Union["Paths", None]]  # type: ignore[misc]
+
+
+def recurisively_generate_routes(paths: Paths) -> Router:
+    routes: List[BaseRoute] = []
+    for path in paths:
+        subpaths = paths[path]
+        if subpaths is None:
+            routes.append(Route(f"/{path}", simple))
+        else:
+            routes.append(Mount(f"/{path}", app=recurisively_generate_routes(subpaths)))
+    return Router(routes=routes)
 
 
 app = App(
@@ -61,6 +75,7 @@ app = App(
                 execute_dependencies_concurrently=True,
             ),
         ),
+        Mount("/routing", app=recurisively_generate_routes(ROUTING_PATHS))
     ]
 )
 
