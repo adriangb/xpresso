@@ -1,11 +1,12 @@
+from typing import Mapping, List, Union
+
 from fastapi import Depends
-from fastapi import FastAPI as App
-from starlette.responses import Response
+from fastapi import FastAPI as App, Response, Request
+from fastapi.routing import Mount, APIRouter as Router, APIRoute
+from starlette.routing import BaseRoute, Route
 
-from benchmarks.constants import DAG_SHAPE, DELAY, NO_DELAY
+from benchmarks.constants import DAG_SHAPE, DELAY, NO_DELAY, ROUTING_PATHS
 from benchmarks.utils import generate_dag
-
-app = App()
 
 
 def make_depends(type_: str, provider: str) -> str:
@@ -15,8 +16,7 @@ def make_depends(type_: str, provider: str) -> str:
 glbls = {"Depends": Depends}
 
 
-@app.router.get("/simple")
-async def simple() -> Response:
+async def simple(request: Request) -> Response:
     """An endpoint that does the minimal amount of work"""
     return Response()
 
@@ -27,7 +27,6 @@ dag_size, dep_without_delays = generate_dag(
 print("/fast_deps dag size: ", dag_size)
 
 
-@app.router.get("/fast_deps")
 async def fast_dependencies(
     _: int = Depends(dep_without_delays),
 ) -> Response:
@@ -41,9 +40,35 @@ dag_size, dep_with_delays = generate_dag(
 print("/slow_deps dag size: ", dag_size)
 
 
-@app.router.get("/slow_deps")
 async def slow_dependencies(
     _: int = Depends(dep_with_delays),
 ) -> Response:
     """An endpoint with dependencies that simulate IO"""
     return Response()
+
+
+Paths = Mapping[str, Union["Paths", None]]  # type: ignore[misc]
+
+
+def recurisively_generate_routes(paths: Paths) -> Router:
+    routes: List[BaseRoute] = []
+    for path in paths:
+        subpaths = paths[path]
+        if subpaths is None:
+            routes.append(Route(f"/{path}", simple))
+        else:
+            routes.append(Mount(f"/{path}", app=recurisively_generate_routes(subpaths)))
+    return Router(routes=routes)
+
+
+app = App(
+    routes=[
+        APIRoute("/simple", simple),
+        APIRoute("/fast_deps", fast_dependencies),
+        APIRoute(
+            "/slow_deps",
+            slow_dependencies,
+        ),
+        Mount("/routing", app=recurisively_generate_routes(ROUTING_PATHS))
+    ]
+)
