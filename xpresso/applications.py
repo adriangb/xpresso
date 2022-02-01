@@ -182,7 +182,6 @@ class App:
         receive: starlette.types.Receive,
         send: starlette.types.Send,
     ) -> None:
-        scope["app"] = self
         scope_type = scope["type"]
         if scope_type == "http" or scope_type == "websocket":
             if not self._setup_run:

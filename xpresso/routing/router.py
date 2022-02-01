@@ -52,10 +52,6 @@ class Router(StarletteRouter):
         receive: Receive,
         send: Send,
     ) -> None:
-
-        if "router" not in scope:
-            scope["router"] = self
-
         await self._app(scope, receive, send)  # type: ignore[arg-type,call-arg,misc]
 
     mount = not_supported("mount")
