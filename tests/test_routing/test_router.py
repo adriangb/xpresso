@@ -1,3 +1,5 @@
+from typing import Any, Dict
+
 from starlette.middleware import Middleware
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 
@@ -92,3 +94,28 @@ def test_router_middleware_modify_path() -> None:
 
     resp = client.get("/very-bad")
     assert resp.status_code == 404, resp.content
+
+
+def test_exclude_from_schema() -> None:
+    app = App(
+        routes=[
+            Mount(
+                "/mount",
+                app=Router(
+                    routes=[Path("/test", get=lambda: None)], include_in_schema=False
+                ),
+            )
+        ]
+    )
+
+    expected_openapi_json: Dict[str, Any] = {
+        "openapi": "3.0.3",
+        "info": {"title": "API", "version": "0.1.0"},
+        "paths": {},
+    }
+
+    client = TestClient(app)
+
+    resp = client.get("/openapi.json")
+    assert resp.status_code == 200, resp.content
+    assert resp.json() == expected_openapi_json
