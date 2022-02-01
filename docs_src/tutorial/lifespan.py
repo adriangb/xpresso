@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from typing import AsyncGenerator
 
@@ -13,6 +14,7 @@ class Config:
 ConfigDep = Annotated[Config, Dependant(scope="app")]
 
 
+@asynccontextmanager
 async def lifespan(config: ConfigDep) -> AsyncGenerator[None, None]:
     print(config.token)
     yield

@@ -1,14 +1,11 @@
-import sys
-
-if sys.version_info < (3, 9):
-    from typing_extensions import Annotated
-else:
-    from typing import Annotated
+from contextlib import asynccontextmanager
+from typing import AsyncIterator
 
 from starlette.responses import Response
 from starlette.testclient import TestClient
 
 from xpresso import App, Dependant, Operation, Path
+from xpresso.typing import Annotated
 
 
 def test_router_route_dependencies() -> None:
@@ -44,8 +41,12 @@ def test_lifespan_dependencies() -> None:
     class Test:
         ...
 
-    async def lifespan(t: Annotated[Test, Dependant(scope="app")]) -> None:
+    @asynccontextmanager
+    async def lifespan(
+        t: Annotated[Test, Dependant(scope="app")]
+    ) -> AsyncIterator[None]:
         app.state.t = t  # type: ignore[has-type]
+        yield
 
     async def endpoint(t: Annotated[Test, Dependant(scope="app")]) -> Response:
         assert app.state.t is t  # type: ignore[has-type]

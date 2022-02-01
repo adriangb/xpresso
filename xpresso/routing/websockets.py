@@ -54,6 +54,8 @@ class _WebSocketRoute:
 
 
 class WebSocketRoute(starlette.routing.WebSocketRoute):
+    path: str
+
     def __init__(
         self,
         path: str,

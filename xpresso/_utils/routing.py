@@ -1,58 +1,74 @@
+import sys
 import typing
 from dataclasses import dataclass
+
+if sys.version_info < (3, 8):
+    from typing_extensions import Protocol
+else:
+    from typing import Protocol
 
 from starlette.routing import BaseRoute, Mount
 from starlette.routing import Router as StarletteRouter
 
-from xpresso.responses import Responses
 from xpresso.routing.pathitem import Path
 from xpresso.routing.router import Router as XpressoRouter
+from xpresso.routing.websockets import WebSocketRoute
+
+Lifespan = typing.Callable[..., typing.AsyncContextManager[None]]
+
+
+class App(Protocol):
+    lifespan: typing.Optional[Lifespan]
+    router: XpressoRouter
+
+
+AppType = typing.TypeVar("AppType", bound=App)
 
 
 @dataclass(frozen=True)
-class VisitedRoute:
+class VisitedRoute(typing.Generic[AppType]):
     path: str
-    routers: typing.List[StarletteRouter]
+    nodes: typing.List[typing.Union[StarletteRouter, AppType]]
     route: BaseRoute
-    tags: typing.List[str]
-    responses: Responses
 
 
 def visit_routes(
-    routers: typing.List[StarletteRouter],
-    path: typing.Optional[str] = None,
-    tags: typing.Optional[typing.List[str]] = None,
-    responses: typing.Optional[Responses] = None,
-) -> typing.Generator[VisitedRoute, None, None]:
-    path = path or ""
-    tags = tags or []
-    responses = responses or {}
-    router = next(iter(reversed(routers)), None)
-    assert router is not None
-    for route in typing.cast(typing.Iterable[BaseRoute], router.routes):
-        if isinstance(route, Mount) and isinstance(route.app, StarletteRouter):
-            child_tags = tags
-            child_responses = responses
-            if isinstance(route.app, XpressoRouter):
-                child_tags = child_tags + route.app.tags
-                child_responses = {**child_responses, **route.app.responses}
-            yield from visit_routes(
-                routers=routers + [route.app],
-                path=path + route.path,
-                tags=child_tags,
-                responses=child_responses,
-            )
-        elif hasattr(route, "path"):
-            route_path: str = route.path  # type: ignore
-            child_tags = tags
-            child_responses = responses
-            if isinstance(route, Path):
-                child_tags = child_tags + route.tags
-                child_responses = {**child_responses, **route.responses}
+    app_type: typing.Type[AppType],
+    router: StarletteRouter,
+    nodes: typing.List[typing.Union[StarletteRouter, AppType]],
+    path: str,
+) -> typing.Generator[VisitedRoute[AppType], None, None]:
+    for route in typing.cast(typing.Iterable[BaseRoute], router.routes):  # type: ignore  # for Pylance
+        if isinstance(route, Mount):
+            app: typing.Any = route.app
+            mount_path: str = route.path  # type: ignore  # for Pylance
+            if isinstance(app, StarletteRouter):
+                yield VisitedRoute(
+                    path=path,
+                    nodes=nodes + [app],
+                    route=route,
+                )
+                yield from visit_routes(
+                    app_type=app_type,
+                    router=app,
+                    nodes=nodes + [app],
+                    path=path + mount_path,
+                )
+            elif isinstance(app, app_type):
+                yield VisitedRoute(
+                    path=path,
+                    nodes=nodes + [app, app.router],
+                    route=route,
+                )
+                yield from visit_routes(
+                    app_type=app_type,
+                    router=app.router,
+                    nodes=nodes + [app, app.router],
+                    path=path + mount_path,
+                )
+        elif isinstance(route, (Path, WebSocketRoute)):
             yield VisitedRoute(
-                path=path + route_path,
-                routers=routers,
+                path=path + route.path,
+                nodes=nodes,
                 route=route,
-                tags=child_tags,
-                responses=child_responses,
             )
