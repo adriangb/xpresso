@@ -112,7 +112,7 @@ class App:
         self.container = container or BaseContainer(
             scopes=("app", "connection", "endpoint")
         )
-        register_framework_dependencies(self.container)
+        register_framework_dependencies(self.container, app=self, app_type=App)
         self._setup_run = False
 
         @asynccontextmanager

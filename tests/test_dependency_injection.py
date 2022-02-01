@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 from typing import AsyncIterator
 
+from di import BaseContainer
 from starlette.responses import Response
 from starlette.testclient import TestClient
 
@@ -50,6 +51,35 @@ def test_lifespan_dependencies() -> None:
 
     async def endpoint(t: Annotated[Test, Dependant(scope="app")]) -> Response:
         assert app.state.t is t  # type: ignore[has-type]
+        return Response()
+
+    app = App([Path("/", get=endpoint)], lifespan=lifespan)
+
+    with TestClient(app=app) as client:
+        resp = client.get("/")
+    assert resp.status_code == 200
+
+
+def test_inject_container() -> None:
+    @asynccontextmanager
+    async def lifespan(container: BaseContainer) -> AsyncIterator[None]:
+        assert tuple(container.current_scopes) == ("app",)
+        yield
+
+    app = App([], lifespan=lifespan)
+
+    with TestClient(app=app):
+        pass
+
+
+def test_inject_app() -> None:
+    @asynccontextmanager
+    async def lifespan(app: App) -> AsyncIterator[None]:
+        app.state.foo = 1
+        yield
+
+    async def endpoint(app: App) -> Response:
+        assert app.state.foo == 1
         return Response()
 
     app = App([Path("/", get=endpoint)], lifespan=lifespan)
