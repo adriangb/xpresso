@@ -110,7 +110,7 @@ class App:
         servers: typing.Optional[typing.Iterable[openapi_models.Server]] = None,
     ) -> None:
         self.container = container or BaseContainer(
-            scopes=("app", "connection", "operation")
+            scopes=("app", "connection", "endpoint")
         )
         register_framework_dependencies(self.container)
         self._setup_run = False

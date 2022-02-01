@@ -309,7 +309,7 @@ def test_mounted_xpresso_app_dependencies_shared_containers() -> None:
     async def endpoint(thing: Thing) -> str:
         return thing.value
 
-    container = BaseContainer(scopes=("app", "connection", "operation"))
+    container = BaseContainer(scopes=("app", "connection", "endpoint"))
     container.register_by_type(
         Dependant(lambda: Thing("injected")),
         Thing,

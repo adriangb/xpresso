@@ -11,7 +11,7 @@ Scopes let you control the "lifetime" of your dependency and are inspired by [py
 In Pytest you may have used scopes like "session", "module" or "function".
 In Xpresso there are three scopes available:
 
-1. `"operation"`: the dependency is created right before calling the endpoint function and torn down right after your function returns, but before the response is sent to the client.
+1. `"endpoint"`: the dependency is created right before calling the endpoint function and torn down right after your function returns, but before the response is sent to the client.
 1. `"connection"` (default): this scope is entered before the endpoint scope and before calling your endpoint function and is torn down right after the response is sent to the client.
 1. `"app"`: the outermost scope. Dependencies in this scope are tied to the [lifespan] of the application.
 
@@ -25,7 +25,7 @@ Everything else can stay the same, this is all we need!
 
 !!! attention
     You may notice we also had to change the `HttpBinConfig` marker to the `"app"` scope.
-    Just like in Pytest, where a `"session"` scoped fixture can't depend on a `"function"` scoped fixture, in Xpresso an `"app"` scoped fixture can't depend on an `"operation"` scoped fixture, so we are forced to make `HttpBinConfig` an `"app"` scoped fixture.
+    Just like in Pytest, where a `"session"` scoped fixture can't depend on a `"function"` scoped fixture, in Xpresso an `"app"` scoped fixture can't depend on an `"endpoint"` scoped fixture, so we are forced to make `HttpBinConfig` an `"app"` scoped fixture.
 
 If you run this and navigate to [http://127.0.0.1:8000/echo/url](http://127.0.0.1:8000/echo/url) the response will be the same, but you will probably notice reduced latency if you refresh to make several requests.
 

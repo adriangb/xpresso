@@ -14,21 +14,21 @@ async def endpoint_2() -> None:
 
 
 def test_url_path_for_with_path_parameters() -> None:
-    operation = Operation(endpoint_1, name="operation")
+    operation = Operation(endpoint_1, name="endpoint")
     with pytest.raises(starlette.routing.NoMatchFound):
-        operation.url_path_for("operation", param="foobar")
+        operation.url_path_for("endpoint", param="foobar")
 
 
 def test_url_path_for_no_match() -> None:
-    operation = Operation(endpoint_1, name="operation")
+    operation = Operation(endpoint_1, name="endpoint")
     with pytest.raises(starlette.routing.NoMatchFound):
         operation.url_path_for("not-operation")
 
 
 def test_url_path_for_matches() -> None:
-    operation = Operation(endpoint_1, name="operation")
+    operation = Operation(endpoint_1, name="endpoint")
 
-    url = operation.url_path_for("operation")
+    url = operation.url_path_for("endpoint")
 
     assert str(url) == "/"
 

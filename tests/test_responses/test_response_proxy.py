@@ -18,7 +18,7 @@ from xpresso.exceptions import XpressoError
 from xpresso.responses import get_response, set_response
 
 
-@pytest.mark.parametrize("scope", ["operation", "connection"])
+@pytest.mark.parametrize("scope", ["endpoint", "connection"])
 def test_get_response(scope: typing.Any) -> None:
     """ResponseProxy can be used to get the final Response from within a dependency"""
 
@@ -43,7 +43,7 @@ def test_get_response(scope: typing.Any) -> None:
 
     with TestClient(app) as client:
         resp = client.get("/")
-    assert resp.status_code == (405 if scope == "operation" else 404)
+    assert resp.status_code == (405 if scope == "endpoint" else 404)
 
 
 def test_get_response_connection_scope() -> None:
@@ -83,7 +83,7 @@ def test_set_response() -> None:
             Path(
                 "/",
                 get=endpoint,
-                dependencies=[Dependant(dependency, scope="operation")],
+                dependencies=[Dependant(dependency, scope="endpoint")],
             )
         ]
     )
@@ -114,6 +114,6 @@ def test_set_response_operation_scope() -> None:
 
     client = TestClient(app)
     with pytest.raises(
-        XpressoError, match='can only be used from "operation" scoped dependendencies'
+        XpressoError, match='can only be used from "endpoint" scoped dependendencies'
     ):
         client.get("/")

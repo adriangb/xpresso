@@ -45,7 +45,7 @@ class _WebSocketRoute:
         xpresso_scope: asgi_scope_extension.XpressoASGIExtension = scope["extensions"][
             "xpresso"
         ]
-        async with xpresso_scope["container"].enter_scope("operation") as container:
+        async with xpresso_scope["container"].enter_scope("endpoint") as container:
             await container.execute_async(
                 self.dependant,
                 values=values,
@@ -81,7 +81,7 @@ class WebSocketRoute(starlette.routing.WebSocketRoute):
     ) -> None:
         self.dependant = container.solve(
             JoinedDependant(
-                Dependant(self.endpoint, scope="operation"),
+                Dependant(self.endpoint, scope="endpoint"),
                 siblings=[*dependencies, *(self.dependencies or ())],
             )
         )

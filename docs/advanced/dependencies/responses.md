@@ -14,7 +14,7 @@ This functionality is enabled through **response proxies**:
 
 These functions can only be called from within the teardown of a dependency.
 If called from anywhere else (inside the endpoint or in the setup of a context manager dependency) they will raise an exception.
-Further, modifying the response or calling `set_response()` will only work from a dependency in the `"operation"` scope (otherwise the response has already been sent).
+Further, modifying the response or calling `set_response()` will only work from a dependency in the `"endpoint"` scope (otherwise the response has already been sent).
 
 ## Reading responses
 
@@ -29,7 +29,7 @@ The main advantage of using the `"connection"` scope is reduced latency for the 
 
 ## Writing responses
 
-If you need to modify the response, use the `"operation"` scope.
+If you need to modify the response, use the `"endpoint"` scope.
 Here's an example of a simple request/context tracing system:
 
 ```python hl_lines="17-30"

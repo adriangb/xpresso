@@ -44,7 +44,7 @@ def set_response(request: Request, response: Response) -> None:
     xpresso_scope: XpressoASGIExtension = request.scope["extensions"]["xpresso"]
     if xpresso_scope["response_sent"]:
         raise XpressoError(
-            'set_response() can only be used from "operation" scoped dependendencies'
+            'set_response() can only be used from "endpoint" scoped dependendencies'
         )
     xpresso_scope["response"] = response  # type: ignore[assignment]
 

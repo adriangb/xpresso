@@ -14,7 +14,7 @@ from di.api.providers import DependencyProvider
 T = typing.TypeVar("T")
 
 
-Scope = Literal["app", "connection", "operation"]
+Scope = Literal["app", "connection", "endpoint"]
 
 
 class Dependant(di.Dependant[typing.Any]):

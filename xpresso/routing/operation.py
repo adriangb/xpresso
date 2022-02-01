@@ -55,7 +55,7 @@ class _OperationApp:
         xpresso_scope: asgi_scope_extension.XpressoASGIExtension = scope["extensions"][
             "xpresso"
         ]
-        async with xpresso_scope["container"].enter_scope("operation") as container:
+        async with xpresso_scope["container"].enter_scope("endpoint") as container:
             endpoint_return = await container.execute_async(
                 self.dependant,
                 values=values,
@@ -128,7 +128,7 @@ class Operation(BaseRoute):
         self.dependant = container.solve(
             JoinedDependant(
                 Dependant(
-                    self.endpoint, scope="operation", sync_to_thread=self.sync_to_thread
+                    self.endpoint, scope="endpoint", sync_to_thread=self.sync_to_thread
                 ),
                 siblings=[*dependencies, *(self.dependencies or ())],
             )
