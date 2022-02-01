@@ -12,7 +12,7 @@ from xpresso.dependencies.models import Dependant
 T = typing.TypeVar("T")
 
 
-def register_framework_dependencies(container: BaseContainer):
+def register_framework_dependencies(container: BaseContainer, app: typing.Any):
     container.register_by_type(
         Dependant(Request, scope="connection", wire=False),
         Request,
@@ -44,4 +44,12 @@ def register_framework_dependencies(container: BaseContainer):
             wire=False,
         ),
         BackgroundTasks,
+    )
+    container.register_by_type(
+        Dependant(
+            lambda: app,
+            scope="app",
+            wire=False,
+        ),
+        type(app),
     )

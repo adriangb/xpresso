@@ -11,15 +11,13 @@ from starlette.routing import BaseRoute, Mount
 from starlette.routing import Router as StarletteRouter
 
 from xpresso.routing.pathitem import Path
-from xpresso.routing.router import Router as XpressoRouter
 from xpresso.routing.websockets import WebSocketRoute
-
-Lifespan = typing.Callable[..., typing.AsyncContextManager[None]]
 
 
 class App(Protocol):
-    lifespan: typing.Optional[Lifespan]
-    router: XpressoRouter
+    @property
+    def router(self) -> StarletteRouter:
+        ...
 
 
 AppType = typing.TypeVar("AppType", bound=App)

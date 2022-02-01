@@ -1,6 +1,6 @@
 import inspect
-import traceback
 import typing
+from contextlib import asynccontextmanager
 
 import starlette.types
 from di import AsyncExecutor, BaseContainer, JoinedDependant
@@ -87,7 +87,6 @@ class App:
     openapi: typing.Optional[openapi_models.OpenAPI]
     state: State
     container: BaseContainer
-    _lifespans: typing.List[typing.Callable[..., typing.AsyncIterator[None]]]
 
     def __init__(
         self,
@@ -113,10 +112,38 @@ class App:
         self.container = container or BaseContainer(
             scopes=("app", "connection", "operation")
         )
-        register_framework_dependencies(self.container)
+        register_framework_dependencies(self.container, self)
         self._setup_run = False
 
-        self.lifespan = lifespan
+        @asynccontextmanager
+        async def lifespan_ctx(*args: typing.Any) -> typing.AsyncIterator[None]:
+            lifespans = self._setup()
+            self._setup_run = True
+            original_container = self.container
+            async with self.container.enter_scope("app") as container:
+                self.container = container
+                if lifespan is not None:
+                    dep = Dependant(
+                        _wrap_lifespan_as_async_generator(lifespan), scope="app"
+                    )
+                else:
+                    dep = Dependant(lambda: None, scope="app")
+                solved = self.container.solve(
+                    JoinedDependant(
+                        dep,
+                        siblings=[
+                            Dependant(lifespan, scope="app") for lifespan in lifespans
+                        ],
+                    )
+                )
+                try:
+                    await container.execute_async(solved, executor=AsyncExecutor())
+                    yield
+                finally:
+                    # make this cm reentrant for testing purposes
+                    self.container = original_container
+                    self._setup_run = False
+
         self._debug = debug
         self.state = State()
 
@@ -137,6 +164,7 @@ class App:
             dependencies=dependencies,
             middleware=middleware,
             include_in_schema=include_in_schema,
+            lifespan=lifespan_ctx,
         )
 
         self.openapi_version = openapi_version
@@ -147,56 +175,6 @@ class App:
         )
         self.servers = servers
         self.openapi = None
-
-    async def _lifespan(
-        self,
-        scope: starlette.types.Scope,
-        receive: starlette.types.Receive,
-        send: starlette.types.Send,
-    ) -> None:
-        """
-        Handle ASGI lifespan messages, which allows us to manage application
-        startup and shutdown events.
-        """
-        started = False
-        await receive()
-        try:
-            self._setup()
-            self._setup_run = True
-            original_container = self.container
-            async with self.container.enter_scope("app") as container:
-                self.container = container
-
-                def placeholder() -> None:
-                    ...
-
-                solved = self.container.solve(
-                    JoinedDependant(
-                        Dependant(placeholder, scope="app"),
-                        siblings=[
-                            Dependant(lifespan, scope="app")
-                            for lifespan in self._lifespans
-                        ],
-                    )
-                )
-                await container.execute_async(solved, executor=AsyncExecutor())
-                try:
-                    await send({"type": "lifespan.startup.complete"})
-                    started = True
-                    await receive()
-                finally:
-                    # make this cm reentrant for testing purposes
-                    self.container = original_container
-                    self._setup_run = False
-        except BaseException:
-            exc_text = traceback.format_exc()
-            if started:
-                await send({"type": "lifespan.shutdown.failed", "message": exc_text})
-            else:
-                await send({"type": "lifespan.startup.failed", "message": exc_text})
-            raise
-        else:
-            await send({"type": "lifespan.shutdown.complete"})
 
     async def __call__(
         self,
@@ -220,24 +198,26 @@ class App:
                 xpresso_asgi_extension["response_sent"] = True
             return
         else:  # lifespan
-            await self._lifespan(scope, receive, send)
-            return
+            await self.router(scope, receive, send)
 
-    def _setup(self) -> None:
-        self._lifespans: typing.List[
-            typing.Callable[..., typing.AsyncIterator[None]]
-        ] = []
-        for route in visit_routes(app_type=App, router=self.router, nodes=[self, self.router], path=""):  # type: ignore[misc]
+    def _setup(self) -> typing.List[typing.Callable[..., typing.AsyncIterator[None]]]:
+        lifespans: typing.List[typing.Callable[..., typing.AsyncIterator[None]]] = []
+        for route in visit_routes(
+            app_type=App, router=self.router, nodes=[self, self.router], path=""
+        ):
             dependencies: typing.List[DependantBase[typing.Any]] = []
-            for router_or_app in route.nodes:
-                if isinstance(router_or_app, Router):
-                    dependencies.extend(router_or_app.dependencies)
-                elif isinstance(router_or_app, App):
-                    lifespan = router_or_app.lifespan
-                    if lifespan is not None:
-                        self._lifespans.append(
-                            _wrap_lifespan_as_async_generator(lifespan)
+            for node in route.nodes:
+                if isinstance(node, Router):
+                    dependencies.extend(node.dependencies)
+                    if node is not self.router:  # avoid circul lifespan calls
+                        lifespan = typing.cast(
+                            typing.Callable[..., typing.AsyncContextManager[None]],
+                            node.lifespan_context,  # type: ignore  # for Pylance
                         )
+                        if lifespan is not None:
+                            lifespans.append(
+                                _wrap_lifespan_as_async_generator(lifespan)
+                            )
             if isinstance(route.route, Path):
                 for operation in route.route.operations.values():
                     operation.solve(
@@ -256,10 +236,7 @@ class App:
                     ],
                     container=self.container,
                 )
-        if not self._lifespans:
-            # edge case: this app has no routes
-            if self.lifespan is not None:
-                self._lifespans.append(_wrap_lifespan_as_async_generator(self.lifespan))
+        return lifespans
 
     async def get_openapi(self) -> openapi_models.OpenAPI:
         return genrate_openapi(
