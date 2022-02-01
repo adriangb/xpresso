@@ -1,4 +1,7 @@
+import pytest
+
 from docs_src.advanced.websockets import app
+from xpresso.exceptions import WebSocketValidationError
 from xpresso.testclient import TestClient
 from xpresso.websockets import WebSocketDisconnect
 
@@ -6,28 +9,23 @@ from xpresso.websockets import WebSocketDisconnect
 def test_websockets_missing_header() -> None:
     client = TestClient(app)
 
-    try:
+    with pytest.raises(WebSocketValidationError) as err:
         with client.websocket_connect("/ws"):
-            raise AssertionError("Should not be called")  # pragma: no cover
-    except WebSocketDisconnect:
-        pass
-    else:
-        raise AssertionError(
-            "Expected a WebSocketDisconnect to be raised"
-        )  # pragma: no cover
+            pass
+
+    assert isinstance(err.value, WebSocketValidationError)
+    assert err.value.errors() == [{'loc': ('header', 'x_header'), 'msg': 'Missing required header parameter', 'type': 'value_error'}]
 
 
 def test_websockets_unprocessable_header() -> None:
     client = TestClient(app)
-    try:
+
+    with pytest.raises(WebSocketValidationError) as err:
         with client.websocket_connect("/ws", headers={"X-Header": "not a number"}):
-            raise AssertionError("Should not be called")  # pragma: no cover
-    except WebSocketDisconnect:
-        pass
-    else:
-        raise AssertionError(
-            "Expected a WebSocketDisconnect to be raised"
-        )  # pragma: no cover
+            pass
+
+    assert isinstance(err.value, WebSocketValidationError)
+    assert err.value.errors() == [{'loc': ('header', 'x_header'), 'msg': 'value is not a valid integer', 'type': 'type_error.integer'}]
 
 
 def test_websockets_exception_in_user_dependency() -> None:

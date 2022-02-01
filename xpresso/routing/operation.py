@@ -6,7 +6,6 @@ from di.api.executor import AsyncExecutorProtocol
 from di.api.providers import DependencyProvider as Endpoint
 from di.api.solved import SolvedDependant
 from di.dependant import JoinedDependant
-from starlette.background import BackgroundTasks
 from starlette.datastructures import URLPath
 from starlette.requests import HTTPConnection, Request
 from starlette.responses import JSONResponse, Response
@@ -47,10 +46,6 @@ class _OperationApp:
         values: typing.Dict[typing.Any, typing.Any] = {
             Request: request,
             HTTPConnection: request,
-            BackgroundTasks: BackgroundTasks(),
-            Scope: scope,
-            Receive: receive,
-            Send: send,
         }
         xpresso_scope: asgi_scope_extension.XpressoASGIExtension = scope["extensions"][
             "xpresso"

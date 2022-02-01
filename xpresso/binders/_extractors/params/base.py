@@ -2,10 +2,9 @@ import inspect
 import typing
 from dataclasses import dataclass
 
-import starlette.types
-import starlette.websockets
 from pydantic.error_wrappers import ErrorWrapper
 from pydantic.fields import ModelField
+from starlette.requests import HTTPConnection
 
 from xpresso._utils.typing import model_field_from_param
 from xpresso.binders._extractors.api import ParameterExtractor
@@ -23,18 +22,14 @@ class ParameterExtractorBase(ParameterExtractor):
     async def validate(
         self,
         values: typing.Optional[Some[typing.Any]],
-        scope: starlette.types.Scope,
-        receive: starlette.types.Receive,
-        send: starlette.types.Send,
+        connection: HTTPConnection,
     ) -> typing.Any:
         """Validate after parsing. Only used by the top-level body"""
         if values is None:
             if self.field.required is False:
                 return self.field.get_default()
             else:
-                if scope["type"] == "websocket":
-                    ws = starlette.websockets.WebSocket(scope, receive, send)
-                    await ws.close()
+                if connection.scope["type"] == "websocket":
                     raise WebSocketValidationError(
                         [
                             ErrorWrapper(
@@ -56,17 +51,8 @@ class ParameterExtractorBase(ParameterExtractor):
             if isinstance(errs, ErrorWrapper):
                 errs = [errs]
             errs = typing.cast(typing.List[ErrorWrapper], errs)
-            if scope["type"] == "websocket":
-                ws = starlette.websockets.WebSocket(scope, receive, send)
-                await ws.close()
-                raise WebSocketValidationError(
-                    [
-                        ErrorWrapper(
-                            ValueError(f"Missing required {self.in_} parameter"),
-                            loc=self.loc,
-                        )
-                    ]
-                )
+            if connection.scope["type"] == "websocket":
+                raise WebSocketValidationError(errs)
             raise RequestValidationError(errs)
         return val
 

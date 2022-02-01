@@ -8,7 +8,6 @@ if sys.version_info < (3, 8):
 else:
     from typing import Protocol
 
-import starlette.types
 from pydantic.fields import ModelField
 from starlette.requests import HTTPConnection
 
@@ -66,17 +65,12 @@ class CookieParameterExtractor(ParameterExtractorBase):
 
     async def extract(
         self,
-        scope: starlette.types.Scope,
-        receive: starlette.types.Receive,
-        send: starlette.types.Send,
         connection: HTTPConnection,
     ) -> Any:
         param = connection.cookies.get(self.name, None)
         if param is not None:
-            return await self.validate(
-                Some(self.extractor(param)), scope, receive, send
-            )
-        return await self.validate(None, scope, receive, send)
+            return await self.validate(Some(self.extractor(param)), connection)
+        return await self.validate(None, connection)
 
 
 @dataclass(frozen=True)

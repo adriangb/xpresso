@@ -9,7 +9,6 @@ if sys.version_info < (3, 8):
 else:
     from typing import Protocol
 
-import starlette.types
 from pydantic.error_wrappers import ErrorWrapper
 from pydantic.fields import ModelField
 from starlette.requests import HTTPConnection
@@ -93,9 +92,6 @@ class HeaderParameterExtractor(ParameterExtractorBase):
 
     async def extract(
         self,
-        scope: starlette.types.Scope,
-        receive: starlette.types.Receive,
-        send: starlette.types.Send,
         connection: HTTPConnection,
     ) -> Any:
         # parse headers according to RFC 7230
@@ -103,7 +99,7 @@ class HeaderParameterExtractor(ParameterExtractorBase):
         # so here we merge them all into one "," seperated string
         # also note that whitespaces after a "," don't matter, so we .lstrip() as needed
         header_values: "List[str]" = []
-        for name, value in scope["headers"]:
+        for name, value in connection.scope["headers"]:
             if name == self.header_name:
                 header_values.append(value.decode("latin-1"))
         header_value: "Optional[str]"
@@ -114,10 +110,10 @@ class HeaderParameterExtractor(ParameterExtractorBase):
         try:
             extracted = self.extractor(header_value)
         except InvalidSerialization as exc:
-            raise ERRORS[scope["type"]](
+            raise ERRORS[connection.scope["type"]](
                 [ErrorWrapper(exc=exc, loc=("header", self.name))]
             )
-        return await self.validate(extracted, scope, receive, send)
+        return await self.validate(extracted, connection)
 
 
 @dataclass(frozen=True)

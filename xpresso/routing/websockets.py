@@ -34,13 +34,9 @@ class _WebSocketRoute:
         send: starlette.types.Send,
     ) -> None:
         ws = starlette.websockets.WebSocket(scope=scope, receive=receive, send=send)
-        conn = starlette.requests.HTTPConnection(scope=scope, receive=receive)
         values: typing.Dict[typing.Any, typing.Any] = {
             starlette.websockets.WebSocket: ws,
-            starlette.requests.HTTPConnection: conn,
-            starlette.types.Scope: scope,
-            starlette.types.Receive: receive,
-            starlette.types.Send: send,
+            starlette.requests.HTTPConnection: ws,
         }
         xpresso_scope: asgi_scope_extension.XpressoASGIExtension = scope["extensions"][
             "xpresso"

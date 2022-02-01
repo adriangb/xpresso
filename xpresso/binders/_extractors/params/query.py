@@ -2,7 +2,6 @@ import inspect
 from dataclasses import dataclass
 from typing import Any, ClassVar, Optional
 
-import starlette.types
 from pydantic.error_wrappers import ErrorWrapper
 from starlette.requests import HTTPConnection
 
@@ -28,9 +27,6 @@ class QueryParameterExtractor(ParameterExtractorBase):
 
     async def extract(
         self,
-        scope: starlette.types.Scope,
-        receive: starlette.types.Receive,
-        send: starlette.types.Send,
         connection: HTTPConnection,
     ) -> Any:
         try:
@@ -38,7 +34,7 @@ class QueryParameterExtractor(ParameterExtractorBase):
                 name=self.name, params=connection.query_params.multi_items()
             )
         except InvalidSerialization:
-            raise ERRORS[scope["type"]](
+            raise ERRORS[connection.scope["type"]](
                 [
                     ErrorWrapper(
                         exc=TypeError("Data is not a valid URL encoded query"),
@@ -46,7 +42,7 @@ class QueryParameterExtractor(ParameterExtractorBase):
                     )
                 ]
             )
-        return await self.validate(extracted, scope, receive, send)
+        return await self.validate(extracted, connection)
 
 
 @dataclass(frozen=True)

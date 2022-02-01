@@ -51,7 +51,7 @@ def register_framework_dependencies(
     )
     container.register_by_type(
         Dependant(
-            BackgroundTasks,
+            lambda: BackgroundTasks(),
             scope="connection",
             wire=False,
         ),

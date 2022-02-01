@@ -7,7 +7,6 @@ if sys.version_info < (3, 8):
 else:
     from typing import Protocol
 
-import starlette.types
 from starlette.datastructures import FormData, UploadFile
 from starlette.requests import HTTPConnection, Request
 
@@ -51,9 +50,6 @@ class BodyExtractorMarker(Protocol):
 class ParameterExtractor(Protocol):
     def extract(
         self,
-        scope: starlette.types.Scope,
-        receive: starlette.types.Receive,
-        send: starlette.types.Send,
         connection: HTTPConnection,
     ) -> Any:
         raise NotImplementedError

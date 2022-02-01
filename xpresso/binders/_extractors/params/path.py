@@ -3,7 +3,6 @@ import inspect
 from dataclasses import dataclass
 from typing import Any, Callable, ClassVar, Dict, Iterable, List, Optional, Tuple, cast
 
-import starlette.types
 from pydantic.error_wrappers import ErrorWrapper
 from pydantic.fields import ModelField
 from starlette.requests import HTTPConnection
@@ -128,19 +127,16 @@ class PathParameterExtractor(ParameterExtractorBase):
 
     async def extract(
         self,
-        scope: starlette.types.Scope,
-        receive: starlette.types.Receive,
-        send: starlette.types.Send,
         connection: HTTPConnection,
     ) -> Any:
         param_value: str = connection.path_params[self.name]  # type: ignore[assignment]
         try:
             extracted = self.extractor(name=self.name, value=param_value)
         except InvalidSerialization as exc:
-            raise ERRORS[scope["type"]](
+            raise ERRORS[connection.scope["type"]](
                 [ErrorWrapper(exc=exc, loc=("path", self.name))]
             )
-        return await self.validate(Some(extracted), scope, receive, send)
+        return await self.validate(Some(extracted), connection)
 
 
 @dataclass(frozen=True)
