@@ -8,7 +8,8 @@ from xpresso.exceptions import RequestValidationError
 encoder = JsonableEncoder()
 
 
-async def http_exception_handler(request: Request, exc: HTTPException) -> JSONResponse:
+async def http_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    assert isinstance(exc, HTTPException)
     headers = getattr(exc, "headers", None)
     if headers:
         return JSONResponse(
@@ -19,8 +20,9 @@ async def http_exception_handler(request: Request, exc: HTTPException) -> JSONRe
 
 
 async def validation_exception_handler(
-    request: Request, exc: RequestValidationError
+    request: Request, exc: Exception
 ) -> JSONResponse:
+    assert isinstance(exc, RequestValidationError)
     return JSONResponse(
         encoder({"detail": exc.errors()}),
         status_code=exc.status_code,

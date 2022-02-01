@@ -6,6 +6,7 @@ from typing import (
     Any,
     Callable,
     Dict,
+    Generator,
     Iterable,
     List,
     Mapping,
@@ -14,6 +15,7 @@ from typing import (
     Sequence,
     Type,
     Union,
+    cast,
 )
 
 if sys.version_info < (3, 9):
@@ -28,7 +30,7 @@ from pydantic.typing import NoneType
 from starlette.responses import Response
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
-from xpresso._utils.routing import visit_routes
+from xpresso._utils.routing import VisitedRoute
 from xpresso.binders import dependants as binder_dependants
 from xpresso.openapi import models
 from xpresso.openapi.constants import REF_PREFIX
@@ -293,11 +295,11 @@ def get_operation(
     model_name_map: ModelNameMap,
     components: Dict[str, Any],
     security_models: Mapping[Security, SecurityBase],
-    parent_tags: List[str],
-    parent_responses: Responses,
+    tags: List[str],
+    response_specs: Responses,
 ) -> models.Operation:
     data: Dict[str, Any] = {
-        "tags": [*route.tags, *parent_tags] or None,
+        "tags": tags or None,
         "summary": route.summary,
         "description": route.description,
         "deprecated": route.deprecated,
@@ -344,7 +346,6 @@ def get_operation(
             ],
             security_schemes,
         )
-    response_specs = {**parent_responses, **route.responses}
     data["responses"] = get_responses(
         route,
         response_specs=response_specs,
@@ -379,18 +380,33 @@ def get_operation(
 
 
 def get_paths_items(
-    router: Router,
+    visitor: Generator[VisitedRoute[Any], None, None],
     model_name_map: ModelNameMap,
     components: Dict[str, Any],
     security_models: Mapping[Security, SecurityBase],
 ) -> Dict[str, models.PathItem]:
     paths: Dict[str, models.PathItem] = {}
-    for visited_route in visit_routes([router]):
+    for visited_route in visitor:
         if isinstance(visited_route.route, Path):
-            if not visited_route.route.include_in_schema:
+            path_item = visited_route.route
+            if not path_item.include_in_schema:
                 continue
+            tags: List[str] = []
+            responses = dict(cast(Responses, {}))
+            include_in_schema = True
+            for node in visited_route.nodes:
+                if isinstance(node, Router):
+                    if not node.include_in_schema:
+                        include_in_schema = False
+                        break
+                    responses.update(node.responses)
+                    tags.extend(node.tags)
+            if not include_in_schema:
+                continue
+            tags.extend(path_item.tags)
+            responses.update(path_item.responses)
             operations: Dict[str, models.Operation] = {}
-            for method, operation in visited_route.route.operations.items():
+            for method, operation in path_item.operations.items():
                 if not operation.include_in_schema:
                     continue
                 operations[method.lower()] = get_operation(
@@ -398,8 +414,8 @@ def get_paths_items(
                     model_name_map=model_name_map,
                     components=components,
                     security_models=security_models,
-                    parent_tags=visited_route.tags,
-                    parent_responses=visited_route.responses,
+                    tags=tags + operation.tags,
+                    response_specs={**responses, **operation.responses},
                 )
             paths[visited_route.path] = models.PathItem(
                 description=visited_route.route.description,
@@ -411,15 +427,15 @@ def get_paths_items(
 
 
 def genrate_openapi(
+    visitor: Generator[VisitedRoute[Any], None, None],
     version: str,
     info: models.Info,
     servers: Optional[Iterable[models.Server]],
-    router: Router,
     security_models: Mapping[Security, SecurityBase],
 ) -> models.OpenAPI:
     model_name_map: ModelNameMap = {}
     components: Dict[str, Any] = {}
-    paths = get_paths_items(router, model_name_map, components, security_models)
+    paths = get_paths_items(visitor, model_name_map, components, security_models)
     return models.OpenAPI(
         openapi=version,
         info=info,

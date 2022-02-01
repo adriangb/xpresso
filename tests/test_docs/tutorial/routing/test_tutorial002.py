@@ -12,7 +12,7 @@ def test_openapi() -> None:
             "/v1/items": {
                 "get": {
                     "responses": {"404": {"description": "Item not found"}},
-                    "tags": ["read", "v1", "items"],
+                    "tags": ["v1", "items", "read"],
                     "summary": "List all items",
                     "description": "The **items** operation",
                     "deprecated": True,
@@ -32,7 +32,7 @@ def test_openapi() -> None:
                             },
                         },
                     },
-                    "tags": ["write", "v1", "items"],
+                    "tags": ["v1", "items", "write"],
                     "description": "Documentation from docstrings!\n    You can use any valid markdown, for example lists:\n\n    - Point 1\n    - Point 2\n    ",
                     "requestBody": {
                         "content": {
