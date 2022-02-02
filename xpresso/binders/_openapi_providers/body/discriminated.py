@@ -28,6 +28,13 @@ class OpenAPIContentTypeDiscriminated(OpenAPIBody):
     required: typing.Optional[bool]
     include_in_schema = True
 
+    def get_models(self) -> typing.List[type]:
+        return [
+            model
+            for provider in self.sub_body_providers.values()
+            for model in provider.get_models()
+        ]
+
     def get_openapi(
         self, model_name_map: ModelNameMap, schemas: Schemas
     ) -> openapi_models.RequestBody:

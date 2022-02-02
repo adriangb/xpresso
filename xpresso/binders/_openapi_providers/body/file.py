@@ -29,6 +29,9 @@ class OpenAPIFileBody(OpenAPIBody):
     nullable: bool
     include_in_schema: bool
 
+    def get_models(self) -> typing.List[type]:
+        return []
+
     def get_schema(
         self, model_name_map: ModelNameMap, schemas: Schemas
     ) -> openapi_models.Schema:

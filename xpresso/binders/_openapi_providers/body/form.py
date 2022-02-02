@@ -1,7 +1,9 @@
 import inspect
 import sys
 import typing
-from dataclasses import dataclass
+from dataclasses import dataclass, is_dataclass
+
+from pydantic import BaseModel
 
 if sys.version_info < (3, 8):
     from typing_extensions import Literal
@@ -10,7 +12,7 @@ else:
 
 from di.typing import get_markers_from_parameter
 
-from xpresso._utils.typing import model_field_from_param
+from xpresso._utils.typing import model_field_from_param, pydantic_model_from_dataclass
 from xpresso.binders._openapi_providers.api import (
     ModelNameMap,
     OpenAPIBody,
@@ -36,6 +38,13 @@ class OpenAPIFormDataBody(OpenAPIBody):
     required: bool
     nullable: bool
     include_in_schema: bool
+
+    def get_models(self) -> typing.List[type]:
+        return [
+            model
+            for provider in self.field_openapi_providers.values()
+            for model in provider.get_models()
+        ]
 
     def get_schema(
         self, model_name_map: ModelNameMap, schemas: Schemas
@@ -106,8 +115,23 @@ class OpenAPIFormDataMarker(OpenAPIBodyMarker):
         field_openapi_providers: typing.Dict[str, OpenAPIBody] = {}
         required_fields: typing.List[str] = []
         # use pydantic to get rid of outer annotated, optional, etc.
-        annotation = form_data_field.type_
-        for field_param in inspect.signature(annotation).parameters.values():
+        form_data_model = form_data_field.type_
+        if not inspect.isclass(form_data_model):
+            raise TypeError("Form model must be a dataclass or Pydantic model")
+        if issubclass(form_data_model, BaseModel):
+            pydantic_model = form_data_model
+        elif is_dataclass(form_data_model):
+            pydantic_model = pydantic_model_from_dataclass(form_data_model)
+        else:
+            raise TypeError("Form model must be a dataclass or Pydantic model")
+        for field in pydantic_model.__fields__.values():
+            default = inspect.Parameter.empty if field.required else field.default
+            field_param = inspect.Parameter(
+                name=field.name,
+                kind=inspect.Parameter.KEYWORD_ONLY,
+                annotation=field.outer_type_,
+                default=default,
+            )
             marker: typing.Optional[BodyBinderMarker] = None
             for param_marker in get_markers_from_parameter(field_param):
                 if isinstance(param_marker, BodyBinderMarker):

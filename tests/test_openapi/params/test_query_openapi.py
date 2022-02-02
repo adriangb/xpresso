@@ -208,7 +208,6 @@ def test_array() -> None:
                     },
                     "parameters": [
                         {
-                            "required": False,
                             "style": "form",
                             "explode": True,
                             "schema": {
@@ -385,7 +384,6 @@ def test_non_nullable_with_default() -> None:
                     },
                     "parameters": [
                         {
-                            "required": False,
                             "style": "form",
                             "explode": True,
                             "schema": {
@@ -558,7 +556,6 @@ def test_nullable_with_default() -> None:
                     },
                     "parameters": [
                         {
-                            "required": False,
                             "style": "form",
                             "explode": True,
                             "schema": {

@@ -1,22 +1,28 @@
 import inspect
 import sys
-from typing import Dict, Optional, Union
+from typing import Dict, List, Optional, Union
 
 if sys.version_info < (3, 8):
     from typing_extensions import Protocol
 else:
     from typing import Protocol
 
-from pydantic.schema import TypeModelOrEnum
-
 from xpresso.openapi import models
 
-ModelNameMap = Dict[TypeModelOrEnum, str]
+Model = type
+ModelNameMap = Dict[Model, str]
 Schemas = Dict[str, Union[models.Schema, models.Reference]]
 
 
 class OpenAPIBody(Protocol):
     include_in_schema: bool
+
+    def get_models(self) -> List[type]:
+        """The type representing this parameter.
+
+        This is used as the key to deduplicate references and schema names.
+        """
+        raise NotImplementedError
 
     def get_openapi(
         self, model_name_map: ModelNameMap, schemas: Schemas
@@ -56,6 +62,10 @@ class OpenAPIParameter(Protocol):
     def get_openapi(
         self, model_name_map: ModelNameMap, schemas: Schemas
     ) -> models.ConcreteParameter:
+        raise NotImplementedError
+
+    def get_models(self) -> List[type]:
+        """Used as the key to deduplicate references and schema names"""
         raise NotImplementedError
 
     def __eq__(self, o: object) -> bool:

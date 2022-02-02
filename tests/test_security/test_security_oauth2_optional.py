@@ -100,10 +100,12 @@ openapi_schema: Dict[str, Any] = {
                                     "client_id": {
                                         "title": "Client Id",
                                         "type": "string",
+                                        "nullable": True,
                                     },
                                     "client_secret": {
                                         "title": "Client Secret",
                                         "type": "string",
+                                        "nullable": True,
                                     },
                                 },
                             },

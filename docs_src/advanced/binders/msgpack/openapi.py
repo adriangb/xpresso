@@ -1,4 +1,5 @@
 import inspect
+import typing
 
 from xpresso.binders.api import (
     ModelNameMap,
@@ -11,6 +12,9 @@ from xpresso.openapi import models
 
 class OpenAPIBodyMsgPack(OpenAPIBody):
     include_in_schema: bool = True
+
+    def get_models(self) -> typing.List[type]:
+        return []
 
     def get_media_type_string(self) -> str:
         return "application/x-msgpack"

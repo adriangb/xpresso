@@ -1,9 +1,10 @@
 import inspect
 import typing
-from dataclasses import dataclass
+from dataclasses import dataclass, is_dataclass
 from urllib.parse import unquote_plus
 
 from di.typing import get_markers_from_parameter
+from pydantic import BaseModel
 from pydantic.fields import ModelField
 from starlette.datastructures import FormData, Headers, UploadFile
 from starlette.formparsers import FormParser
@@ -13,7 +14,7 @@ from xpresso._utils.media_type_validator import MediaTypeValidator
 from xpresso._utils.media_type_validator import (
     get_validator as get_media_type_validator,
 )
-from xpresso._utils.typing import model_field_from_param
+from xpresso._utils.typing import model_field_from_param, pydantic_model_from_dataclass
 from xpresso.binders._extractors.api import BodyExtractor, BodyExtractorMarker
 from xpresso.binders._extractors.body.form_field import FormFieldBodyExtractorMarker
 from xpresso.binders._extractors.validator import validate as validate_data
@@ -110,12 +111,27 @@ class FormDataBodyExtractorMarkerBase(BodyExtractorMarker):
     ]
 
     def register_parameter(self, param: inspect.Parameter) -> BodyExtractor:
-        formdata_field = model_field_from_param(param)
+        form_data_field = model_field_from_param(param)
 
         field_extractors: typing.Dict[str, BodyExtractor] = {}
         # use pydantic to get rid of outer annotated, optional, etc.
-        annotation = formdata_field.type_
-        for param_name, field_param in inspect.signature(annotation).parameters.items():
+        form_data_model = form_data_field.type_
+        if not inspect.isclass(form_data_model):
+            raise TypeError("Form model must be a dataclass or Pydantic model")
+        if issubclass(form_data_model, BaseModel):
+            pydantic_model = form_data_model
+        elif is_dataclass(form_data_model):
+            pydantic_model = pydantic_model_from_dataclass(form_data_model)
+        else:
+            raise TypeError("Form model must be a dataclass or Pydantic model")
+        for field in pydantic_model.__fields__.values():
+            default = inspect.Parameter.empty if field.required else field.default
+            field_param = inspect.Parameter(
+                name=field.name,
+                kind=inspect.Parameter.KEYWORD_ONLY,
+                annotation=field.outer_type_,
+                default=default,
+            )
             marker: typing.Optional[BodyBinderMarker] = None
             for param_marker in get_markers_from_parameter(field_param):
                 if isinstance(param_marker, BodyBinderMarker):
@@ -132,7 +148,7 @@ class FormDataBodyExtractorMarkerBase(BodyExtractorMarker):
             else:
                 extractor_marker = marker.extractor_marker
             extractor = extractor_marker.register_parameter(field_param)
-            field_extractors[param_name] = extractor
+            field_extractors[field.name] = extractor
         if self.enforce_media_type and self.media_type:
             media_type_validator = get_media_type_validator(self.media_type)
         else:
@@ -140,7 +156,7 @@ class FormDataBodyExtractorMarkerBase(BodyExtractorMarker):
         return self.cls(
             media_type_validator=media_type_validator,
             field_extractors=field_extractors,
-            field=formdata_field,
+            field=form_data_field,
         )
 
 
