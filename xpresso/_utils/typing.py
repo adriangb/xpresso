@@ -3,7 +3,6 @@ import typing
 from enum import Enum
 
 from pydantic import BaseConfig, BaseModel
-from pydantic.dataclasses import dataclass as pydantic_dataclass
 from pydantic.fields import (
     MAPPING_LIKE_SHAPES,
     SHAPE_FROZENSET,
@@ -28,16 +27,6 @@ def model_field_from_param(param: inspect.Parameter) -> ModelField:
         class_validators={},
         config=BaseConfig,
     )
-
-
-def pydantic_model_from_dataclass(cls: type) -> typing.Type[BaseModel]:
-    """Converts a stdlib dataclass to a pydantic BaseModel"""
-    if hasattr(cls, "__pydantic_model__"):
-        return getattr(cls, "__pydantic_model__")
-    try:
-        return pydantic_dataclass(cls, frozen=False).__pydantic_model__
-    except TypeError:
-        return pydantic_dataclass(cls, frozen=True).__pydantic_model__
 
 
 def filter_pydantic_models_from_set(

@@ -1,10 +1,9 @@
 import inspect
 import typing
-from dataclasses import dataclass, is_dataclass
+from dataclasses import dataclass
 from urllib.parse import unquote_plus
 
 from di.typing import get_markers_from_parameter
-from pydantic import BaseModel
 from pydantic.fields import ModelField
 from starlette.datastructures import FormData, Headers, UploadFile
 from starlette.formparsers import FormParser
@@ -14,7 +13,7 @@ from xpresso._utils.media_type_validator import MediaTypeValidator
 from xpresso._utils.media_type_validator import (
     get_validator as get_media_type_validator,
 )
-from xpresso._utils.typing import model_field_from_param, pydantic_model_from_dataclass
+from xpresso._utils.typing import model_field_from_param
 from xpresso.binders._extractors.api import BodyExtractor, BodyExtractorMarker
 from xpresso.binders._extractors.body.form_field import FormFieldBodyExtractorMarker
 from xpresso.binders._extractors.validator import validate as validate_data
@@ -115,23 +114,8 @@ class FormDataBodyExtractorMarkerBase(BodyExtractorMarker):
 
         field_extractors: typing.Dict[str, BodyExtractor] = {}
         # use pydantic to get rid of outer annotated, optional, etc.
-        form_data_model = form_data_field.type_
-        if not inspect.isclass(form_data_model):
-            raise TypeError("Form model must be a dataclass or Pydantic model")
-        if issubclass(form_data_model, BaseModel):
-            pydantic_model = form_data_model
-        elif is_dataclass(form_data_model):
-            pydantic_model = pydantic_model_from_dataclass(form_data_model)
-        else:
-            raise TypeError("Form model must be a dataclass or Pydantic model")
-        for field in pydantic_model.__fields__.values():
-            default = inspect.Parameter.empty if field.required else field.default
-            field_param = inspect.Parameter(
-                name=field.name,
-                kind=inspect.Parameter.KEYWORD_ONLY,
-                annotation=field.outer_type_,
-                default=default,
-            )
+        annotation = form_data_field.type_
+        for param_name, field_param in inspect.signature(annotation).parameters.items():
             marker: typing.Optional[BodyBinderMarker] = None
             for param_marker in get_markers_from_parameter(field_param):
                 if isinstance(param_marker, BodyBinderMarker):
@@ -148,7 +132,7 @@ class FormDataBodyExtractorMarkerBase(BodyExtractorMarker):
             else:
                 extractor_marker = marker.extractor_marker
             extractor = extractor_marker.register_parameter(field_param)
-            field_extractors[field.name] = extractor
+            field_extractors[param_name] = extractor
         if self.enforce_media_type and self.media_type:
             media_type_validator = get_media_type_validator(self.media_type)
         else:
