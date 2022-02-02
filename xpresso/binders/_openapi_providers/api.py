@@ -1,6 +1,6 @@
 import inspect
 import sys
-from typing import Any, Dict, Optional
+from typing import Dict, Optional, Union
 
 if sys.version_info < (3, 8):
     from typing_extensions import Protocol
@@ -12,7 +12,7 @@ from pydantic.schema import TypeModelOrEnum
 from xpresso.openapi import models
 
 ModelNameMap = Dict[TypeModelOrEnum, str]
-Schemas = Dict[str, Any]
+Schemas = Dict[str, Union[models.Schema, models.Reference]]
 
 
 class OpenAPIBody(Protocol):
@@ -28,10 +28,10 @@ class OpenAPIBody(Protocol):
     ) -> models.Schema:
         raise NotImplementedError
 
-    def get_media_type(self) -> str:
+    def get_media_type_string(self) -> str:
         raise NotImplementedError
 
-    def get_media_type_object(
+    def get_openapi_media_type(
         self, model_name_map: ModelNameMap, schemas: Schemas
     ) -> models.MediaType:
         raise NotImplementedError

@@ -45,7 +45,7 @@ class OpenAPIJsonBody(OpenAPIBody):
         schemas.update(refs)
         return openapi_models.Schema(**schema, nullable=self.field.allow_none or None)
 
-    def get_media_type_object(
+    def get_openapi_media_type(
         self, model_name_map: ModelNameMap, schemas: Schemas
     ) -> openapi_models.MediaType:
         return openapi_models.MediaType(
@@ -53,7 +53,7 @@ class OpenAPIJsonBody(OpenAPIBody):
             examples=self.examples,  # type: ignore[arg-type]
         )
 
-    def get_media_type(self) -> str:
+    def get_media_type_string(self) -> str:
         return "application/json"
 
     def get_openapi(
@@ -63,7 +63,7 @@ class OpenAPIJsonBody(OpenAPIBody):
             description=self.description,
             required=self.required,
             content={
-                "application/json": self.get_media_type_object(model_name_map, schemas)
+                "application/json": self.get_openapi_media_type(model_name_map, schemas)
             },
         )
 

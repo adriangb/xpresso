@@ -36,7 +36,7 @@ class OpenAPIFileBody(OpenAPIBody):
             type="string", format=self.format, nullable=self.nullable or None
         )
 
-    def get_media_type_object(
+    def get_openapi_media_type(
         self, model_name_map: ModelNameMap, schemas: Schemas
     ) -> openapi_models.MediaType:
         return openapi_models.MediaType(
@@ -44,7 +44,7 @@ class OpenAPIFileBody(OpenAPIBody):
             examples=self.examples,  # type: ignore[arg-type]
         )
 
-    def get_media_type(self) -> str:
+    def get_media_type_string(self) -> str:
         return self.media_type or "*/*"
 
     def get_openapi(
@@ -54,7 +54,7 @@ class OpenAPIFileBody(OpenAPIBody):
             description=self.description,
             required=self.required,
             content={
-                self.get_media_type(): self.get_media_type_object(
+                self.get_media_type_string(): self.get_openapi_media_type(
                     model_name_map, schemas
                 )
             },

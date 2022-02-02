@@ -12,10 +12,10 @@ from xpresso.openapi import models
 class OpenAPIBodyMsgPack(OpenAPIBody):
     include_in_schema: bool = True
 
-    def get_media_type(self) -> str:
+    def get_media_type_string(self) -> str:
         return "application/x-msgpack"
 
-    def get_media_type_object(
+    def get_openapi_media_type(
         self, model_name_map: ModelNameMap, schemas: Schemas
     ) -> models.MediaType:
         return models.MediaType(
@@ -35,7 +35,7 @@ class OpenAPIBodyMsgPack(OpenAPIBody):
     ) -> models.RequestBody:
         return models.RequestBody(
             content={
-                self.get_media_type(): self.get_media_type_object(
+                self.get_media_type_string(): self.get_openapi_media_type(
                     model_name_map, schemas
                 )
             }
