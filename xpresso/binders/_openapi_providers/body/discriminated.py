@@ -28,6 +28,13 @@ class OpenAPIContentTypeDiscriminated(OpenAPIBody):
     required: typing.Optional[bool]
     include_in_schema = True
 
+    def get_models(self) -> typing.List[type]:
+        return [
+            model
+            for provider in self.sub_body_providers.values()
+            for model in provider.get_models()
+        ]
+
     def get_openapi(
         self, model_name_map: ModelNameMap, schemas: Schemas
     ) -> openapi_models.RequestBody:
@@ -35,7 +42,7 @@ class OpenAPIContentTypeDiscriminated(OpenAPIBody):
             description=self.description,
             required=self.required,
             content={
-                media_type: provider.get_media_type_object(model_name_map, schemas)
+                media_type: provider.get_openapi_media_type(model_name_map, schemas)
                 for media_type, provider in self.sub_body_providers.items()
             },
         )
@@ -79,7 +86,7 @@ class OpenAPIContentTypeDiscriminatedMarker(OpenAPIBodyMarker):
             sub_body_openapi = marker.openapi_marker
             provider = sub_body_openapi.register_parameter(sub_body_param)
             if provider.include_in_schema:
-                media_type = provider.get_media_type()
+                media_type = provider.get_media_type_string()
                 sub_body_providers[media_type] = provider
         return OpenAPIContentTypeDiscriminated(
             sub_body_providers=sub_body_providers,

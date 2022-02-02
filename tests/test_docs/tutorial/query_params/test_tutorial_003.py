@@ -27,7 +27,6 @@ openapi_schema: Dict[str, Any] = {
                 },
                 "parameters": [
                     {
-                        "required": False,
                         "style": "form",
                         "explode": True,
                         "schema": {"title": "Skip", "type": "integer", "default": 0},
@@ -35,7 +34,6 @@ openapi_schema: Dict[str, Any] = {
                         "in": "query",
                     },
                     {
-                        "required": False,
                         "style": "form",
                         "explode": True,
                         "schema": {

@@ -13,8 +13,9 @@ else:
 from pydantic.fields import ModelField
 from starlette.datastructures import UploadFile
 
+from xpresso._utils.typing import is_mapping_like, is_sequence_like
 from xpresso.binders._extractors.exceptions import InvalidSerialization
-from xpresso.binders._extractors.utils import grouped, is_mapping_like, is_sequence_like
+from xpresso.binders._extractors.utils import grouped
 from xpresso.typing import Some
 
 

@@ -39,7 +39,6 @@ openapi_schema: Dict[str, Any] = {
                 },
                 "parameters": [
                     {
-                        "required": False,
                         "style": "simple",
                         "explode": False,
                         "schema": {

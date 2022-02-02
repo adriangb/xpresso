@@ -110,11 +110,11 @@ class FormDataBodyExtractorMarkerBase(BodyExtractorMarker):
     ]
 
     def register_parameter(self, param: inspect.Parameter) -> BodyExtractor:
-        formdata_field = model_field_from_param(param)
+        form_data_field = model_field_from_param(param)
 
         field_extractors: typing.Dict[str, BodyExtractor] = {}
         # use pydantic to get rid of outer annotated, optional, etc.
-        annotation = formdata_field.type_
+        annotation = form_data_field.type_
         for param_name, field_param in inspect.signature(annotation).parameters.items():
             marker: typing.Optional[BodyBinderMarker] = None
             for param_marker in get_markers_from_parameter(field_param):
@@ -140,7 +140,7 @@ class FormDataBodyExtractorMarkerBase(BodyExtractorMarker):
         return self.cls(
             media_type_validator=media_type_validator,
             field_extractors=field_extractors,
-            field=formdata_field,
+            field=form_data_field,
         )
 
 

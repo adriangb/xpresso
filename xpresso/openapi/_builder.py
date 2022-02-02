@@ -1,19 +1,19 @@
 import inspect
 import sys
 from collections import ChainMap
-from enum import Enum
 from typing import (
     Any,
     Callable,
     Dict,
-    Generator,
     Iterable,
     List,
     Mapping,
     NamedTuple,
     Optional,
     Sequence,
-    Type,
+    Set,
+    Tuple,
+    TypeVar,
     Union,
     cast,
 )
@@ -23,14 +23,15 @@ if sys.version_info < (3, 9):
 else:
     from typing import get_origin, get_args, get_type_hints
 
-from pydantic import BaseConfig, BaseModel
+from pydantic import BaseConfig
 from pydantic.fields import ModelField
-from pydantic.schema import field_schema, get_flat_models_from_field, get_model_name_map
+from pydantic.schema import field_schema, get_flat_models_from_field
 from pydantic.typing import NoneType
 from starlette.responses import Response
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
 from xpresso._utils.routing import VisitedRoute
+from xpresso._utils.typing import get_model_name_map
 from xpresso.binders import dependants as binder_dependants
 from xpresso.openapi import models
 from xpresso.openapi.constants import REF_PREFIX
@@ -41,8 +42,11 @@ from xpresso.routing.router import Router
 from xpresso.security._base import SecurityBase
 from xpresso.security._dependants import Security
 
-ModelNameMap = Dict[Union[Type[BaseModel], Type[Enum]], str]
+T = TypeVar("T")
 
+ModelNameMap = Dict[type, str]
+
+Routes = Mapping[str, Tuple[Path, Mapping[str, Operation]]]
 
 SecurityModels = Mapping[Security, SecurityBase]
 
@@ -380,7 +384,7 @@ def get_operation(
 
 
 def get_paths_items(
-    visitor: Generator[VisitedRoute[Any], None, None],
+    visitor: Iterable[VisitedRoute[Any]],
     model_name_map: ModelNameMap,
     components: Dict[str, Any],
     security_models: Mapping[Security, SecurityBase],
@@ -426,15 +430,50 @@ def get_paths_items(
     return paths
 
 
+def filter_routes(visitor: Iterable[VisitedRoute[Any]]) -> Routes:
+    res: Dict[str, Tuple[Path, Dict[str, Operation]]] = {}
+    for visited_route in visitor:
+        if isinstance(visited_route.route, Path):
+            path_item = visited_route.route
+            if not path_item.include_in_schema:
+                continue
+            operations: Dict[str, Operation] = {}
+            for method, operation in path_item.operations.items():
+                if not operation.include_in_schema:
+                    continue
+                operations[method.lower()] = operation
+            res[visited_route.path] = (path_item, operations)
+    return res
+
+
+def get_flat_models(routes: Routes) -> Set[type]:
+    res: Set[type] = set()
+    for _, operations in routes.values():
+        for operation in operations.values():
+            dependant = operation.dependant
+            flat_dependencies = dependant.get_flat_subdependants()
+            for dep in flat_dependencies:
+                if isinstance(
+                    dep,
+                    (binder_dependants.ParameterBinder, binder_dependants.BodyBinder),
+                ):
+                    openapi = dep.openapi
+                    res.update(openapi.get_models())
+    return res
+
+
 def genrate_openapi(
-    visitor: Generator[VisitedRoute[Any], None, None],
+    visitor: Iterable[VisitedRoute[Any]],
     version: str,
     info: models.Info,
     servers: Optional[Iterable[models.Server]],
     security_models: Mapping[Security, SecurityBase],
 ) -> models.OpenAPI:
-    model_name_map: ModelNameMap = {}
     components: Dict[str, Any] = {}
+    visitor = list(visitor)
+    routes = filter_routes(visitor)
+    flat_models = get_flat_models(routes)
+    model_name_map = get_model_name_map(flat_models)
     paths = get_paths_items(visitor, model_name_map, components, security_models)
     return models.OpenAPI(
         openapi=version,

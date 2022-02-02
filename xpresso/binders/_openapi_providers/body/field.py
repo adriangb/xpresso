@@ -21,6 +21,9 @@ class FieldOpenAPIBase(OpenAPIBody):
     include_in_schema: bool
     field_openapi: OpenAPIBody
 
+    def get_models(self) -> typing.List[type]:
+        return self.field_openapi.get_models()
+
     def get_encoding(self) -> typing.Optional[models.Encoding]:
         return self.field_openapi.get_encoding()
 

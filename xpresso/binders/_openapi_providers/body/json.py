@@ -3,8 +3,9 @@ import typing
 from dataclasses import dataclass
 
 from pydantic.fields import ModelField
-from pydantic.schema import field_schema, get_flat_models_from_field, get_model_name_map
+from pydantic.schema import get_flat_models_from_field
 
+from xpresso._utils.schemas import openapi_schema_from_pydantic_field
 from xpresso._utils.typing import model_field_from_param
 from xpresso.binders._openapi_providers.api import (
     ModelNameMap,
@@ -14,7 +15,6 @@ from xpresso.binders._openapi_providers.api import (
 )
 from xpresso.binders._openapi_providers.utils import parse_examples
 from xpresso.openapi import models as openapi_models
-from xpresso.openapi.constants import REF_PREFIX
 
 
 @dataclass(frozen=True)
@@ -25,27 +25,15 @@ class OpenAPIJsonBody(OpenAPIBody):
     required: bool
     include_in_schema: bool
 
+    def get_models(self) -> typing.List[type]:
+        return list(get_flat_models_from_field(self.field, set()))
+
     def get_schema(
         self, model_name_map: ModelNameMap, schemas: Schemas
     ) -> openapi_models.Schema:
-        model_name_map.update(
-            get_model_name_map(
-                get_flat_models_from_field(
-                    self.field,
-                    model_name_map.keys(),  # type: ignore[arg-type]
-                )
-            )
-        )
-        schema, refs, _ = field_schema(
-            self.field,
-            by_alias=True,
-            ref_prefix=REF_PREFIX,
-            model_name_map=model_name_map,
-        )
-        schemas.update(refs)
-        return openapi_models.Schema(**schema, nullable=self.field.allow_none or None)
+        return openapi_schema_from_pydantic_field(self.field, model_name_map, schemas)
 
-    def get_media_type_object(
+    def get_openapi_media_type(
         self, model_name_map: ModelNameMap, schemas: Schemas
     ) -> openapi_models.MediaType:
         return openapi_models.MediaType(
@@ -53,7 +41,7 @@ class OpenAPIJsonBody(OpenAPIBody):
             examples=self.examples,  # type: ignore[arg-type]
         )
 
-    def get_media_type(self) -> str:
+    def get_media_type_string(self) -> str:
         return "application/json"
 
     def get_openapi(
@@ -63,7 +51,7 @@ class OpenAPIJsonBody(OpenAPIBody):
             description=self.description,
             required=self.required,
             content={
-                "application/json": self.get_media_type_object(model_name_map, schemas)
+                "application/json": self.get_openapi_media_type(model_name_map, schemas)
             },
         )
 

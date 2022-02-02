@@ -37,6 +37,13 @@ class OpenAPIFormDataBody(OpenAPIBody):
     nullable: bool
     include_in_schema: bool
 
+    def get_models(self) -> typing.List[type]:
+        return [
+            model
+            for provider in self.field_openapi_providers.values()
+            for model in provider.get_models()
+        ]
+
     def get_schema(
         self, model_name_map: ModelNameMap, schemas: Schemas
     ) -> openapi_models.Schema:
@@ -53,7 +60,7 @@ class OpenAPIFormDataBody(OpenAPIBody):
             nullable=self.nullable or None,
         )
 
-    def get_media_type_object(
+    def get_openapi_media_type(
         self, model_name_map: ModelNameMap, schemas: Schemas
     ) -> openapi_models.MediaType:
         encodings: typing.Dict[str, openapi_models.Encoding] = {}
@@ -67,7 +74,7 @@ class OpenAPIFormDataBody(OpenAPIBody):
             encoding=encodings or None,
         )
 
-    def get_media_type(self) -> str:
+    def get_media_type_string(self) -> str:
         return self.media_type
 
     def get_openapi(
@@ -77,7 +84,7 @@ class OpenAPIFormDataBody(OpenAPIBody):
             description=self.description,
             required=self.required,
             content={
-                self.get_media_type(): self.get_media_type_object(
+                self.get_media_type_string(): self.get_openapi_media_type(
                     model_name_map, schemas
                 )
             },
