@@ -69,7 +69,7 @@ Create a file called `tests.py` with the following contents:
 --8<-- "docs_src/advanced/binders/msgpack/tests.py"
 ```
 
-At this point we would have just stubbed out the actual implementations (just `FromMsgPack` for now, something like `FromMsgPack = Annoatated[T, "placeholder"]` would do).
+At this point we would have just stubbed out the actual implementations (just `FromMsgPack` for now, something like `FromMsgPack = Annotated[T, "placeholder"]` would do).
 So go ahead and create a file called `functions.py` and add a stub for `FromMsgPack`.
 
 But if we run our tests (`pytest tests.py`) they fail.
