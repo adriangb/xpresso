@@ -11,11 +11,15 @@ from pydantic.fields import (
     SHAPE_TUPLE_ELLIPSIS,
     ModelField,
 )
+from pydantic.schema import get_flat_models_from_field
 
-from xpresso._utils.typing import model_field_from_param
+from xpresso._utils.schemas import openapi_schema_from_pydantic_field
+from xpresso._utils.typing import is_sequence_like, model_field_from_param
 from xpresso.binders._openapi_providers.api import (
+    ModelNameMap,
     OpenAPIParameter,
     OpenAPIParameterMarker,
+    Schemas,
 )
 from xpresso.binders._openapi_providers.utils import parse_examples
 from xpresso.openapi import models as openapi_models
@@ -44,6 +48,26 @@ class OpenAPIParameterBase(OpenAPIParameter):
     include_in_schema: bool
     examples: Examples = field(compare=False)
     field: ModelField = field(compare=False)
+    param_cls: typing.ClassVar[typing.Type[openapi_models.ConcreteParameter]]
+
+    def get_openapi(
+        self, model_name_map: ModelNameMap, schemas: Schemas
+    ) -> openapi_models.ConcreteParameter:
+        return self.param_cls(
+            description=self.description or self.field.field_info.description,  # type: ignore[arg-type]
+            required=None if self.required is False else True,
+            deprecated=self.deprecated,
+            style=self.style,  # type: ignore[arg-type]
+            explode=self.explode,
+            schema=openapi_schema_from_pydantic_field(
+                self.field, model_name_map, schemas
+            ),
+            examples=self.examples,  # type: ignore[arg-type]
+            name=self.name,
+        )
+
+    def get_models(self) -> typing.List[type]:
+        return list(get_flat_models_from_field(self.field, known_models=set()))
 
 
 @dataclass(frozen=True)
@@ -57,20 +81,25 @@ class OpenAPIParameterMarkerBase(OpenAPIParameterMarker):
     examples: Examples
     in_: typing.ClassVar[str]
     cls: typing.ClassVar[typing.Type[OpenAPIParameterBase]]
-    must_be_required: typing.ClassVar[bool] = False
+    required: typing.ClassVar[bool] = False
 
     def register_parameter(self, param: inspect.Parameter) -> OpenAPIParameterBase:
         field = model_field_from_param(param)
         name = self.alias or field.alias
-        if field.required is False and self.must_be_required:
+        if field.required is False and self.required:
             raise TypeError(
                 f"{self.in_.title()} parameters MUST be required and MUST NOT have default values"
             )
+        if self.required:
+            required = True
+        elif field.required and not is_sequence_like(field):
+            required = True
+        else:
+            required = False
         return self.cls(
             name=name,
             in_=self.in_,
-            required=(field.required is not False)
-            and (field.shape not in SEQUENCE_LIKE_SHAPES),
+            required=required,
             field=field,
             style=self.style,
             explode=self.explode,

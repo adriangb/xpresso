@@ -37,6 +37,13 @@ class OpenAPIFormDataBody(OpenAPIBody):
     nullable: bool
     include_in_schema: bool
 
+    def get_models(self) -> typing.List[type]:
+        return [
+            model
+            for provider in self.field_openapi_providers.values()
+            for model in provider.get_models()
+        ]
+
     def get_schema(
         self, model_name_map: ModelNameMap, schemas: Schemas
     ) -> openapi_models.Schema:

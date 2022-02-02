@@ -201,7 +201,6 @@ def test_array() -> None:
                     },
                     "parameters": [
                         {
-                            "required": False,
                             "style": "form",
                             "explode": False,
                             "schema": {
@@ -375,7 +374,6 @@ def test_default() -> None:
                     },
                     "parameters": [
                         {
-                            "required": False,
                             "style": "form",
                             "explode": True,
                             "schema": {

@@ -198,7 +198,6 @@ def test_array() -> None:
                     },
                     "parameters": [
                         {
-                            "required": False,
                             "style": "simple",
                             "explode": False,
                             "schema": {
@@ -369,7 +368,6 @@ def test_default() -> None:
                     },
                     "parameters": [
                         {
-                            "required": False,
                             "style": "simple",
                             "explode": False,
                             "schema": {

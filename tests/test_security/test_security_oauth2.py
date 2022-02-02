@@ -56,6 +56,12 @@ openapi_schema: Dict[str, Any] = {
     "openapi": "3.0.3",
     "info": {"title": "API", "version": "0.1.0"},
     "paths": {
+        "/users/me": {
+            "get": {
+                "responses": {"200": {"description": "Successful Response"}},
+                "security": [{"OAuth2": []}],
+            }
+        },
         "/login": {
             "post": {
                 "responses": {
@@ -98,10 +104,12 @@ openapi_schema: Dict[str, Any] = {
                                     "client_id": {
                                         "title": "Client Id",
                                         "type": "string",
+                                        "nullable": True,
                                     },
                                     "client_secret": {
                                         "title": "Client Secret",
                                         "type": "string",
+                                        "nullable": True,
                                     },
                                 },
                             },
@@ -117,12 +125,6 @@ openapi_schema: Dict[str, Any] = {
                     },
                     "required": True,
                 },
-            }
-        },
-        "/users/me": {
-            "get": {
-                "responses": {"200": {"description": "Successful Response"}},
-                "security": [{"OAuth2": []}],
             }
         },
     },
