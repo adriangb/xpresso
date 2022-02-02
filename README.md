@@ -103,10 +103,11 @@ Xpresso takes these ideas and refines them by:
 - Decoupling the dependency injection system from the request/response cycle, leading to an overall much more flexible and powerful dependency injection system, packaged up as the standalone [di] library. This is how Xpresso is able to provide [dependency injection into the application lifespan] and support for [multiple dependency scopes].
 - Making the extraction of data from requests an API available to other developers, enabling features like compatibility with libraries other than Pydantic or [MessagePack support] to be made available as 3rd party extensions instead of feature requests. All of this with full support for hooking into the OpenAPI documentation generation.
 - [Providing better support for `application/x-www-form-urlencoded` and `multipart/form-data` requests](https://xpresso-api.dev/latest/tutorial/forms/) by describing them with dataclasses or [Pydantic] models. This includes support for advanced use cases like extracting JSON from a form field.
+- Able to inject `App` or a custom subclass you use into your lifespan and endpoints instead of having to resort to `request.scope["app"]`.
 - Better performance by implementing [dependency resolution in Rust], [executing dependencies concurrently] and [controlling threading of sync dependencies on a per-dependency basis].
 - Allowing you to describe a single OpenAPI operation that accepts multiple content/types and extracting the right one based on headers
 - Giving you the ability to access and modify responses from within dependencies, allowing you to replace timing, tracing and logging middleware (which is routing ¨naive) with routing aware dependencies. No more middleware that accepts a regex pattern of paths!
-- Allowing dynamic building of security models triggered by lifespan events (you can load your Security model config from the enviroment at runtime).
+- Allowing dynamic building of security models triggered by lifespan events (you can load your Security model config from the environment at runtime).
 - Use of `Annotated` ([PEP 593]) instead of default values (`param: str = Query(...)`) which decouples the framework from Pydantic and enables a lot of the other features listed above and even allows you to make up your own markers to use if you make [custom Binders].
 - Middleware on `Router` so that you can apply auth, logging or profiling to only some routes without resorting to regex path matching.
 - Support for lifespans on any `Router` or mounted `App` (this silently fails in FastAPI and Starlette)
