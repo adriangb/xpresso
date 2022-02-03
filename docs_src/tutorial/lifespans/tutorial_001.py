@@ -1,29 +1,27 @@
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator, Optional
+from typing import AsyncGenerator
 
 from pydantic import BaseModel
 
-from xpresso import App, Dependant, Path
-from xpresso.typing import Annotated
+from xpresso import App, Path
 
 
-class AppHealth(BaseModel):
-    app_id: Optional[int] = None
-
-
-HealthState = Annotated[AppHealth, Dependant(scope="app")]
+class AppState(BaseModel):
+    started: bool = False
 
 
 @asynccontextmanager
-async def lifespan(
-    app: App, health: HealthState
-) -> AsyncGenerator[None, None]:
-    health.app_id = id(app)  # this is just a trivial example
+async def lifespan(state: AppState) -> AsyncGenerator[None, None]:
+    state.started = True
     yield
 
 
-async def healthcheck(health: HealthState) -> AppHealth:
-    return health
+class AppHealth(BaseModel):
+    running: bool
+
+
+async def healthcheck(state: AppState) -> AppHealth:
+    return AppHealth(running=state.started)
 
 
 app = App(
