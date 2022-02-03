@@ -87,6 +87,18 @@ class App:
     state: State
     container: BaseContainer
 
+    __slots__ = (
+        "container",
+        "_setup_run",
+        "_debug",
+        "state",
+        "router",
+        "_openapi_version",
+        "_openapi_info",
+        "_openapi_servers",
+        "openapi",
+    )
+
     def __init__(
         self,
         routes: typing.Optional[typing.Sequence[BaseRoute]] = None,
@@ -166,13 +178,13 @@ class App:
             lifespan=lifespan_ctx,
         )
 
-        self.openapi_version = openapi_version
-        self.openapi_info = openapi_models.Info(
+        self._openapi_version = openapi_version
+        self._openapi_info = openapi_models.Info(
             title=title,
             version=version,
             description=description,
         )
-        self.servers = servers
+        self._openapi_servers = servers
         self.openapi = None
 
     async def __call__(
@@ -238,9 +250,9 @@ class App:
                 app_type=App, router=self.router, nodes=[self, self.router], path=""
             ),
             container=self.container,
-            version=self.openapi_version,
-            info=self.openapi_info,
-            servers=self.servers,
+            version=self._openapi_version,
+            info=self._openapi_info,
+            servers=self._openapi_servers,
         )
 
     def _get_doc_routes(
@@ -273,7 +285,7 @@ class App:
                 full_openapi_url = root_path + openapi_url  # type: ignore[operator]
                 return get_swagger_ui_html(
                     openapi_url=full_openapi_url,
-                    title=self.openapi_info.title + " - Swagger UI",
+                    title=self._openapi_info.title + " - Swagger UI",
                     oauth2_redirect_url=None,
                     init_oauth=None,
                 )

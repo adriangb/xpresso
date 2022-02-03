@@ -16,7 +16,7 @@ class _PathApp:
 
     __slots__ = ("operations",)
 
-    def __init__(self, operations: typing.Dict[str, Operation]) -> None:
+    def __init__(self, operations: typing.Mapping[str, Operation]) -> None:
         self.operations = operations
 
     def __call__(
