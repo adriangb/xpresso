@@ -17,7 +17,7 @@ If you run this example using Uvicorn, you can go to [http://127.0.0.1:8000/item
 ## Type conversions
 
 Xpresso uses type annotations from your parameters to do conversions and parsing.
-If we modify the example above to expect an `int`, Xpresso will convert the path parameter (which is always a string, since it is coming from a URL) int an `int` and automatically return an error response if it is not a valid integer:
+If we modify the example above to expect an `int`, Xpresso will convert the path parameter (which is always a string, since it is coming from a URL) into an `int` and automatically return an error response if it is not a valid integer:
 
 ```python
 --8<-- "docs_src/tutorial/path_params/tutorial_002.py"
