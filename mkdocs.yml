@@ -47,7 +47,7 @@ nav:
       - HTTP Parameter Dependencies: "tutorial/dependencies/http-params.md"
       - Scopes: "tutorial/dependencies/scopes.md"
       - Shared Dependencies: "tutorial/dependencies/shared.md"
-    - Application Lifespan: "tutorial/lifespan.md"
+    - Lifespans: "tutorial/lifespan.md"
     - Routing: "tutorial/routing.md"
     - CORS: tutorial/cors.md
   - Advanced Usage:
