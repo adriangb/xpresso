@@ -5,7 +5,6 @@ from contextlib import asynccontextmanager
 import starlette.types
 from di import AsyncExecutor, BaseContainer, JoinedDependant
 from di.api.dependencies import DependantBase
-from starlette.datastructures import State
 from starlette.middleware import Middleware
 from starlette.middleware.errors import ServerErrorMiddleware
 from starlette.requests import Request
@@ -83,8 +82,6 @@ def _wrap_lifespan_as_async_generator(
 
 class App:
     router: Router
-    openapi: typing.Optional[openapi_models.OpenAPI]
-    state: State
     container: BaseContainer
 
     __slots__ = (
@@ -92,11 +89,10 @@ class App:
         "_openapi_info",
         "_openapi_servers",
         "_openapi_version",
+        "_openapi",
         "_setup_run",
         "container",
-        "openapi",
         "router",
-        "state",
     )
 
     def __init__(
@@ -127,7 +123,7 @@ class App:
         self._setup_run = False
 
         @asynccontextmanager
-        async def lifespan_ctx(*args: typing.Any) -> typing.AsyncIterator[None]:
+        async def lifespan_ctx(*_: typing.Any) -> typing.AsyncIterator[None]:
             lifespans = self._setup()
             self._setup_run = True
             original_container = self.container
@@ -156,7 +152,6 @@ class App:
                     self._setup_run = False
 
         self._debug = debug
-        self.state = State()
 
         routes = list(routes or [])
         routes.extend(
@@ -185,7 +180,7 @@ class App:
             description=description,
         )
         self._openapi_servers = servers
-        self.openapi = None
+        self._openapi: "typing.Optional[openapi_models.OpenAPI]" = None
 
     async def __call__(
         self,
@@ -212,6 +207,7 @@ class App:
 
     def _setup(self) -> typing.List[typing.Callable[..., typing.AsyncIterator[None]]]:
         lifespans: typing.List[typing.Callable[..., typing.AsyncIterator[None]]] = []
+        seen_routers: typing.Set[typing.Any] = set()
         for route in visit_routes(
             app_type=App, router=self.router, nodes=[self, self.router], path=""
         ):
@@ -219,6 +215,9 @@ class App:
             for node in route.nodes:
                 if isinstance(node, Router):
                     dependencies.extend(node.dependencies)
+                    if node in seen_routers:
+                        continue
+                    seen_routers.add(node)
                     # avoid circular lifespan calls
                     if node is not self.router and node.lifespan is not None:
                         lifespans.append(
@@ -266,9 +265,9 @@ class App:
             openapi_url = openapi_url
 
             async def openapi(req: Request) -> JSONResponse:
-                if self.openapi is None:
-                    self.openapi = self.get_openapi()
-                res = JSONResponse(self.openapi.dict(exclude_none=True, by_alias=True))
+                if self._openapi is None:
+                    self._openapi = self.get_openapi()
+                res = JSONResponse(self._openapi.dict(exclude_none=True, by_alias=True))
                 return res
 
             routes.append(
