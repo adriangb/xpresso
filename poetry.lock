@@ -168,7 +168,7 @@ toml = ["tomli"]
 
 [[package]]
 name = "di"
-version = "0.53.1"
+version = "0.53.2"
 description = "Autowiring dependency injection"
 category = "main"
 optional = false
@@ -1054,7 +1054,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7,<4"
-content-hash = "56de03aa3b12086a32d281bc0f3c924f4f7eb822c4e92b89295a9c8bef5cb16d"
+content-hash = "962b4aca9be35b26fdf2ed9d990ae2275039329f7c8195fe902088b981f26ed1"
 
 [metadata.files]
 anyio = [
@@ -1222,8 +1222,8 @@ coverage = [
     {file = "coverage-6.3.1.tar.gz", hash = "sha256:6c3f6158b02ac403868eea390930ae64e9a9a2a5bbfafefbb920d29258d9f2f8"},
 ]
 di = [
-    {file = "di-0.53.1-py3-none-any.whl", hash = "sha256:fe84a4465dcf27f24b33c49101852084af8766b02aabff9860e60db10e7ef6ba"},
-    {file = "di-0.53.1.tar.gz", hash = "sha256:5ea43ed95fb20193058ee01ab78f410753ce8fbb9646cb0243a1b9235d164edb"},
+    {file = "di-0.53.2-py3-none-any.whl", hash = "sha256:2ec8ffbb424549d88e8afc0066510c1b316c38260f35ac30e763d0bf0643408f"},
+    {file = "di-0.53.2.tar.gz", hash = "sha256:0bd9ac423016dd273f11f198958d4bf8c0f09e4fa6b6b7ca130070b6f7e32f86"},
 ]
 distlib = [
     {file = "distlib-0.3.4-py2.py3-none-any.whl", hash = "sha256:6564fe0a8f51e734df6333d08b8b94d4ea8ee6b99b5ed50613f731fd4089f34b"},
