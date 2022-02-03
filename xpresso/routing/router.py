@@ -40,14 +40,14 @@ class Router:
     _app: _ASGIApp
 
     __slots__ = (
-        "routes",
-        "_router",
-        "lifespan",
-        "dependencies",
-        "tags",
-        "responses",
-        "include_in_schema",
         "_app",
+        "_router",
+        "dependencies",
+        "include_in_schema",
+        "lifespan",
+        "responses",
+        "routes",
+        "tags",
     )
 
     def __init__(

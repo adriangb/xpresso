@@ -88,15 +88,15 @@ class App:
     container: BaseContainer
 
     __slots__ = (
-        "container",
-        "_setup_run",
         "_debug",
-        "state",
-        "router",
-        "_openapi_version",
         "_openapi_info",
         "_openapi_servers",
+        "_openapi_version",
+        "_setup_run",
+        "container",
         "openapi",
+        "router",
+        "state",
     )
 
     def __init__(
