@@ -1,18 +1,45 @@
+import sys
 import typing
+
+if sys.version_info < (3, 8):
+    from typing_extensions import Protocol
+else:
+    from typing import Protocol
 
 import starlette.middleware
 from starlette.routing import BaseRoute
 from starlette.routing import Router as StarletteRouter
-from starlette.types import ASGIApp, Receive, Scope, Send
+from starlette.types import Receive, Scope, Send
 
-from xpresso._utils.deprecation import not_supported
 from xpresso.dependencies.models import Dependant
 from xpresso.responses import Responses
 
 
-class Router(StarletteRouter):
-    routes: typing.List[BaseRoute]
-    _app: ASGIApp
+class _ASGIApp(Protocol):
+    def __call__(
+        self,
+        scope: Scope,
+        receive: Receive,
+        send: Send,
+    ) -> typing.Awaitable[None]:
+        ...
+
+
+_MiddlewareIterator = typing.Iterable[
+    typing.Tuple[typing.Callable[..., _ASGIApp], typing.Mapping[str, typing.Any]]
+]
+
+
+class Router:
+    routes: typing.Sequence[BaseRoute]
+    lifespan: typing.Optional[
+        typing.Callable[..., typing.AsyncContextManager[None]]
+    ] = None
+    dependencies: typing.Sequence[Dependant]
+    tags: typing.Sequence[str]
+    responses: Responses
+    include_in_schema: bool
+    _app: _ASGIApp
 
     def __init__(
         self,
@@ -25,26 +52,28 @@ class Router(StarletteRouter):
             typing.Callable[..., typing.AsyncContextManager[None]]
         ] = None,
         redirect_slashes: bool = True,
-        default: typing.Optional[ASGIApp] = None,
-        dependencies: typing.Optional[typing.List[Dependant]] = None,
+        default: typing.Optional[_ASGIApp] = None,
+        dependencies: typing.Optional[typing.Sequence[Dependant]] = None,
         tags: typing.Optional[typing.List[str]] = None,
         responses: typing.Optional[Responses] = None,
         include_in_schema: bool = True,
     ) -> None:
-        super().__init__(  # type: ignore
-            routes=list(routes),
+        self.routes = list(routes)
+        self.lifespan = lifespan
+        self._router = StarletteRouter(
+            routes=self.routes,
             redirect_slashes=redirect_slashes,
-            default=default,  # type: ignore
-            lifespan=lifespan,  # type: ignore
+            default=default,  # type: ignore[arg-type]
+            lifespan=lifespan,  # type: ignore[arg-type]
         )
         self.dependencies = list(dependencies or [])
         self.tags = list(tags or [])
         self.responses = dict(responses or {})
         self.include_in_schema = include_in_schema
-        self._app = super().__call__  # type: ignore[assignment,misc]
+        self._app = self._router.__call__
         if middleware is not None:
-            for cls, options in reversed(middleware):  # type: ignore  # for Pylance
-                self._app = cls(app=self._app, **options)  # type: ignore[assignment,misc]
+            for cls, options in typing.cast(_MiddlewareIterator, reversed(middleware)):
+                self._app = cls(app=self._app, **options)
 
     async def __call__(
         self,
@@ -53,12 +82,3 @@ class Router(StarletteRouter):
         send: Send,
     ) -> None:
         await self._app(scope, receive, send)  # type: ignore[arg-type,call-arg,misc]
-
-    mount = not_supported("mount")
-    host = not_supported("host")
-    add_route = not_supported("add_route")
-    add_websocket_route = not_supported("add_websocket_route")
-    route = not_supported("route")
-    websocket_route = not_supported("websocket_route")
-    add_event_handler = not_supported("add_event_handler")
-    on_event = not_supported("on_event")
