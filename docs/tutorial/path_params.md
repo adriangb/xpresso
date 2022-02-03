@@ -1,6 +1,6 @@
 # Path parameters
 
-Path parameters are declared in the route defenition, using the same foramt as formatting strings (`"{}"`):
+Path parameters are declared in the route definition, using the same format as formatting strings (`"{}"`):
 To tell Xpresso that you want to extract a path parameter and inject it into your function, use `FromPath`.
 This is just a marker that tells Xpresso how to inject the value, it has no effect on the function if it is called directly.
 
@@ -46,7 +46,7 @@ So you can also use Pydantic constraints:
     This is probably a good spot to digress and talk about `Annotated` since you may be confused if you are not familiar with it.
     If you've used FastAPI, you may be used to declaring things like `param: str = Path(gt=0)`.
     In Xpresso, this turns into `param: Annotated[str, Path(), Field(gt=0)]`.
-    For more background on `Annoated` itself, see the [Python Types] section of our docs.
+    For more background on `Annotated` itself, see the [Python Types] section of our docs.
 
 !!! tip "Tip"
     The import `from Xpresso.typing import Annotated` is just a convenience import.
