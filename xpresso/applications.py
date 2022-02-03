@@ -207,15 +207,11 @@ class App:
             for node in route.nodes:
                 if isinstance(node, Router):
                     dependencies.extend(node.dependencies)
-                    if node is not self.router:  # avoid circul lifespan calls
-                        lifespan = typing.cast(
-                            typing.Callable[..., typing.AsyncContextManager[None]],
-                            node.lifespan_context,  # type: ignore  # for Pylance
+                    # avoid circular lifespan calls
+                    if node is not self.router and node.lifespan is not None:
+                        lifespans.append(
+                            _wrap_lifespan_as_async_generator(node.lifespan)
                         )
-                        if lifespan is not None:
-                            lifespans.append(
-                                _wrap_lifespan_as_async_generator(lifespan)
-                            )
             if isinstance(route.route, Path):
                 for operation in route.route.operations.values():
                     operation.solve(
@@ -236,7 +232,7 @@ class App:
                 )
         return lifespans
 
-    async def get_openapi(self) -> openapi_models.OpenAPI:
+    def get_openapi(self) -> openapi_models.OpenAPI:
         return genrate_openapi(
             visitor=visit_routes(
                 app_type=App, router=self.router, nodes=[self, self.router], path=""
@@ -259,7 +255,7 @@ class App:
 
             async def openapi(req: Request) -> JSONResponse:
                 if self.openapi is None:
-                    self.openapi = await self.get_openapi()
+                    self.openapi = self.get_openapi()
                 res = JSONResponse(self.openapi.dict(exclude_none=True, by_alias=True))
                 return res
 
