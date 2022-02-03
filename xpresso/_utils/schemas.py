@@ -2,7 +2,7 @@ from pydantic.fields import ModelField
 from pydantic.schema import field_schema
 
 from xpresso._utils.typing import filter_pydantic_models_from_mapping
-from xpresso.binders._openapi_providers.api import ModelNameMap, Schemas
+from xpresso.binders.api import ModelNameMap, Schemas
 from xpresso.openapi import models as openapi_models
 from xpresso.openapi.constants import REF_PREFIX
 

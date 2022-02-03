@@ -1,6 +1,6 @@
 import inspect
 import sys
-from collections import ChainMap
+from collections import ChainMap, Counter
 from typing import (
     Any,
     Callable,
@@ -8,9 +8,7 @@ from typing import (
     Iterable,
     List,
     Mapping,
-    NamedTuple,
     Optional,
-    Sequence,
     Set,
     Tuple,
     TypeVar,
@@ -23,6 +21,7 @@ if sys.version_info < (3, 9):
 else:
     from typing import get_origin, get_args, get_type_hints
 
+from di import BaseContainer
 from pydantic import BaseConfig
 from pydantic.fields import ModelField
 from pydantic.schema import field_schema, get_flat_models_from_field
@@ -39,8 +38,6 @@ from xpresso.responses import JsonResponseSpec, Responses, ResponseSpec
 from xpresso.routing.operation import Operation
 from xpresso.routing.pathitem import Path
 from xpresso.routing.router import Router
-from xpresso.security._base import SecurityBase
-from xpresso.security._dependants import Security
 
 T = TypeVar("T")
 
@@ -48,7 +45,7 @@ ModelNameMap = Dict[type, str]
 
 Routes = Mapping[str, Tuple[Path, Mapping[str, Operation]]]
 
-SecurityModels = Mapping[Security, SecurityBase]
+SecurityModels = Mapping[binder_dependants.SecurityBinder, models.SecurityScheme]
 
 validation_error_definition = {
     "title": "ValidationError",
@@ -141,7 +138,9 @@ def get_parameters(
                     model_name_map=model_name_map, schemas=schemas
                 )
             )
-    return parameters or None
+    if parameters:
+        return list(sorted(parameters, key=lambda param: param.name))
+    return None
 
 
 def get_request_body(
@@ -278,27 +277,11 @@ def get_responses(
     return {"200": response_model}
 
 
-class SecurityModel(NamedTuple):
-    scopes: Sequence[str]
-    model: SecurityBase
-
-
-def get_security_schemes(
-    security_models: Sequence[SecurityModel],
-    security_schemes: Dict[str, models.SecurityBase],
-) -> List[Dict[str, Sequence[str]]]:
-    security: Dict[str, Sequence[str]] = {}
-    for m in security_models:
-        security[m.model.scheme_name] = m.scopes
-        security_schemes[m.model.scheme_name] = m.model.model
-    return [security]
-
-
 def get_operation(
     route: Operation,
     model_name_map: ModelNameMap,
     components: Dict[str, Any],
-    security_models: Mapping[Security, SecurityBase],
+    security_models: Mapping[binder_dependants.SecurityBinder, str],
     tags: List[str],
     response_specs: Responses,
 ) -> models.Operation:
@@ -319,7 +302,7 @@ def get_operation(
     parameters = get_parameters(
         [
             dep
-            for dep in route_dependant.dag
+            for dep in route_dependant.get_flat_subdependants()
             if isinstance(dep, binder_dependants.ParameterBinder)
         ],
         model_name_map,
@@ -330,26 +313,25 @@ def get_operation(
     body_dependant = next(
         (
             dep
-            for dep in route_dependant.dag
+            for dep in route_dependant.get_flat_subdependants()
             if isinstance(dep, binder_dependants.BodyBinder)
         ),
         None,
     )
     if body_dependant is not None:
         data["requestBody"] = get_request_body(body_dependant, model_name_map, schemas)
-    security_dependants: List[Security] = [
-        dep for dep in route_dependant.dag if isinstance(dep, Security)
+    security_dependants: List[binder_dependants.SecurityBinder] = [
+        dep
+        for dep in route_dependant.get_flat_subdependants()
+        if isinstance(dep, binder_dependants.SecurityBinder)
     ]
     if security_dependants:
         security_schemes = components.get("securitySchemes", None) or {}
         components["securitySchemes"] = security_schemes
-        data["security"] = get_security_schemes(
-            [
-                SecurityModel(list(d.scopes), security_models[d])
-                for d in security_dependants
-            ],
-            security_schemes,
-        )
+        data["security"] = [
+            {security_models[dep]: list(dep.scopes)}
+            for dep in sorted(security_dependants, key=lambda dep: security_models[dep])
+        ]
     data["responses"] = get_responses(
         route,
         response_specs=response_specs,
@@ -387,7 +369,7 @@ def get_paths_items(
     visitor: Iterable[VisitedRoute[Any]],
     model_name_map: ModelNameMap,
     components: Dict[str, Any],
-    security_models: Mapping[Security, SecurityBase],
+    security_models: Mapping[binder_dependants.SecurityBinder, str],
 ) -> Dict[str, models.PathItem]:
     paths: Dict[str, models.PathItem] = {}
     for visited_route in visitor:
@@ -427,7 +409,7 @@ def get_paths_items(
                 servers=visited_route.route.servers or None,
                 **operations,  # type: ignore[arg-type]
             )  # type: ignore  # for Pylance
-    return paths
+    return {k: paths[k] for k in sorted(paths.keys())}
 
 
 def filter_routes(visitor: Iterable[VisitedRoute[Any]]) -> Routes:
@@ -462,19 +444,72 @@ def get_flat_models(routes: Routes) -> Set[type]:
     return res
 
 
+def get_security_models(
+    routes: Routes, container: BaseContainer
+) -> Mapping[binder_dependants.SecurityBinder, models.SecurityScheme]:
+    res: Dict[binder_dependants.SecurityBinder, models.SecurityScheme] = {}
+    for _, operations in routes.values():
+        for operation in operations.values():
+            dependant = operation.dependant
+            flat_dependencies = dependant.get_flat_subdependants()
+            for dep in flat_dependencies:
+                if isinstance(
+                    dep,
+                    binder_dependants.SecurityBinder,
+                ):
+                    res[dep] = dep.construct_model(container)
+    return res
+
+
+def get_security_scheme_name_map(
+    models: Mapping[binder_dependants.SecurityBinder, models.SecurityScheme]
+) -> Mapping[models.SecurityScheme, str]:
+    scheme_names = {scheme: binder.scheme_name for binder, scheme in models.items()}
+    name_counter = Counter(scheme_names.values())
+    schemes_with_duplicate_names = [
+        scheme for scheme in scheme_names if name_counter[scheme_names[scheme]] > 1
+    ]
+    # sort in reverse order so that APIKey(name="key1") gets assigned the deduped name "APIKey_1"
+    for scheme in sorted(
+        schemes_with_duplicate_names,
+        key=lambda scheme: tuple(scheme.dict().items()),
+        reverse=True,
+    ):
+        name = scheme_names[scheme]
+        scheme_names[scheme] += f"_{name_counter[name]}"
+        name_counter[name] -= 1
+    return scheme_names
+
+
 def genrate_openapi(
     visitor: Iterable[VisitedRoute[Any]],
+    container: BaseContainer,
     version: str,
     info: models.Info,
     servers: Optional[Iterable[models.Server]],
-    security_models: Mapping[Security, SecurityBase],
 ) -> models.OpenAPI:
-    components: Dict[str, Any] = {}
     visitor = list(visitor)
     routes = filter_routes(visitor)
     flat_models = get_flat_models(routes)
     model_name_map = get_model_name_map(flat_models)
-    paths = get_paths_items(visitor, model_name_map, components, security_models)
+    security_binders = get_security_models(routes, container)
+    security_scheme_name_map = get_security_scheme_name_map(security_binders)
+    security_bider_to_name_map = {
+        binder: security_scheme_name_map[scheme]
+        for binder, scheme in security_binders.items()
+    }
+    components_security_schemes = {
+        name: scheme for scheme, name in security_scheme_name_map.items()
+    }
+    components: Dict[str, Any] = {}
+    if components_security_schemes:
+        components["securitySchemes"] = {
+            name: components_security_schemes[name]
+            for name in sorted(components_security_schemes.keys())
+        }
+    paths = get_paths_items(
+        visitor, model_name_map, components, security_bider_to_name_map
+    )
     return models.OpenAPI(
         openapi=version,
         info=info,

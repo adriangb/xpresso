@@ -24,12 +24,11 @@ from xpresso.exception_handlers import (
 from xpresso.exceptions import HTTPException, RequestValidationError
 from xpresso.middleware.exceptions import ExceptionMiddleware
 from xpresso.openapi import models as openapi_models
-from xpresso.openapi._builder import SecurityModels, genrate_openapi
+from xpresso.openapi._builder import genrate_openapi
 from xpresso.openapi._html import get_swagger_ui_html
 from xpresso.routing.pathitem import Path
 from xpresso.routing.router import Router
 from xpresso.routing.websockets import WebSocketRoute
-from xpresso.security._dependants import Security
 
 ExceptionHandler = typing.Callable[
     [Request, Exception], typing.Union[Response, typing.Awaitable[Response]]
@@ -240,30 +239,11 @@ class App:
     async def get_openapi(self) -> openapi_models.OpenAPI:
         return genrate_openapi(
             visitor=visit_routes(app_type=App, router=self.router, nodes=[self, self.router], path=""),  # type: ignore  # for Pylance
+            container=self.container,
             version=self.openapi_version,
             info=self.openapi_info,
             servers=self.servers,
-            security_models=await self.gather_security_models(),
         )
-
-    async def gather_security_models(self) -> SecurityModels:
-        security_dependants: typing.List[Security] = []
-        for route in visit_routes(app_type=App, router=self.router, nodes=[self, self.router], path=""):  # type: ignore[misc]
-            if isinstance(route.route, Path):
-                for operation in route.route.operations.values():
-                    dependant = operation.dependant
-                    assert dependant is not None
-                    for subdependant in dependant.dag:
-                        if isinstance(subdependant, Security):
-                            security_dependants.append(subdependant)
-        executor = AsyncExecutor()
-        return {
-            sec_dep: await self.container.execute_async(
-                self.container.solve(sec_dep),
-                executor=executor,
-            )
-            for sec_dep in security_dependants
-        }
 
     def _get_doc_routes(
         self,

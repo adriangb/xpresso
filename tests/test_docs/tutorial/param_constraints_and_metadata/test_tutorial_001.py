@@ -26,19 +26,6 @@ openapi_schema: Dict[str, Any] = {
                 },
                 "parameters": [
                     {
-                        "description": "Count of items to skip starting from the 0th item",
-                        "required": True,
-                        "style": "form",
-                        "explode": True,
-                        "schema": {
-                            "title": "Skip",
-                            "exclusiveMinimum": 0.0,
-                            "type": "integer",
-                        },
-                        "name": "skip",
-                        "in": "query",
-                    },
-                    {
                         "description": "Maximum number of items to return",
                         "required": True,
                         "style": "form",
@@ -50,6 +37,19 @@ openapi_schema: Dict[str, Any] = {
                             "description": "Maximum number of items to return",
                         },
                         "name": "limit",
+                        "in": "query",
+                    },
+                    {
+                        "description": "Count of items to skip starting from the 0th item",
+                        "required": True,
+                        "style": "form",
+                        "explode": True,
+                        "schema": {
+                            "title": "Skip",
+                            "exclusiveMinimum": 0.0,
+                            "type": "integer",
+                        },
+                        "name": "skip",
                         "in": "query",
                     },
                 ],

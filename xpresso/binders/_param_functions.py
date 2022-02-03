@@ -13,43 +13,40 @@ else:
     from typing import Literal
 
 import xpresso.binders.dependants as param_dependants
-from xpresso.binders._extractors.body.discriminated import (
+from xpresso.binders._body.extractors.discriminated import (
     ContentTypeDiscriminatedExtractorMarker,
 )
-from xpresso.binders._extractors.body.field import (
+from xpresso.binders._body.extractors.field import (
     FieldExtractorMarker,
     RepeatedFieldExtractorMarker,
 )
-from xpresso.binders._extractors.body.file import FileBodyExtractorMarker
-from xpresso.binders._extractors.body.form import (
+from xpresso.binders._body.extractors.file import FileBodyExtractorMarker
+from xpresso.binders._body.extractors.form import (
     FormDataBodyExtractorMarker,
     MultipartBodyExtractorMarker,
 )
-from xpresso.binders._extractors.body.form_field import FormFieldBodyExtractorMarker
-from xpresso.binders._extractors.body.json import Decoder, JsonBodyExtractorMarker
-from xpresso.binders._extractors.params.cookie import CookieParameterExtractorMarker
-from xpresso.binders._extractors.params.header import HeaderParameterExtractorMarker
-from xpresso.binders._extractors.params.path import PathParameterExtractorMarker
-from xpresso.binders._extractors.params.query import QueryParameterExtractorMarker
-from xpresso.binders._openapi_providers.body.discriminated import (
+from xpresso.binders._body.extractors.form_field import FormFieldBodyExtractorMarker
+from xpresso.binders._body.extractors.json import Decoder, JsonBodyExtractorMarker
+from xpresso.binders._body.openapi.discriminated import (
     OpenAPIContentTypeDiscriminatedMarker,
 )
-from xpresso.binders._openapi_providers.body.field import (
+from xpresso.binders._body.openapi.field import (
     OpenAPIFieldMarker,
     OpenAPIRepeatedFieldMarker,
 )
-from xpresso.binders._openapi_providers.body.file import OpenAPIFileMarker
-from xpresso.binders._openapi_providers.body.form import OpenAPIFormDataMarker
-from xpresso.binders._openapi_providers.body.form_field import OpenAPIFormFieldMarker
-from xpresso.binders._openapi_providers.body.json import OpenAPIJsonMarker
-from xpresso.binders._openapi_providers.params.cookie import (
-    OpenAPICookieParameterMarker,
-)
-from xpresso.binders._openapi_providers.params.header import (
-    OpenAPIHeaderParameterMarker,
-)
-from xpresso.binders._openapi_providers.params.path import OpenAPIPathParameterMarker
-from xpresso.binders._openapi_providers.params.query import OpenAPIQueryParameterMarker
+from xpresso.binders._body.openapi.file import OpenAPIFileMarker
+from xpresso.binders._body.openapi.form import OpenAPIFormDataMarker
+from xpresso.binders._body.openapi.form_field import OpenAPIFormFieldMarker
+from xpresso.binders._body.openapi.json import OpenAPIJsonMarker
+from xpresso.binders._parameters.extractors.cookie import CookieParameterExtractorMarker
+from xpresso.binders._parameters.extractors.header import HeaderParameterExtractorMarker
+from xpresso.binders._parameters.extractors.path import PathParameterExtractorMarker
+from xpresso.binders._parameters.extractors.query import QueryParameterExtractorMarker
+from xpresso.binders._parameters.openapi.cookie import OpenAPICookieParameterMarker
+from xpresso.binders._parameters.openapi.header import OpenAPIHeaderParameterMarker
+from xpresso.binders._parameters.openapi.path import OpenAPIPathParameterMarker
+from xpresso.binders._parameters.openapi.query import OpenAPIQueryParameterMarker
+from xpresso.binders.api import SecurityBase
 from xpresso.openapi import models as openapi_models
 
 T = typing.TypeVar("T")
@@ -343,6 +340,17 @@ def ContentTypeDiscriminatedBody(
     return param_dependants.BodyBinderMarker(
         extractor_marker=extractor,
         openapi_marker=openapi,
+    )
+
+
+def Security(
+    model: typing.Union[SecurityBase, typing.Type[SecurityBase]],
+    *,
+    scopes: typing.Optional[typing.Sequence[str]] = None,
+    scheme_name: typing.Optional[str] = None,
+) -> param_dependants.SecurityBinder:
+    return param_dependants.SecurityBinder(
+        model=model, scopes=scopes, scheme_name=scheme_name
     )
 
 
