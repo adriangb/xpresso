@@ -18,6 +18,11 @@ except ImportError:  # pragma: no cover
     EmailStr = str  # type: ignore
 
 
+class FrozenBaseModel(BaseModel):
+    class Config(BaseConfig):
+        frozen = True
+
+
 ParameterLocations = Literal["header", "path", "query", "cookie"]
 PathParamStyles = Literal["simple", "label", "matrix"]
 QueryParamStyles = Literal["form", "spaceDelimited", "pipeDelimited", "deepObject"]
@@ -28,18 +33,18 @@ FormDataStyles = QueryParamStyles
 Extension = Union[Dict[str, Any], List[Any], str, int, float, bool, None]
 
 
-class Contact(BaseModel):
+class Contact(FrozenBaseModel):
     name: Optional[str] = None
     url: Optional[AnyUrl] = None
     email: Optional[EmailStr] = None
 
 
-class License(BaseModel):
+class License(FrozenBaseModel):
     name: str
     url: Optional[AnyUrl] = None
 
 
-class Info(BaseModel):
+class Info(FrozenBaseModel):
     title: str
     version: str
     description: Optional[str] = None
@@ -47,32 +52,32 @@ class Info(BaseModel):
     contact: Optional[Contact] = None
     license: Optional[License] = None
 
-    class Config(BaseConfig):
+    class Config(FrozenBaseModel.Config):
         extra = Extra.allow  # for extensions
 
 
-class ServerVariable(BaseModel):
+class ServerVariable(FrozenBaseModel):
     default: str
     enum: Optional[List[str]] = None
     description: Optional[str] = None
 
 
-class Server(BaseModel):
+class Server(FrozenBaseModel):
     url: Union[AnyUrl, str]
     description: Optional[str] = None
     variables: Optional[Dict[str, ServerVariable]] = None
 
 
-class Reference(BaseModel):
+class Reference(FrozenBaseModel):
     ref: str = Field(alias="$ref")
 
 
-class Discriminator(BaseModel):
+class Discriminator(FrozenBaseModel):
     propertyName: str
     mapping: Optional[Dict[str, str]] = None
 
 
-class XML(BaseModel):
+class XML(FrozenBaseModel):
     name: Optional[str] = None
     namespace: Optional[str] = None
     prefix: Optional[str] = None
@@ -80,12 +85,12 @@ class XML(BaseModel):
     wrapped: Optional[bool] = None
 
 
-class ExternalDocumentation(BaseModel):
+class ExternalDocumentation(FrozenBaseModel):
     url: AnyUrl
     description: Optional[str] = None
 
 
-class Schema(BaseModel):
+class Schema(FrozenBaseModel):
     ref: Optional[str] = Field(default=None, alias="$ref")
     title: Optional[str] = None
     multipleOf: Optional[float] = None
@@ -125,27 +130,27 @@ class Schema(BaseModel):
     examples: Optional[Dict[str, Any]] = None
 
 
-class Example(BaseModel):
+class Example(FrozenBaseModel):
     summary: Optional[str] = None
     description: Optional[str] = None
     value: Any = None
     external_value: Optional[str] = Field(default=None, alias="externalValue")
 
 
-class Encoding(BaseModel):
+class Encoding(FrozenBaseModel):
     contentType: Optional[str] = None
     headers: Optional[Dict[str, Union[Header, Reference]]] = None
     style: Optional[str] = None
     explode: Optional[bool] = None
 
 
-class MediaType(BaseModel):
+class MediaType(FrozenBaseModel):
     schema_: Optional[Union[Schema, Reference]] = Field(alias="schema")
     examples: Optional[Dict[str, Union[Example, Reference]]] = None
     encoding: Optional[Dict[str, Encoding]] = None
 
 
-class ParameterBase(BaseModel):
+class ParameterBase(FrozenBaseModel):
     description: Optional[str] = None
     required: Optional[bool] = None
     deprecated: Optional[bool] = None
@@ -191,13 +196,13 @@ class Cookie(ConcreteParameter):
 Parameter = Union[Query, Header, Cookie, Path]
 
 
-class RequestBody(BaseModel):
+class RequestBody(FrozenBaseModel):
     content: Dict[str, MediaType]
     description: Optional[str] = None
     required: Optional[bool] = None
 
 
-class Link(BaseModel):
+class Link(FrozenBaseModel):
     operationRef: Optional[str] = None
     operationId: Optional[str] = None
     parameters: Optional[Dict[str, str]] = None
@@ -206,7 +211,7 @@ class Link(BaseModel):
     server: Optional[Server] = None
 
 
-class ResponseHeader(BaseModel):
+class ResponseHeader(FrozenBaseModel):
     description: Optional[str] = None
     deprecated: Optional[bool] = None
     # Serialization rules for simple scenarios
@@ -218,14 +223,14 @@ class ResponseHeader(BaseModel):
     content: Optional[Dict[str, MediaType]] = None
 
 
-class Response(BaseModel):
+class Response(FrozenBaseModel):
     description: str
     headers: Optional[Dict[str, Union[ResponseHeader, Reference]]] = None
     content: Optional[Dict[str, MediaType]] = None
     links: Optional[Dict[str, Union[Link, Reference]]] = None
 
 
-class Operation(BaseModel):
+class Operation(FrozenBaseModel):
     responses: Dict[str, Union[Response, Reference]]
     tags: Optional[List[str]] = None
     summary: Optional[str] = None
@@ -240,11 +245,11 @@ class Operation(BaseModel):
     security: Optional[List[Dict[str, List[str]]]] = None
     servers: Optional[List[Server]] = None
 
-    class Config(BaseConfig):
+    class Config(FrozenBaseModel.Config):
         extra = Extra.allow  # for extensions
 
 
-class PathItem(BaseModel):
+class PathItem(FrozenBaseModel):
     ref: Optional[str] = Field(None, alias="$ref")
     summary: Optional[str] = None
     description: Optional[str] = None
@@ -259,14 +264,14 @@ class PathItem(BaseModel):
     servers: Optional[List[Server]] = None
     parameters: Optional[List[Union[Parameter, Reference]]] = None
 
-    class Config(BaseConfig):
+    class Config(FrozenBaseModel.Config):
         extra = Extra.allow  # for extensions
 
 
 SecuritySchemeName = Literal["apiKey", "http", "oauth2", "openIdConnect"]
 
 
-class SecurityBase(BaseModel):
+class SecurityBase(FrozenBaseModel):
     type: SecuritySchemeName
     description: Optional[str] = None
 
@@ -290,9 +295,12 @@ class HTTPBearer(HTTPBase):
     bearerFormat: Optional[str] = None
 
 
-class OAuthFlow(BaseModel):
+class OAuthFlow(FrozenBaseModel):
     refreshUrl: Optional[AnyUrl] = None
     scopes: Optional[Mapping[str, str]] = Field(default_factory=dict)  # type: ignore
+
+    def __hash__(self) -> int:  # type: ignore  # for Pylance
+        return hash((self.__class__, self.refreshUrl))
 
 
 class OAuthFlowImplicit(OAuthFlow):
@@ -312,7 +320,7 @@ class OAuthFlowAuthorizationCode(OAuthFlow):
     tokenUrl: str
 
 
-class OAuthFlows(BaseModel):
+class OAuthFlows(FrozenBaseModel):
     implicit: Optional[OAuthFlowImplicit] = None
     password: Optional[OAuthFlowPassword] = None
     clientCredentials: Optional[OAuthFlowClientCredentials] = None
@@ -332,7 +340,7 @@ class OpenIdConnect(SecurityBase):
 SecurityScheme = Union[APIKey, HTTPBase, OAuth2, OpenIdConnect, HTTPBearer]
 
 
-class Components(BaseModel):
+class Components(FrozenBaseModel):
     schemas: Optional[Dict[str, Union[Schema, Reference]]] = None
     responses: Optional[Dict[str, Union[Response, Reference]]] = None
     parameters: Optional[Dict[str, Union[Parameter, Reference]]] = None
@@ -344,13 +352,13 @@ class Components(BaseModel):
     callbacks: Optional[Dict[str, Union[Dict[str, PathItem], Reference]]] = None
 
 
-class Tag(BaseModel):
+class Tag(FrozenBaseModel):
     name: str
     description: Optional[str] = None
     externalDocs: Optional[ExternalDocumentation] = None
 
 
-class OpenAPI(BaseModel):
+class OpenAPI(FrozenBaseModel):
     openapi: str
     info: Info
     paths: Dict[str, Union[PathItem, Extension]] = Field(default_factory=dict)

@@ -26,6 +26,7 @@ from xpresso.binders._param_functions import (
     PathParam,
     QueryParam,
     RepeatedFormField,
+    Security,
 )
 from xpresso.datastructures import UploadFile
 from xpresso.dependencies.models import Dependant
@@ -35,7 +36,6 @@ from xpresso.routing.operation import Operation
 from xpresso.routing.pathitem import Path
 from xpresso.routing.router import Router
 from xpresso.routing.websockets import WebSocketRoute
-from xpresso.security._functions import Security
 from xpresso.websockets import WebSocket
 
 __all__ = (
