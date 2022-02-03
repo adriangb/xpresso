@@ -32,14 +32,23 @@ _MiddlewareIterator = typing.Iterable[
 
 class Router:
     routes: typing.Sequence[BaseRoute]
-    lifespan: typing.Optional[
-        typing.Callable[..., typing.AsyncContextManager[None]]
-    ] = None
+    lifespan: typing.Optional[typing.Callable[..., typing.AsyncContextManager[None]]]
     dependencies: typing.Sequence[Dependant]
     tags: typing.Sequence[str]
     responses: Responses
     include_in_schema: bool
     _app: _ASGIApp
+
+    __slots__ = (
+        "_app",
+        "_router",
+        "dependencies",
+        "include_in_schema",
+        "lifespan",
+        "responses",
+        "routes",
+        "tags",
+    )
 
     def __init__(
         self,
@@ -75,10 +84,10 @@ class Router:
             for cls, options in typing.cast(_MiddlewareIterator, reversed(middleware)):
                 self._app = cls(app=self._app, **options)
 
-    async def __call__(
+    def __call__(
         self,
         scope: Scope,
         receive: Receive,
         send: Send,
-    ) -> None:
-        await self._app(scope, receive, send)  # type: ignore[arg-type,call-arg,misc]
+    ) -> typing.Awaitable[None]:
+        return self._app(scope, receive, send)
