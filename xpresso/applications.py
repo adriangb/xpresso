@@ -238,7 +238,9 @@ class App:
 
     async def get_openapi(self) -> openapi_models.OpenAPI:
         return genrate_openapi(
-            visitor=visit_routes(app_type=App, router=self.router, nodes=[self, self.router], path=""),  # type: ignore  # for Pylance
+            visitor=visit_routes(
+                app_type=App, router=self.router, nodes=[self, self.router], path=""
+            ),
             container=self.container,
             version=self.openapi_version,
             info=self.openapi_info,
