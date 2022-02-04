@@ -22,7 +22,7 @@ def test_cors_middleware() -> None:
     )
     assert response.headers["access-control-allow-headers"] == "X-Example"
 
-    # Test standard response
+    # Test standard response for /v1/landing
     headers = {"Origin": "https://frontend.example.com"}
     response = client.get("/v1/landing", headers=headers)
     assert response.status_code == 200, response.text
@@ -32,8 +32,13 @@ def test_cors_middleware() -> None:
         == "https://frontend.example.com"
     )
 
-    # Test non-CORS response
+    # Test non-CORS response for /v1/landing
     response = client.get("/v1/landing")
     assert response.status_code == 200, response.text
     assert response.json() == {"message": "Hello!"}
     assert "access-control-allow-origin" not in response.headers
+
+    # Test non-CORS response for /health
+    response = client.get("/health")
+    assert response.status_code == 200, response.text
+    assert response.json() == {"okay": True}
