@@ -872,7 +872,7 @@
 This is the only way to handle startup/shutdown; there are no startup/shutdown events in Xpresso.</p>
 <p>The main difference vs. Starlette is that the lifespan context manager is allowed to depend on <code>"app"</code> scoped dependencies (see <a href="../dependencies/scopes/">Dependency Scopes</a>), including the <code>App</code> itself:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">asynccontextmanager</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">AsyncGenerator</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">AsyncIterator</span>
 
 <span class="kn">from</span> <span class="nn">pydantic</span> <span class="kn">import</span> <span class="n">BaseModel</span>
 
@@ -884,7 +884,7 @@ This is the only way to handle startup/shutdown; there are no startup/shutdown e
 
 
 <span class="nd">@asynccontextmanager</span>
-<span class="k">async</span> <span class="k">def</span> <span class="nf">lifespan</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">AppState</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">lifespan</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">AppState</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="kc">None</span><span class="p">]:</span>
     <span class="n">state</span><span class="o">.</span><span class="n">started</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="k">yield</span>
 
@@ -909,7 +909,7 @@ Instead, you can create you own strongly typed mutable or immutable state object
 <h2 id="router-lifespans">Router lifespans</h2>
 <p>Routers can also have lifespans, and these lifespans will be executed when the top level <code>App</code>'s lifespan executes:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">asynccontextmanager</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">AsyncGenerator</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">AsyncIterator</span><span class="p">,</span> <span class="n">List</span>
 
 <span class="kn">from</span> <span class="nn">xpresso</span> <span class="kn">import</span> <span class="n">App</span><span class="p">,</span> <span class="n">Path</span><span class="p">,</span> <span class="n">Router</span>
 <span class="kn">from</span> <span class="nn">xpresso.routing.mount</span> <span class="kn">import</span> <span class="n">Mount</span>
@@ -920,18 +920,16 @@ Instead, you can create you own strongly typed mutable or immutable state object
 
 
 <span class="nd">@asynccontextmanager</span>
-<span class="k">async</span> <span class="k">def</span> <span class="nf">app_lifespan</span><span class="p">(</span><span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">app_lifespan</span><span class="p">(</span><span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="kc">None</span><span class="p">]:</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;App lifespan&quot;</span><span class="p">)</span>
     <span class="k">yield</span>
 
 
 <span class="hll"><span class="nd">@asynccontextmanager</span>
-</span><span class="hll"><span class="k">async</span> <span class="k">def</span> <span class="nf">router_lifespan</span><span class="p">(</span>
-</span><span class="hll">    <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">,</span>
-</span><span class="hll"><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-</span>    <span class="n">logger</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Router lifespan&quot;</span><span class="p">)</span>
-    <span class="k">yield</span>
-
+</span><span class="hll"><span class="k">async</span> <span class="k">def</span> <span class="nf">router_lifespan</span><span class="p">(</span><span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="kc">None</span><span class="p">]:</span>
+</span><span class="hll">    <span class="n">logger</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Router lifespan&quot;</span><span class="p">)</span>
+</span><span class="hll">    <span class="k">yield</span>
+</span>
 
 <span class="k">async</span> <span class="k">def</span> <span class="nf">get_logs</span><span class="p">(</span><span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
     <span class="k">return</span> <span class="n">logger</span>
@@ -939,18 +937,18 @@ Instead, you can create you own strongly typed mutable or immutable state object
 
 <span class="n">app</span> <span class="o">=</span> <span class="n">App</span><span class="p">(</span>
     <span class="n">routes</span><span class="o">=</span><span class="p">[</span>
-<span class="hll">        <span class="n">Mount</span><span class="p">(</span>
-</span><span class="hll">            <span class="s2">&quot;&quot;</span><span class="p">,</span>
-</span><span class="hll">            <span class="n">app</span><span class="o">=</span><span class="n">Router</span><span class="p">(</span>
+        <span class="n">Mount</span><span class="p">(</span>
+            <span class="s2">&quot;&quot;</span><span class="p">,</span>
+<span class="hll">            <span class="n">app</span><span class="o">=</span><span class="n">Router</span><span class="p">(</span>
 </span><span class="hll">                <span class="n">routes</span><span class="o">=</span><span class="p">[</span>
 </span><span class="hll">                    <span class="n">Path</span><span class="p">(</span>
 </span><span class="hll">                        <span class="s2">&quot;/logs&quot;</span><span class="p">,</span>
 </span><span class="hll">                        <span class="n">get</span><span class="o">=</span><span class="n">get_logs</span><span class="p">,</span>
 </span><span class="hll">                    <span class="p">)</span>
 </span><span class="hll">                <span class="p">],</span>
-</span>                <span class="n">lifespan</span><span class="o">=</span><span class="n">router_lifespan</span><span class="p">,</span>
-            <span class="p">),</span>
-        <span class="p">)</span>
+</span><span class="hll">                <span class="n">lifespan</span><span class="o">=</span><span class="n">router_lifespan</span><span class="p">,</span>
+</span><span class="hll">            <span class="p">),</span>
+</span>        <span class="p">)</span>
     <span class="p">],</span>
     <span class="n">lifespan</span><span class="o">=</span><span class="n">app_lifespan</span><span class="p">,</span>
 <span class="p">)</span>
