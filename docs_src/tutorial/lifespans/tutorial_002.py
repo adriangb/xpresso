@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator, List
+from typing import AsyncIterator, List
 
 from xpresso import App, Path, Router
 from xpresso.routing.mount import Mount
@@ -10,15 +10,13 @@ class Logger(List[str]):
 
 
 @asynccontextmanager
-async def app_lifespan(logger: Logger) -> AsyncGenerator[None, None]:
+async def app_lifespan(logger: Logger) -> AsyncIterator[None]:
     logger.append("App lifespan")
     yield
 
 
 @asynccontextmanager
-async def router_lifespan(
-    logger: Logger,
-) -> AsyncGenerator[None, None]:
+async def router_lifespan(logger: Logger) -> AsyncIterator[None]:
     logger.append("Router lifespan")
     yield
 

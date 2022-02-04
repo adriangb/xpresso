@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator
+from typing import AsyncIterator
 
 from pydantic import BaseModel
 
@@ -11,7 +11,7 @@ class AppState(BaseModel):
 
 
 @asynccontextmanager
-async def lifespan(state: AppState) -> AsyncGenerator[None, None]:
+async def lifespan(state: AppState) -> AsyncIterator[None]:
     state.started = True
     yield
 
