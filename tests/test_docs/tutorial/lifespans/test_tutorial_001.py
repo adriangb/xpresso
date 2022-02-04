@@ -8,4 +8,4 @@ def test_lifespan() -> None:
         resp = client.get("/health")
         assert resp.status_code == 200, resp.content
 
-    assert resp.json() == {"app_id": id(app)}
+    assert resp.json() == {"running": True}
