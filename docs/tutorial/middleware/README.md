@@ -20,6 +20,12 @@ Here are a couple differences worth highlighting that you help you in deciding w
 - Dependencies can pass in values to your endpoint function, middleware can not (directly) pass data to your endpoint function.
 - Middleware can return a Response directly to your client, without passing through your endpoint function. Dependencies can only do this by raising a `HTTPException`.
 
+## Middleware on Routers
+
+Unlike FastAPI and Starlette where middleware is installed on the "application" object (`fastapi.applications.FastAPI` in FastAPI and `starlette.applications.Starlette` in Starlette), in Xpresso middleware is installed on `Router`.
+This gives you the ability to selectively apply middleware to only some routes (by mounting a `Router` on a subpath using `Mount`).
+Otherwise, the semantics and usage of middleware are still the same: it runs before routing (for the router it is installed on) and it manages both requests and responses.
+
 ## Example: CORSMiddleware
 
 As an example of applying a generic ASGI middleware to Xpresso, we'll use Starlette's [CORSMiddleware].
