@@ -51,7 +51,6 @@ nav:
       - Introduction: "tutorial/middleware/README.md"
     - Lifespans: "tutorial/lifespan.md"
     - Routing: "tutorial/routing.md"
-    - CORS: tutorial/cors.md
   - Advanced Usage:
     - WebSockets: advanced/websockets.md
     - Dependencies:
