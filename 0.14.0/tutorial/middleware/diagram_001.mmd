@@ -1,0 +1,10 @@
+sequenceDiagram
+    Client-->>Server: Incoming Request
+    Server-->>Middleware: Process Request
+    Middleware-->>Router: Route Request
+    Router-->>Dependencies: Process Request
+    Dependencies->>Endpoint:
+    Endpoint->>Dependencies: Process Response
+    Dependencies->>Middleware: Process Response
+    Middleware->>Server: Send Response
+    Server->>Client: Return Response
