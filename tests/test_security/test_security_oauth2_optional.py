@@ -3,7 +3,7 @@ from typing import Any, Dict, Generator, Optional
 import pytest
 from pydantic import BaseModel
 
-from xpresso import App, Dependant, FromFormData, Path, Security
+from xpresso import App, Depends, FromFormData, Path, Security
 from xpresso.security import OAuth2, OAuth2PasswordRequestFormStrict
 from xpresso.testclient import TestClient
 from xpresso.typing import Annotated
@@ -34,7 +34,7 @@ def login(form_data: FromFormData[OAuth2PasswordRequestFormStrict]):
     return form_data
 
 
-def read_users_me(current_user: Annotated[Optional[User], Dependant(get_current_user)]):
+def read_users_me(current_user: Annotated[Optional[User], Depends(get_current_user)]):
     if current_user is None:
         return {"msg": "Create an account first"}
     return current_user

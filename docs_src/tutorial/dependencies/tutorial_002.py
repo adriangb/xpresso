@@ -1,6 +1,6 @@
 import httpx
 
-from xpresso import App, Dependant, Path
+from xpresso import App, Depends, Path
 from xpresso.typing import Annotated
 
 
@@ -8,7 +8,7 @@ def get_client() -> httpx.AsyncClient:
     return httpx.AsyncClient(base_url="https://httpbin.org")
 
 
-HttpbinClient = Annotated[httpx.AsyncClient, Dependant(get_client)]
+HttpbinClient = Annotated[httpx.AsyncClient, Depends(get_client)]
 
 
 async def echo_url(client: HttpbinClient) -> str:

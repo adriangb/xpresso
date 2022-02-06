@@ -1,12 +1,12 @@
 from docs_src.advanced.dependencies.tutorial_004 import StatusCodeLogFile, app
-from xpresso import Dependant
+from xpresso import Depends
 from xpresso.testclient import TestClient
 
 
 def test_read_items_logging() -> None:
     log = StatusCodeLogFile()
     with app.container.register_by_type(
-        Dependant(lambda: log, scope="connection"), StatusCodeLogFile
+        Depends(lambda: log, scope="connection"), StatusCodeLogFile
     ):
         client = TestClient(app)
 

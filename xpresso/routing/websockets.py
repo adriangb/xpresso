@@ -13,7 +13,7 @@ from di.api.solved import SolvedDependant
 from di.dependant import JoinedDependant
 
 import xpresso._utils.asgi_scope_extension as asgi_scope_extension
-from xpresso.dependencies.models import Dependant
+from xpresso.dependencies.models import Depends
 
 
 class _WebSocketRoute:
@@ -58,7 +58,7 @@ class WebSocketRoute(starlette.routing.WebSocketRoute):
         endpoint: Endpoint,
         *,
         name: typing.Optional[str] = None,
-        dependencies: typing.Optional[typing.Sequence[Dependant]] = None,
+        dependencies: typing.Optional[typing.Sequence[Depends]] = None,
         execute_dependencies_concurrently: bool = False,
     ) -> None:
         super().__init__(  # type: ignore
@@ -77,7 +77,7 @@ class WebSocketRoute(starlette.routing.WebSocketRoute):
     ) -> None:
         self.dependant = container.solve(
             JoinedDependant(
-                Dependant(self.endpoint, scope="endpoint"),
+                Depends(self.endpoint, scope="endpoint"),
                 siblings=[*dependencies, *(self.dependencies or ())],
             )
         )

@@ -2,7 +2,7 @@ from typing import Callable, FrozenSet, Optional
 
 from xpresso import (
     App,
-    Dependant,
+    Depends,
     FromPath,
     FromQuery,
     HTTPException,
@@ -41,12 +41,10 @@ app = App(
             get=get_item,  # no extra roles required
             delete=Operation(
                 endpoint=delete_item,
-                dependencies=[
-                    Dependant(require_roles("items-admin"))
-                ],
+                dependencies=[Depends(require_roles("items-admin"))],
             ),
-            dependencies=[Dependant(require_roles("items-user"))],
+            dependencies=[Depends(require_roles("items-user"))],
         )
     ],
-    dependencies=[Dependant(require_roles("user"))],
+    dependencies=[Depends(require_roles("user"))],
 )

@@ -18,7 +18,7 @@ T = typing.TypeVar("T")
 Scope = Literal["app", "connection", "endpoint"]
 
 
-class Dependant(di.Dependant[typing.Any]):
+class Depends(di.Dependant[typing.Any]):
     __slots__ = ()
     scope: Scope
 
@@ -38,17 +38,17 @@ class Dependant(di.Dependant[typing.Any]):
             sync_to_thread=sync_to_thread,
         )
 
-    def initialize_sub_dependant(self, param: inspect.Parameter) -> Dependant:
+    def initialize_sub_dependant(self, param: inspect.Parameter) -> Depends:
         if param.default is param.empty:
             # try to auto-wire
-            return Dependant(
+            return Depends(
                 call=None,
                 scope=self.scope,
                 use_cache=self.use_cache,
             )
         # has a default parameter but we create a dependency anyway just for binds
         # but do not wire it to make autowiring less brittle and less magic
-        return Dependant(
+        return Depends(
             call=None,
             scope=self.scope,
             use_cache=self.use_cache,

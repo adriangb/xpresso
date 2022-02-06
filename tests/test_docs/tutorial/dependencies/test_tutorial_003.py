@@ -3,7 +3,7 @@ from contextlib import ExitStack
 import httpx
 
 from docs_src.tutorial.dependencies.tutorial_003 import HttpBinConfigModel, app
-from xpresso import Dependant
+from xpresso import Depends
 from xpresso.testclient import TestClient
 
 
@@ -27,13 +27,13 @@ def test_client_config_injection():
     with ExitStack() as stack:
         stack.enter_context(
             app.container.register_by_type(
-                Dependant(lambda: HttpBinConfigModel(url=test_url)),
+                Depends(lambda: HttpBinConfigModel(url=test_url)),
                 HttpBinConfigModel,
             )
         )
         stack.enter_context(
             app.container.register_by_type(
-                Dependant(get_client),
+                Depends(get_client),
                 httpx.AsyncClient,
             )
         )

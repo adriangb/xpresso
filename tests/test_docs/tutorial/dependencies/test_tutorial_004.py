@@ -1,7 +1,7 @@
 import httpx
 
 from docs_src.tutorial.dependencies.tutorial_004 import app
-from xpresso import Dependant
+from xpresso import Depends
 from xpresso.testclient import TestClient
 
 
@@ -11,7 +11,7 @@ def test_client_injection():
         return httpx.Response(200, json={"url": "https://httpbin.org/get"})
 
     with app.container.register_by_type(
-        Dependant(
+        Depends(
             lambda: httpx.AsyncClient(
                 transport=httpx.MockTransport(handler), base_url="https://httpbin.org"
             )

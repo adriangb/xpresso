@@ -29,7 +29,7 @@ from xpresso.binders._param_functions import (
     Security,
 )
 from xpresso.datastructures import UploadFile
-from xpresso.dependencies.models import Dependant
+from xpresso.dependencies.models import Depends
 from xpresso.exceptions import HTTPException
 from xpresso.requests import Request
 from xpresso.routing.operation import Operation
@@ -51,7 +51,7 @@ __all__ = (
     "Form",
     "File",
     "Multipart",
-    "Dependant",
+    "Depends",
     "App",
     "Router",
     "UploadFile",

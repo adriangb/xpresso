@@ -3,7 +3,7 @@ from typing import Any, Dict, Generator
 import pytest
 from pydantic import BaseModel
 
-from xpresso import App, Dependant, Path, Security
+from xpresso import App, Depends, Path, Security
 from xpresso.security import APIKeyHeader
 from xpresso.testclient import TestClient
 from xpresso.typing import Annotated
@@ -14,7 +14,7 @@ def get_name() -> str:
 
 
 class LazyAPIKeyHeader(APIKeyHeader):
-    def __init__(self, name: Annotated[str, Dependant(get_name, scope="app")]) -> None:
+    def __init__(self, name: Annotated[str, Depends(get_name, scope="app")]) -> None:
         super().__init__(name=name)
 
 
@@ -27,7 +27,7 @@ def get_current_user(oauth_header: Annotated[str, Security(LazyAPIKeyHeader)]):
     return user
 
 
-def read_current_user(current_user: Annotated[User, Dependant(get_current_user)]):
+def read_current_user(current_user: Annotated[User, Depends(get_current_user)]):
     return current_user
 
 

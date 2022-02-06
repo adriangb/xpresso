@@ -11,7 +11,7 @@ from starlette.routing import BaseRoute
 from starlette.routing import Router as StarletteRouter
 from starlette.types import Receive, Scope, Send
 
-from xpresso.dependencies.models import Dependant
+from xpresso.dependencies.models import Depends
 from xpresso.responses import Responses
 
 
@@ -33,7 +33,7 @@ _MiddlewareIterator = typing.Iterable[
 class Router:
     routes: typing.Sequence[BaseRoute]
     lifespan: typing.Optional[typing.Callable[..., typing.AsyncContextManager[None]]]
-    dependencies: typing.Sequence[Dependant]
+    dependencies: typing.Sequence[Depends]
     tags: typing.Sequence[str]
     responses: Responses
     include_in_schema: bool
@@ -62,7 +62,7 @@ class Router:
         ] = None,
         redirect_slashes: bool = True,
         default: typing.Optional[_ASGIApp] = None,
-        dependencies: typing.Optional[typing.Sequence[Dependant]] = None,
+        dependencies: typing.Optional[typing.Sequence[Depends]] = None,
         tags: typing.Optional[typing.List[str]] = None,
         responses: typing.Optional[Responses] = None,
         include_in_schema: bool = True,

@@ -1,4 +1,4 @@
-from xpresso import App, Dependant, Path
+from xpresso import App, Depends, Path
 from xpresso.typing import Annotated
 
 
@@ -15,11 +15,9 @@ def dependency_2(shared: SharedDependency) -> SharedDependency:
 
 
 async def endpoint(
-    shared1: Annotated[SharedDependency, Dependant(dependency_1)],
-    shared2: Annotated[SharedDependency, Dependant(dependency_1)],
-    shared3: Annotated[
-        SharedDependency, Dependant(SharedDependency, use_cache=False)
-    ],
+    shared1: Annotated[SharedDependency, Depends(dependency_1)],
+    shared2: Annotated[SharedDependency, Depends(dependency_1)],
+    shared3: Annotated[SharedDependency, Depends(use_cache=False)],
 ) -> None:
     assert shared1 is shared2
     assert shared1 is not shared3

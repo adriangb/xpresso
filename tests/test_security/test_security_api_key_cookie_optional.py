@@ -3,7 +3,7 @@ from typing import Any, Dict, Generator, Optional
 import pytest
 from pydantic import BaseModel
 
-from xpresso import App, Dependant, Path, Security
+from xpresso import App, Depends, Path, Security
 from xpresso.security import APIKeyCookie
 from xpresso.testclient import TestClient
 from xpresso.typing import Annotated
@@ -23,7 +23,7 @@ def get_current_user(oauth_header: Annotated[Optional[str], Security(api_key)]):
 
 
 def read_current_user(
-    current_user: Annotated[Optional[User], Dependant(get_current_user)]
+    current_user: Annotated[Optional[User], Depends(get_current_user)]
 ):
     if current_user is None:
         return {"msg": "Create an account first"}

@@ -2,7 +2,7 @@ import time
 
 import anyio
 
-from xpresso import App, Dependant, Operation, Path
+from xpresso import App, Depends, Operation, Path
 
 
 def slow_dependency_1() -> None:
@@ -24,8 +24,8 @@ app = App(
             get=Operation(
                 endpoint=endpoint,
                 dependencies=[
-                    Dependant(slow_dependency_1, sync_to_thread=True),
-                    Dependant(slow_dependency_2),
+                    Depends(slow_dependency_1, sync_to_thread=True),
+                    Depends(slow_dependency_2),
                 ],
                 execute_dependencies_concurrently=True,
             ),

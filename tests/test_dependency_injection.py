@@ -6,7 +6,7 @@ from di import BaseContainer
 from starlette.responses import Response
 from starlette.testclient import TestClient
 
-from xpresso import App, Dependant, Operation, Path
+from xpresso import App, Depends, Operation, Path
 from xpresso.typing import Annotated
 
 
@@ -16,21 +16,19 @@ def test_router_route_dependencies() -> None:
     class TrackingDep:
         o: object = None
 
-        def __call__(self, o: Annotated[object, Dependant(scope="app")]) -> None:
+        def __call__(self, o: Annotated[object, Depends(scope="app")]) -> None:
             self.o = o
 
     router_dep = TrackingDep()
     route_dep = TrackingDep()
     endpoint_dep = TrackingDep()
 
-    async def endpoint(v: Annotated[None, Dependant(endpoint_dep)]) -> Response:
+    async def endpoint(v: Annotated[None, Depends(endpoint_dep)]) -> Response:
         return Response()
 
     app = App(
-        routes=[
-            Path("/", get=Operation(endpoint, dependencies=[Dependant(route_dep)]))
-        ],
-        dependencies=[Dependant(router_dep)],
+        routes=[Path("/", get=Operation(endpoint, dependencies=[Depends(route_dep)]))],
+        dependencies=[Depends(router_dep)],
     )
 
     with TestClient(app=app) as client:
@@ -44,7 +42,7 @@ def test_lifespan_dependencies() -> None:
     class Test:
         foo: str = "foo"
 
-    TestDep = Annotated[Test, Dependant(scope="app")]
+    TestDep = Annotated[Test, Depends(scope="app")]
 
     @asynccontextmanager
     async def lifespan(t: TestDep) -> AsyncIterator[None]:
