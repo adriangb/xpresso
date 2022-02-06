@@ -100,17 +100,14 @@ FastAPI pioneered several ideas that are core to Xpresso's approach:
 
 Xpresso takes these ideas and refines them by:
 
-- Decoupling the dependency injection system from the request/response cycle, leading to an overall much more flexible and powerful dependency injection system, packaged up as the standalone [di] library. This is how Xpresso is able to provide [dependency injection into the application lifespan] and support for [multiple dependency scopes].
-- Making the extraction of data from requests an API available to other developers, enabling features like compatibility with libraries other than Pydantic or [MessagePack support] to be made available as 3rd party extensions instead of feature requests. All of this with full support for hooking into the OpenAPI documentation generation.
-- [Providing better support for `application/x-www-form-urlencoded` and `multipart/form-data` requests](https://xpresso-api.dev/latest/tutorial/forms/) by describing them with dataclasses or [Pydantic] models. This includes support for advanced use cases like extracting JSON from a form field.
-- Able to inject `App` or a custom subclass you use into your lifespan and endpoints instead of having to resort to `request.scope["app"]`.
+- Decoupling the dependency injection system from the request/response cycle, leading to an overall much more flexible and powerful dependency injection system, packaged up as the standalone [di] library.
+- Decoupling the framework from Pydantic by using `Annotated` ([PEP 593]) instead of default values (`param: FromQuery[str]` instead of `param: str = Query(...)`).
+- [Middleware on Routers] so that you can use generic ASGI middleware in a routing-aware manner (for example, installing profiling middleware on only some paths without using regex matching).
+- Support for [lifespans on any Router or mounted App] (this silently fails in FastAPI and Starlette)
+- [dependency injection into the application lifespan] and support for [multiple dependency scopes].
+- Formalizing the framework for extracting parameters and bodies from requests into the [Binder API] so that 3rd party extensions can do anything the framework does.
+- Support for [customizing parameter and form serialization].
 - Better performance by implementing [dependency resolution in Rust], [executing dependencies concurrently] and [controlling threading of sync dependencies on a per-dependency basis].
-- Allowing you to describe a single OpenAPI operation that accepts multiple content/types and extracting the right one based on headers
-- Giving you the ability to access and modify responses from within dependencies, allowing you to replace timing, tracing and logging middleware (which is routing ¨naive) with routing aware dependencies. No more middleware that accepts a regex pattern of paths!
-- Allowing dynamic building of security models triggered by lifespan events (you can load your Security model config from the environment at runtime).
-- Use of `Annotated` ([PEP 593]) instead of default values (`param: str = Query(...)`) which decouples the framework from Pydantic and enables a lot of the other features listed above and even allows you to make up your own markers to use if you make [custom Binders].
-- Middleware on `Router` so that you can apply auth, logging or profiling to only some routes without resorting to regex path matching.
-- Support for lifespans on any `Router` or mounted `App` (this silently fails in FastAPI and Starlette)
 
 [Starlette]: https://github.com/encode/starlette
 [Pydantic]: https://github.com/samuelcolvin/pydantic/
@@ -121,9 +118,11 @@ Xpresso takes these ideas and refines them by:
 [Swagger UI]: https://swagger.io/tools/swagger-ui/
 [dependency injection into the application lifespan]: https://xpresso-api.dev/latest/tutorial/lifespan
 [multiple dependency scopes]: https://xpresso-api.dev/latest/tutorial/dependencies/scopes/
-[MessagePack support]: https://xpresso-api.dev/latest/advanced/binders/#custom-binders-messagepack-body
 [dependency resolution in Rust]: https://github.com/adriangb/graphlib2
 [executing dependencies concurrently]: https://xpresso-api.dev/latest/advanced/dependencies/performance/#concurrent-execution
 [controlling threading of sync dependencies on a per-dependency basis]: https://xpresso-api.dev/latest/advanced/dependencies/performance/#sync-vs-async
 [PEP 593]: https://www.python.org/dev/peps/pep-0593/
-[custom Binders]: https://xpresso-api.dev/latest/advanced/binders/
+[Binder API]: https://xpresso-api.dev/latest/advanced/binders/
+[customizing parameter and form serialization]: https://xpresso-api.dev/latest/tutorial/query_params/#customizing-deserialization
+[lifespans on any Router or mounted App]: https://xpresso-api.dev/latest/tutorial/lifespan/
+[Middleware on Routers]: https://xpresso-api.dev/0.14.1/tutorial/middleware/#middleware-on-routers
