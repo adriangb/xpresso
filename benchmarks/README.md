@@ -19,4 +19,5 @@ The options are:
 
 - `/simple`: an endpoint that does nothing, this measures framework overhead mainly.
 - `/slow_deps`: a largish dependency graph where each dependency calls `asyncio.sleep(<random number between 1e-3 and 1e-1>)`.
-- `/fast_deps`: a largish dependency graph where each dependency is an async dependency that just calls `asyncio.sleep(1)`.
+- `/fast_deps`: a largish dependency graph where each dependency is an async dependency that just calls `asyncio.sleep(0)`.
+- `/routing/one/two-one/one-two-one`: test routing performance on an endpoint that does nothing but is nested within a large routing table.
