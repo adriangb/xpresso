@@ -39,9 +39,9 @@ ROUTING_PATHS = {
             "two-two-three": None,
         },
         "two-three": {
-            "one-three-one": None,
-            "one-three-two": None,
-            "one-three-three": None,
+            "two-three-one": None,
+            "two-three-two": None,
+            "two-three-three": None,
         },
     },
 }
