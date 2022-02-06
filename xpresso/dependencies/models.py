@@ -10,7 +10,6 @@ else:
     from typing import Literal
 
 import di
-from di.api.dependencies import CacheKey
 from di.api.providers import DependencyProvider
 
 T = typing.TypeVar("T")
@@ -55,9 +54,3 @@ class Dependant(di.Dependant[typing.Any]):
             use_cache=self.use_cache,
             wire=False,
         )
-
-    @property
-    def cache_key(self) -> CacheKey:
-        if self.use_cache is False or self.call is None:
-            return (self.__class__, id(self), None)
-        return (self.__class__, None, self.call)
