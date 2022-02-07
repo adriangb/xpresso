@@ -1,7 +1,7 @@
 import httpx
 from pydantic import BaseSettings
 
-from xpresso import App, Dependant, Path
+from xpresso import App, Depends, Path
 from xpresso.typing import Annotated
 
 
@@ -13,7 +13,7 @@ class HttpBinConfigModel(BaseSettings):
 
 
 HttpBinConfig = Annotated[
-    HttpBinConfigModel, Dependant(lambda: HttpBinConfigModel())
+    HttpBinConfigModel, Depends(lambda: HttpBinConfigModel())
 ]
 
 
@@ -21,7 +21,7 @@ def get_client(config: HttpBinConfig) -> httpx.AsyncClient:
     return httpx.AsyncClient(base_url=config.url)
 
 
-HttpbinClient = Annotated[httpx.AsyncClient, Dependant(get_client)]
+HttpbinClient = Annotated[httpx.AsyncClient, Depends(get_client)]
 
 
 async def echo_url(client: HttpbinClient) -> str:

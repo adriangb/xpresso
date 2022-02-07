@@ -1,6 +1,6 @@
 from xpresso import (
     App,
-    Dependant,
+    Depends,
     FromHeader,
     WebSocket,
     WebSocketRoute,
@@ -31,7 +31,7 @@ app = App(
         WebSocketRoute(
             path="/ws",
             endpoint=websocket_endpoint,
-            dependencies=[Dependant(enforce_header_pattern)],
+            dependencies=[Depends(enforce_header_pattern)],
         ),
     ]
 )

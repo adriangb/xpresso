@@ -14,7 +14,7 @@ This means that **sync dependencies will block the event loop**: a single sync d
 
 Fortunately, this is not a problem for many sync dependencies: if you are just loading a config from environment variables or otherwise not doing IO, your sync dependency won't "block" the event loop and your app will run fine.
 When you really need to start worrying about things is if you are doing database IO with a synchronous database client or something like that.
-For these cases, Xpresso provides a `sync_to_thread` argument to `Dependant` as well as `Operation`.
+For these cases, Xpresso provides a `sync_to_thread` argument to `Depends` as well as `Operation`.
 This will move execution of this dependency or endpoint function into a thread so that it can do IO concurrently and not block your application.
 For example, let's make a sync endpoint and sync dependencies that call `time.sleep()` to simulate some sort of blocking IO:
 

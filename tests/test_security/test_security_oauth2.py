@@ -3,7 +3,7 @@ from typing import Any, Dict, Generator
 import pytest
 from pydantic import BaseModel
 
-from xpresso import App, Dependant, FromFormData, Path, Security
+from xpresso import App, Depends, FromFormData, Path, Security
 from xpresso.security import OAuth2, OAuth2PasswordRequestFormStrict
 from xpresso.testclient import TestClient
 from xpresso.typing import Annotated
@@ -34,7 +34,7 @@ def login(form_data: "FromFormData[OAuth2PasswordRequestFormStrict]"):
 
 
 # Here we use string annotations to test them
-def read_current_user(current_user: "Annotated[User, Dependant(get_current_user)]"):
+def read_current_user(current_user: "Annotated[User, Depends(get_current_user)]"):
     return current_user
 
 

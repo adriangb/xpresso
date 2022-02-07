@@ -13,7 +13,7 @@ from starlette.background import BackgroundTasks
 from starlette.requests import HTTPConnection, Request
 from starlette.websockets import WebSocket
 
-from xpresso.dependencies.models import Dependant
+from xpresso.dependencies.models import Depends
 
 
 class App(Protocol):
@@ -26,15 +26,15 @@ def register_framework_dependencies(
     container: BaseContainer, app: App, app_type: typing.Type[App]
 ):
     container.register_by_type(
-        Dependant(Request, scope="connection", wire=False),
+        Depends(Request, scope="connection", wire=False),
         Request,
     )
     container.register_by_type(
-        Dependant(Request, scope="connection", wire=False),
+        Depends(Request, scope="connection", wire=False),
         Request,
     )
     container.register_by_type(
-        Dependant(
+        Depends(
             HTTPConnection,
             scope="connection",
             wire=False,
@@ -42,7 +42,7 @@ def register_framework_dependencies(
         HTTPConnection,
     )
     container.register_by_type(
-        Dependant(
+        Depends(
             WebSocket,
             scope="connection",
             wire=False,
@@ -50,7 +50,7 @@ def register_framework_dependencies(
         WebSocket,
     )
     container.register_by_type(
-        Dependant(
+        Depends(
             lambda: BackgroundTasks(),
             scope="connection",
             wire=False,
@@ -58,7 +58,7 @@ def register_framework_dependencies(
         BackgroundTasks,
     )
     container.register_by_type(
-        Dependant(
+        Depends(
             lambda: app.container,
             scope="app",
             wire=False,
@@ -67,7 +67,7 @@ def register_framework_dependencies(
         covariant=True,
     )
     container.register_by_type(
-        Dependant(
+        Depends(
             lambda: app,
             scope="app",
             wire=False,

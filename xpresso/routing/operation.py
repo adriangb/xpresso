@@ -15,7 +15,7 @@ from starlette.types import ASGIApp, Receive, Scope, Send
 import xpresso._utils.asgi_scope_extension as asgi_scope_extension
 import xpresso.binders.dependants as param_dependants
 import xpresso.openapi.models as openapi_models
-from xpresso.dependencies.models import Dependant
+from xpresso.dependencies.models import Depends
 from xpresso.encoders.api import Encoder
 from xpresso.encoders.json import JsonableEncoder
 from xpresso.responses import Responses
@@ -81,7 +81,7 @@ class Operation(BaseRoute):
         responses: typing.Optional[Responses] = None,
         # xpresso params
         name: typing.Optional[str] = None,
-        dependencies: typing.Optional[typing.Sequence[Dependant]] = None,
+        dependencies: typing.Optional[typing.Sequence[Depends]] = None,
         execute_dependencies_concurrently: bool = False,
         response_factory: typing.Callable[[typing.Any], Response] = JSONResponse,
         response_encoder: Encoder = JsonableEncoder(),
@@ -122,7 +122,7 @@ class Operation(BaseRoute):
     ) -> None:
         self.dependant = container.solve(
             JoinedDependant(
-                Dependant(
+                Depends(
                     self.endpoint, scope="endpoint", sync_to_thread=self.sync_to_thread
                 ),
                 siblings=[*dependencies, *(self.dependencies or ())],

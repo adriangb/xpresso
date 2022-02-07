@@ -2,14 +2,13 @@ from typing import Generator, List
 
 from xpresso import (
     App,
-    Dependant,
+    Depends,
     FromPath,
     HTTPException,
     Path,
     Request,
 )
 from xpresso.responses import get_response
-from xpresso.typing import Annotated
 
 
 class StatusCodeLogFile(List[int]):
@@ -18,7 +17,7 @@ class StatusCodeLogFile(List[int]):
 
 def log_response_status_code(
     request: Request,
-    log: Annotated[StatusCodeLogFile, Dependant(scope="connection")],
+    log: StatusCodeLogFile,
 ) -> Generator[None, None, None]:
     try:
         yield
@@ -45,9 +44,7 @@ app = App(
             path="/items/{item_name}",
             get=read_items,
             dependencies=[
-                Dependant(
-                    log_response_status_code, scope="connection"
-                )
+                Depends(log_response_status_code, scope="connection")
             ],
         ),
     ]

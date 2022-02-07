@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 from typing import AsyncIterator, List
 
-from xpresso import App, Dependant, Router
+from xpresso import App, Depends, Router
 from xpresso.routing.mount import Mount
 from xpresso.testclient import TestClient
 
@@ -18,9 +18,7 @@ def test_lifespan_mounted_app() -> None:
     counter = Counter()
 
     inner_app = App(lifespan=lifespan)
-    inner_app.container.register_by_type(
-        Dependant(lambda: counter, scope="app"), Counter
-    )
+    inner_app.container.register_by_type(Depends(lambda: counter, scope="app"), Counter)
 
     app = App(
         routes=[
@@ -30,7 +28,7 @@ def test_lifespan_mounted_app() -> None:
         lifespan=lifespan,
     )
 
-    app.container.register_by_type(Dependant(lambda: counter, scope="app"), Counter)
+    app.container.register_by_type(Depends(lambda: counter, scope="app"), Counter)
 
     with TestClient(app):
         pass

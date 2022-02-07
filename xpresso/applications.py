@@ -14,7 +14,7 @@ from starlette.routing import Route as StarletteRoute
 
 from xpresso._utils.asgi_scope_extension import XpressoASGIExtension
 from xpresso._utils.routing import visit_routes
-from xpresso.dependencies.models import Dependant
+from xpresso.dependencies.models import Depends
 from xpresso.dependencies.utils import register_framework_dependencies
 from xpresso.exception_handlers import (
     http_exception_handler,
@@ -100,7 +100,7 @@ class App:
         routes: typing.Optional[typing.Sequence[BaseRoute]] = None,
         *,
         container: typing.Optional[BaseContainer] = None,
-        dependencies: typing.Optional[typing.List[Dependant]] = None,
+        dependencies: typing.Optional[typing.List[Depends]] = None,
         debug: bool = False,
         middleware: typing.Optional[typing.Sequence[Middleware]] = None,
         exception_handlers: typing.Optional[ExceptionHandlers] = None,
@@ -130,16 +130,16 @@ class App:
             async with self.container.enter_scope("app") as container:
                 self.container = container
                 if lifespan is not None:
-                    dep = Dependant(
+                    dep = Depends(
                         _wrap_lifespan_as_async_generator(lifespan), scope="app"
                     )
                 else:
-                    dep = Dependant(lambda: None, scope="app")
+                    dep = Depends(lambda: None, scope="app")
                 solved = self.container.solve(
                     JoinedDependant(
                         dep,
                         siblings=[
-                            Dependant(lifespan, scope="app") for lifespan in lifespans
+                            Depends(lifespan, scope="app") for lifespan in lifespans
                         ],
                     )
                 )

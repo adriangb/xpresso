@@ -2,7 +2,7 @@ from typing import Any, Dict, Mapping, Union, List
 
 from starlette.routing import BaseRoute, Route
 
-from xpresso import App, Dependant, Operation, Path, Request, Response, Router
+from xpresso import App, Depends, Operation, Path, Request, Response, Router
 from xpresso.routing.mount import Mount
 from xpresso.typing import Annotated
 
@@ -10,11 +10,11 @@ from benchmarks.constants import DAG_SHAPE, DELAY, NO_DELAY, ROUTING_PATHS
 from benchmarks.utils import generate_dag
 
 def make_depends(type_: str, provider: str) -> str:
-    return f"Annotated[{type_}, Dependant({provider})]"
+    return f"Annotated[{type_}, Depends({provider})]"
 
 
 glbls: Dict[str, Any] = {
-    "Dependant": Dependant,
+    "Depends": Depends,
     "Annotated": Annotated,
 }
 
@@ -31,7 +31,7 @@ print("/fast_deps dag size: ", dag_size)
 
 
 def fast_dependencies(
-    _: Annotated[int, Dependant(dep_without_delays)]
+    _: Annotated[int, Depends(dep_without_delays)]
 ) -> Response:
     """An endpoint with dependencies that execute instantly"""
     return Response()
@@ -44,7 +44,7 @@ print("/slow_deps dag size: ", dag_size)
 
 
 def slow_dependencies(
-    _: Annotated[int, Dependant(dep_with_delays)]
+    _: Annotated[int, Depends(dep_with_delays)]
 ) -> Response:
     """An endpoint with dependencies that simulate IO"""
     return Response()

@@ -5,10 +5,10 @@ from typing import Optional, Sequence, Union
 from di.api.providers import DependencyProviderType
 
 from xpresso.binders.api import SecurityBase
-from xpresso.dependencies.models import Dependant
+from xpresso.dependencies.models import Depends
 
 
-class Security(Dependant):
+class Security(Depends):
     _dependency: Union[DependencyProviderType[SecurityBase], SecurityBase]
 
     def __init__(
