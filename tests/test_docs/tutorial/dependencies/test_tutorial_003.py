@@ -1,9 +1,6 @@
-from contextlib import ExitStack
-
 import httpx
 
 from docs_src.tutorial.dependencies.tutorial_003 import HttpBinConfigModel, app
-from xpresso import Depends
 from xpresso.testclient import TestClient
 
 
@@ -24,19 +21,9 @@ def test_client_config_injection():
             transport=httpx.MockTransport(handler), base_url=config.url
         )
 
-    with ExitStack() as stack:
-        stack.enter_context(
-            app.container.register_by_type(
-                Depends(lambda: HttpBinConfigModel(url=test_url)),
-                HttpBinConfigModel,
-            )
-        )
-        stack.enter_context(
-            app.container.register_by_type(
-                Depends(get_client),
-                httpx.AsyncClient,
-            )
-        )
+    with app.dependency_overrides as overrides:
+        overrides[HttpBinConfigModel] = lambda: HttpBinConfigModel(url=test_url)
+        overrides[httpx.AsyncClient] = get_client
         client = TestClient(app)
         response = client.get("/echo/url")
         assert response.status_code == 200, response.content

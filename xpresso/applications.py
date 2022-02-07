@@ -1,21 +1,23 @@
+import contextlib
 import inspect
 import typing
-from contextlib import asynccontextmanager
 
 import starlette.types
 from di import AsyncExecutor, BaseContainer, JoinedDependant
 from di.api.dependencies import DependantBase
+from starlette.background import BackgroundTasks
 from starlette.middleware import Middleware
 from starlette.middleware.errors import ServerErrorMiddleware
-from starlette.requests import Request
+from starlette.requests import HTTPConnection, Request
 from starlette.responses import HTMLResponse, JSONResponse, Response
 from starlette.routing import BaseRoute
 from starlette.routing import Route as StarletteRoute
+from starlette.websockets import WebSocket
 
 from xpresso._utils.asgi_scope_extension import XpressoASGIExtension
+from xpresso._utils.overrides import DependencyOverrideManager
 from xpresso._utils.routing import visit_routes
 from xpresso.dependencies.models import Depends
-from xpresso.dependencies.utils import register_framework_dependencies
 from xpresso.exception_handlers import (
     http_exception_handler,
     validation_exception_handler,
@@ -35,6 +37,8 @@ ExceptionHandler = typing.Callable[
 ExceptionHandlers = typing.Mapping[
     typing.Union[typing.Type[Exception], int], ExceptionHandler
 ]
+
+_REQUIRED_CONTAINER_SCOPES = ("app", "connection", "endpoint")
 
 
 def _include_error_middleware(
@@ -116,13 +120,18 @@ class App:
         docs_url: typing.Optional[str] = "/docs",
         servers: typing.Optional[typing.Iterable[openapi_models.Server]] = None,
     ) -> None:
-        self.container = container or BaseContainer(
-            scopes=("app", "connection", "endpoint")
-        )
-        register_framework_dependencies(self.container, app=self, app_type=App)
+        if container is not None:
+            if tuple(container.scopes) != _REQUIRED_CONTAINER_SCOPES:
+                raise ValueError(
+                    f"Containers must have exactly the following scopes (in order): {_REQUIRED_CONTAINER_SCOPES}"
+                )
+            self.container = container
+        else:
+            self.container = BaseContainer(scopes=_REQUIRED_CONTAINER_SCOPES)
+        _register_framework_dependencies(self.container, app=self)
         self._setup_run = False
 
-        @asynccontextmanager
+        @contextlib.asynccontextmanager
         async def lifespan_ctx(*_: typing.Any) -> typing.AsyncIterator[None]:
             lifespans = self._setup()
             self._setup_run = True
@@ -181,6 +190,10 @@ class App:
         )
         self._openapi_servers = servers
         self._openapi: "typing.Optional[openapi_models.OpenAPI]" = None
+
+    @property
+    def dependency_overrides(self) -> DependencyOverrideManager:
+        return DependencyOverrideManager(self.container)
 
     async def __call__(
         self,
@@ -298,3 +311,56 @@ class App:
             )
 
         return routes
+
+
+def _register_framework_dependencies(container: BaseContainer, app: App):
+    container.register_by_type(
+        Depends(Request, scope="connection", wire=False),
+        Request,
+    )
+    container.register_by_type(
+        Depends(Request, scope="connection", wire=False),
+        Request,
+    )
+    container.register_by_type(
+        Depends(
+            HTTPConnection,
+            scope="connection",
+            wire=False,
+        ),
+        HTTPConnection,
+    )
+    container.register_by_type(
+        Depends(
+            WebSocket,
+            scope="connection",
+            wire=False,
+        ),
+        WebSocket,
+    )
+    container.register_by_type(
+        Depends(
+            lambda: BackgroundTasks(),
+            scope="connection",
+            wire=False,
+        ),
+        BackgroundTasks,
+    )
+    container.register_by_type(
+        Depends(
+            lambda: app.container,
+            scope="app",
+            wire=False,
+        ),
+        BaseContainer,
+        covariant=True,
+    )
+    container.register_by_type(
+        Depends(
+            lambda: app,
+            scope="app",
+            wire=False,
+        ),
+        App,
+        covariant=True,
+    )

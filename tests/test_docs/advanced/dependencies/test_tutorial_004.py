@@ -1,13 +1,11 @@
 from docs_src.advanced.dependencies.tutorial_004 import StatusCodeLogFile, app
-from xpresso import Depends
 from xpresso.testclient import TestClient
 
 
 def test_read_items_logging() -> None:
     log = StatusCodeLogFile()
-    with app.container.register_by_type(
-        Depends(lambda: log, scope="connection"), StatusCodeLogFile
-    ):
+    with app.dependency_overrides as overrides:
+        overrides[StatusCodeLogFile] = lambda: log
         client = TestClient(app)
 
         resp = client.get("/items/foo")
