@@ -67,6 +67,4 @@ class DependencyOverrideManager:
         __exc_value: typing.Optional[BaseException],
         __traceback: typing.Optional[TracebackType],
     ) -> typing.Optional[bool]:
-        if self._stacks:
-            return self._stacks.pop().__exit__(__exc_type, __exc_value, __traceback)
-        return None
+        return self._stacks.pop().__exit__(__exc_type, __exc_value, __traceback)
