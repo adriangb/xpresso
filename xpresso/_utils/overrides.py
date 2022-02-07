@@ -4,10 +4,6 @@ import sys
 import typing
 from types import TracebackType
 
-if sys.version_info < (3, 8):
-    from typing_extensions import Protocol
-else:
-    from typing import Protocol
 if sys.version_info < (3, 9):
     from typing_extensions import Annotated, get_args, get_origin
 else:
@@ -26,14 +22,7 @@ def get_type(param: inspect.Parameter) -> type:
     return param.annotation
 
 
-class SupportsSetItem(Protocol):
-    def __setitem__(
-        self, target: DependencyProvider, replacement: DependencyProvider
-    ) -> None:
-        ...
-
-
-class DependencyOverrideManager(typing.ContextManager[SupportsSetItem]):
+class DependencyOverrideManager:
     _stacks: typing.List[contextlib.ExitStack]
 
     def __init__(self, container: BaseContainer) -> None:
@@ -68,8 +57,8 @@ class DependencyOverrideManager(typing.ContextManager[SupportsSetItem]):
         if self._stacks:
             self._stacks[-1].enter_context(cm)
 
-    def __enter__(self) -> SupportsSetItem:
-        self._stacks.append(contextlib.ExitStack())
+    def __enter__(self) -> "DependencyOverrideManager":
+        self._stacks.append(contextlib.ExitStack().__enter__())
         return self
 
     def __exit__(
@@ -79,5 +68,5 @@ class DependencyOverrideManager(typing.ContextManager[SupportsSetItem]):
         __traceback: typing.Optional[TracebackType],
     ) -> typing.Optional[bool]:
         if self._stacks:
-            self._stacks.pop().close()
+            return self._stacks.pop().__exit__(__exc_type, __exc_value, __traceback)
         return None

@@ -16,8 +16,7 @@ class StatusCodeLogFile(List[int]):
 
 
 def log_response_status_code(
-    request: Request,
-    log: StatusCodeLogFile,
+    request: Request, log: StatusCodeLogFile
 ) -> Generator[None, None, None]:
     try:
         yield

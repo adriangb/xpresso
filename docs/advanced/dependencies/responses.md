@@ -20,7 +20,7 @@ Further, modifying the response or calling `set_response()` will only work from 
 
 Here is an example of a dependency that logs the status code for every response on a path:
 
-```python hl_lines="19-30"
+```python hl_lines="18-29"
 --8<-- "docs_src/advanced/dependencies/tutorial_004.py"
 ```
 

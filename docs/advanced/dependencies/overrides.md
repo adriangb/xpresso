@@ -36,10 +36,10 @@ We don't want to actually make network calls to HTTPBin in our tests, so we swap
 
 !!! note
     Xpresso's `app.dependency_overrides` is just a wrapper around the more advanced functionality offered in [di].
-    The lowest level, but most powerful, interface is `Container.register_hook` (`app.container.register_hook`).
+    The lowest level, but most powerful, interface is `Container.register_hook` (`App.container.register_hook` when accessed from an Xpresso App).
     See [di's provider binding docs] for more details.
 
-You can also use this same mechanism to declare a dependency on an abstract interface (including `typing.Protocol` classes) and then register a concrete provider in some `create_production_app()` class.
+You can also use this same mechanism to declare a dependency on an abstract interface (including `typing.Protocol` classes) and then register a concrete implementation in some `create_production_app()` class and a different concrete implementation in `create_test_app()`.
 
 [Markers]: ../../tutorial/dependencies/README.md#explicit-dependencies-with-markers
 [Dependency Injection - Introduction]: ../../tutorial/dependencies/README.md

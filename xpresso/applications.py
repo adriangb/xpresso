@@ -96,6 +96,7 @@ class App:
         "_openapi",
         "_setup_run",
         "container",
+        "dependency_overrides",
         "router",
     )
 
@@ -129,6 +130,7 @@ class App:
         else:
             self.container = BaseContainer(scopes=_REQUIRED_CONTAINER_SCOPES)
         _register_framework_dependencies(self.container, app=self)
+        self.dependency_overrides = DependencyOverrideManager(self.container)
         self._setup_run = False
 
         @contextlib.asynccontextmanager
@@ -190,10 +192,6 @@ class App:
         )
         self._openapi_servers = servers
         self._openapi: "typing.Optional[openapi_models.OpenAPI]" = None
-
-    @property
-    def dependency_overrides(self) -> DependencyOverrideManager:
-        return DependencyOverrideManager(self.container)
 
     async def __call__(
         self,
