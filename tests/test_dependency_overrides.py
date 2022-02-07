@@ -5,7 +5,7 @@ from xpresso.typing import Annotated
 
 def test_override_with_marker() -> None:
     def dep() -> int:
-        return 1
+        ...
 
     async def endpoint(v: Annotated[int, Depends(dep)]) -> int:
         return v
