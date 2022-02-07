@@ -10,11 +10,11 @@ from benchmarks.constants import DAG_SHAPE, DELAY, NO_DELAY, ROUTING_PATHS
 from benchmarks.utils import generate_dag
 
 def make_depends(type_: str, provider: str) -> str:
-    return f"Annotated[{type_}, Dependant({provider})]"
+    return f"Annotated[{type_}, Depends({provider})]"
 
 
 glbls: Dict[str, Any] = {
-    "Dependant": Depends,
+    "Depends": Depends,
     "Annotated": Annotated,
 }
 

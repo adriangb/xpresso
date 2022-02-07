@@ -87,8 +87,8 @@ You can declare it in the endpoint function's signature, but often it is conveni
 ```
 
 !!! tip "Tip"
-    For simple cases like this, you can even use a lambda function: `Dependant(lambda: httpx.AsyncClient(...))`
-    Just be concious of legibility!
+    For simple cases like this, you can even use a lambda function: `Depends(lambda: httpx.AsyncClient(...))`
+    Just be conscious of legibility!
 
 Since we are now specifying the `base_url` when we construct the `httpx.AsyncClient`, we can just use `"/get"` as the URL in our endpoint function:
 
