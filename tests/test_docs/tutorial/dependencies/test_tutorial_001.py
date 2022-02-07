@@ -9,8 +9,12 @@ def test_client_injection():
         assert request.url == "https://httpbin.org/get"
         return httpx.Response(200, json={"url": "https://httpbin.org/get"})
 
-    with app.dependency_overrides as overrides:
-        overrides[httpx.AsyncClient] = lambda: httpx.AsyncClient(transport=httpx.MockTransport(handler))
+    def get_test_client() -> httpx.AsyncClient:
+        transport = httpx.MockTransport(handler)
+        return httpx.AsyncClient(transport=transport)
+
+    with app.dependency_overrides:
+        app.dependency_overrides[httpx.AsyncClient] = get_test_client
 
         client = TestClient(app)
         response = client.get("/echo/url")

@@ -34,11 +34,11 @@ class SupportsSetItem(Protocol):
 
 
 class DependencyOverrideManager(typing.ContextManager[SupportsSetItem]):
-    _stack: typing.Optional[contextlib.ExitStack]
+    _stacks: typing.List[contextlib.ExitStack]
 
     def __init__(self, container: BaseContainer) -> None:
         self._container = container
-        self._stack = None
+        self._stacks = []
 
     def __setitem__(
         self, target: DependencyProvider, replacement: DependencyProvider
@@ -65,11 +65,11 @@ class DependencyOverrideManager(typing.ContextManager[SupportsSetItem]):
             return None
 
         cm = self._container.register(hook)
-        if self._stack is not None:
-            self._stack.enter_context(cm)
+        if self._stacks:
+            self._stacks[-1].enter_context(cm)
 
     def __enter__(self) -> SupportsSetItem:
-        self._stack = contextlib.ExitStack()
+        self._stacks.append(contextlib.ExitStack())
         return self
 
     def __exit__(
@@ -78,6 +78,6 @@ class DependencyOverrideManager(typing.ContextManager[SupportsSetItem]):
         __exc_value: typing.Optional[BaseException],
         __traceback: typing.Optional[TracebackType],
     ) -> typing.Optional[bool]:
-        if self._stack is not None:
-            self._stack.close()
+        if self._stacks:
+            self._stacks.pop().close()
         return None

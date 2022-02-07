@@ -18,7 +18,7 @@ Here is the example we had previously from the [Dependency Injection - Introduct
 
 We don't want to actually make network calls to HTTPBin in our tests, so we swap out the `httpx.AsyncClient` for one using `httpx.MockTransport`:
 
-```python hl_lines="13-16"
+```python hl_lines="12-14 16-17"
 --8<-- "tests/test_docs/tutorial/dependencies/test_tutorial_001.py"
 ```
 
