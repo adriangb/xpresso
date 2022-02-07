@@ -41,49 +41,6 @@ ExceptionHandlers = typing.Mapping[
 _REQUIRED_CONTAINER_SCOPES = ("app", "connection", "endpoint")
 
 
-def _include_error_middleware(
-    debug: bool,
-    user_middleware: typing.Iterable[Middleware],
-    exception_handlers: ExceptionHandlers,
-) -> typing.Sequence[Middleware]:
-    # user's exception handlers come last so that they can override
-    # the default exception handlers
-    exception_handlers = {
-        RequestValidationError: validation_exception_handler,
-        HTTPException: http_exception_handler,
-        **exception_handlers,
-    }
-
-    error_handler = None
-    for key, value in exception_handlers.items():
-        if key in (500, Exception):
-            error_handler = value
-        else:
-            exception_handlers[key] = value
-
-    return (
-        Middleware(ServerErrorMiddleware, handler=error_handler, debug=debug),
-        *user_middleware,
-        Middleware(ExceptionMiddleware, handlers=exception_handlers, debug=debug),
-    )
-
-
-def _wrap_lifespan_as_async_generator(
-    lifespan: typing.Callable[..., typing.AsyncContextManager[None]]
-) -> typing.Callable[..., typing.AsyncIterator[None]]:
-    async def gen(
-        *args: typing.Any, **kwargs: typing.Any
-    ) -> typing.AsyncIterator[None]:
-        async with lifespan(*args, **kwargs):
-            yield
-
-    sig = inspect.signature(gen)
-    sig = sig.replace(parameters=list(inspect.signature(lifespan).parameters.values()))
-    setattr(gen, "__signature__", sig)
-
-    return gen
-
-
 class App:
     router: Router
     container: BaseContainer
@@ -309,6 +266,49 @@ class App:
             )
 
         return routes
+
+
+def _include_error_middleware(
+    debug: bool,
+    user_middleware: typing.Iterable[Middleware],
+    exception_handlers: ExceptionHandlers,
+) -> typing.Sequence[Middleware]:
+    # user's exception handlers come last so that they can override
+    # the default exception handlers
+    exception_handlers = {
+        RequestValidationError: validation_exception_handler,
+        HTTPException: http_exception_handler,
+        **exception_handlers,
+    }
+
+    error_handler = None
+    for key, value in exception_handlers.items():
+        if key in (500, Exception):
+            error_handler = value
+        else:
+            exception_handlers[key] = value
+
+    return (
+        Middleware(ServerErrorMiddleware, handler=error_handler, debug=debug),
+        *user_middleware,
+        Middleware(ExceptionMiddleware, handlers=exception_handlers, debug=debug),
+    )
+
+
+def _wrap_lifespan_as_async_generator(
+    lifespan: typing.Callable[..., typing.AsyncContextManager[None]]
+) -> typing.Callable[..., typing.AsyncIterator[None]]:
+    async def gen(
+        *args: typing.Any, **kwargs: typing.Any
+    ) -> typing.AsyncIterator[None]:
+        async with lifespan(*args, **kwargs):
+            yield
+
+    sig = inspect.signature(gen)
+    sig = sig.replace(parameters=list(inspect.signature(lifespan).parameters.values()))
+    setattr(gen, "__signature__", sig)
+
+    return gen
 
 
 def _register_framework_dependencies(container: BaseContainer, app: App):
