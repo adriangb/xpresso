@@ -317,10 +317,6 @@ def _register_framework_dependencies(container: BaseContainer, app: App):
         Request,
     )
     container.bind_by_type(
-        Depends(Request, scope="connection", wire=False),
-        Request,
-    )
-    container.bind_by_type(
         Depends(
             HTTPConnection,
             scope="connection",
@@ -338,7 +334,7 @@ def _register_framework_dependencies(container: BaseContainer, app: App):
     )
     container.bind_by_type(
         Depends(
-            lambda: BackgroundTasks(),
+            BackgroundTasks,
             scope="connection",
             wire=False,
         ),
