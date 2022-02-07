@@ -312,15 +312,15 @@ def _wrap_lifespan_as_async_generator(
 
 
 def _register_framework_dependencies(container: BaseContainer, app: App):
-    container.register_by_type(
+    container.bind_by_type(
         Depends(Request, scope="connection", wire=False),
         Request,
     )
-    container.register_by_type(
+    container.bind_by_type(
         Depends(Request, scope="connection", wire=False),
         Request,
     )
-    container.register_by_type(
+    container.bind_by_type(
         Depends(
             HTTPConnection,
             scope="connection",
@@ -328,7 +328,7 @@ def _register_framework_dependencies(container: BaseContainer, app: App):
         ),
         HTTPConnection,
     )
-    container.register_by_type(
+    container.bind_by_type(
         Depends(
             WebSocket,
             scope="connection",
@@ -336,7 +336,7 @@ def _register_framework_dependencies(container: BaseContainer, app: App):
         ),
         WebSocket,
     )
-    container.register_by_type(
+    container.bind_by_type(
         Depends(
             lambda: BackgroundTasks(),
             scope="connection",
@@ -344,7 +344,7 @@ def _register_framework_dependencies(container: BaseContainer, app: App):
         ),
         BackgroundTasks,
     )
-    container.register_by_type(
+    container.bind_by_type(
         Depends(
             lambda: app.container,
             scope="app",
@@ -353,7 +353,7 @@ def _register_framework_dependencies(container: BaseContainer, app: App):
         BaseContainer,
         covariant=True,
     )
-    container.register_by_type(
+    container.bind_by_type(
         Depends(
             lambda: app,
             scope="app",

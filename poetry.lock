@@ -168,7 +168,7 @@ toml = ["tomli"]
 
 [[package]]
 name = "di"
-version = "0.56.0"
+version = "0.56.1"
 description = "Autowiring dependency injection"
 category = "main"
 optional = false
@@ -1222,8 +1222,8 @@ coverage = [
     {file = "coverage-6.3.1.tar.gz", hash = "sha256:6c3f6158b02ac403868eea390930ae64e9a9a2a5bbfafefbb920d29258d9f2f8"},
 ]
 di = [
-    {file = "di-0.56.0-py3-none-any.whl", hash = "sha256:ac4a28b790773668af05e306db60ebc7c2f1d725835f4c6a21f9bbf95d085ae8"},
-    {file = "di-0.56.0.tar.gz", hash = "sha256:dbd10a03eaccebf2d776576cd6d6a6d49c60e92b489b85832ad612437587ecbd"},
+    {file = "di-0.56.1-py3-none-any.whl", hash = "sha256:eff78db82e747490e50302eed49641dd7d09ff543f3ab3ad04eb9ba65024a57d"},
+    {file = "di-0.56.1.tar.gz", hash = "sha256:d54d1f3a034cd0180b10e600f15aa29acc1b15f2d2ebf3f4f918afa6d5f2ab91"},
 ]
 distlib = [
     {file = "distlib-0.3.4-py2.py3-none-any.whl", hash = "sha256:6564fe0a8f51e734df6333d08b8b94d4ea8ee6b99b5ed50613f731fd4089f34b"},

@@ -53,7 +53,7 @@ class DependencyOverrideManager:
                 return dep
             return None
 
-        cm = self._container.register(hook)
+        cm = self._container.register_bind_hook(hook)
         if self._stacks:
             self._stacks[-1].enter_context(cm)
 
