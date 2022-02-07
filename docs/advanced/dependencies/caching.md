@@ -20,7 +20,7 @@ Next we'll create two dependencies that depend on this dependency to test that s
 
 Finally we create an endpoint that checks that the shared sub-dependencies are the same but the dependency declared with `use_cache=False` is not the same:
 
-```python hl_lines="17-25"
+```python hl_lines="17-23"
 --8<-- "docs_src/advanced/dependencies/tutorial_003.py"
 ```
 

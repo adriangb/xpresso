@@ -1,21 +1,23 @@
+import contextlib
 import inspect
 import typing
-from contextlib import asynccontextmanager
 
 import starlette.types
 from di import AsyncExecutor, BaseContainer, JoinedDependant
 from di.api.dependencies import DependantBase
+from starlette.background import BackgroundTasks
 from starlette.middleware import Middleware
 from starlette.middleware.errors import ServerErrorMiddleware
-from starlette.requests import Request
+from starlette.requests import HTTPConnection, Request
 from starlette.responses import HTMLResponse, JSONResponse, Response
 from starlette.routing import BaseRoute
 from starlette.routing import Route as StarletteRoute
+from starlette.websockets import WebSocket
 
 from xpresso._utils.asgi_scope_extension import XpressoASGIExtension
+from xpresso._utils.overrides import DependencyOverrideManager
 from xpresso._utils.routing import visit_routes
 from xpresso.dependencies.models import Depends
-from xpresso.dependencies.utils import register_framework_dependencies
 from xpresso.exception_handlers import (
     http_exception_handler,
     validation_exception_handler,
@@ -36,48 +38,7 @@ ExceptionHandlers = typing.Mapping[
     typing.Union[typing.Type[Exception], int], ExceptionHandler
 ]
 
-
-def _include_error_middleware(
-    debug: bool,
-    user_middleware: typing.Iterable[Middleware],
-    exception_handlers: ExceptionHandlers,
-) -> typing.Sequence[Middleware]:
-    # user's exception handlers come last so that they can override
-    # the default exception handlers
-    exception_handlers = {
-        RequestValidationError: validation_exception_handler,
-        HTTPException: http_exception_handler,
-        **exception_handlers,
-    }
-
-    error_handler = None
-    for key, value in exception_handlers.items():
-        if key in (500, Exception):
-            error_handler = value
-        else:
-            exception_handlers[key] = value
-
-    return (
-        Middleware(ServerErrorMiddleware, handler=error_handler, debug=debug),
-        *user_middleware,
-        Middleware(ExceptionMiddleware, handlers=exception_handlers, debug=debug),
-    )
-
-
-def _wrap_lifespan_as_async_generator(
-    lifespan: typing.Callable[..., typing.AsyncContextManager[None]]
-) -> typing.Callable[..., typing.AsyncIterator[None]]:
-    async def gen(
-        *args: typing.Any, **kwargs: typing.Any
-    ) -> typing.AsyncIterator[None]:
-        async with lifespan(*args, **kwargs):
-            yield
-
-    sig = inspect.signature(gen)
-    sig = sig.replace(parameters=list(inspect.signature(lifespan).parameters.values()))
-    setattr(gen, "__signature__", sig)
-
-    return gen
+_REQUIRED_CONTAINER_SCOPES = ("app", "connection", "endpoint")
 
 
 class App:
@@ -92,6 +53,7 @@ class App:
         "_openapi",
         "_setup_run",
         "container",
+        "dependency_overrides",
         "router",
     )
 
@@ -116,13 +78,19 @@ class App:
         docs_url: typing.Optional[str] = "/docs",
         servers: typing.Optional[typing.Iterable[openapi_models.Server]] = None,
     ) -> None:
-        self.container = container or BaseContainer(
-            scopes=("app", "connection", "endpoint")
-        )
-        register_framework_dependencies(self.container, app=self, app_type=App)
+        if container is not None:
+            if tuple(container.scopes) != _REQUIRED_CONTAINER_SCOPES:
+                raise ValueError(
+                    f"Containers must have exactly the following scopes (in order): {_REQUIRED_CONTAINER_SCOPES}"
+                )
+            self.container = container
+        else:
+            self.container = BaseContainer(scopes=_REQUIRED_CONTAINER_SCOPES)
+        _register_framework_dependencies(self.container, app=self)
+        self.dependency_overrides = DependencyOverrideManager(self.container)
         self._setup_run = False
 
-        @asynccontextmanager
+        @contextlib.asynccontextmanager
         async def lifespan_ctx(*_: typing.Any) -> typing.AsyncIterator[None]:
             lifespans = self._setup()
             self._setup_run = True
@@ -298,3 +266,95 @@ class App:
             )
 
         return routes
+
+
+def _include_error_middleware(
+    debug: bool,
+    user_middleware: typing.Iterable[Middleware],
+    exception_handlers: ExceptionHandlers,
+) -> typing.Sequence[Middleware]:
+    # user's exception handlers come last so that they can override
+    # the default exception handlers
+    exception_handlers = {
+        RequestValidationError: validation_exception_handler,
+        HTTPException: http_exception_handler,
+        **exception_handlers,
+    }
+
+    error_handler = None
+    for key, value in exception_handlers.items():
+        if key in (500, Exception):
+            error_handler = value
+        else:
+            exception_handlers[key] = value
+
+    return (
+        Middleware(ServerErrorMiddleware, handler=error_handler, debug=debug),
+        *user_middleware,
+        Middleware(ExceptionMiddleware, handlers=exception_handlers, debug=debug),
+    )
+
+
+def _wrap_lifespan_as_async_generator(
+    lifespan: typing.Callable[..., typing.AsyncContextManager[None]]
+) -> typing.Callable[..., typing.AsyncIterator[None]]:
+    async def gen(
+        *args: typing.Any, **kwargs: typing.Any
+    ) -> typing.AsyncIterator[None]:
+        async with lifespan(*args, **kwargs):
+            yield
+
+    sig = inspect.signature(gen)
+    sig = sig.replace(parameters=list(inspect.signature(lifespan).parameters.values()))
+    setattr(gen, "__signature__", sig)
+
+    return gen
+
+
+def _register_framework_dependencies(container: BaseContainer, app: App):
+    container.bind_by_type(
+        Depends(Request, scope="connection", wire=False),
+        Request,
+    )
+    container.bind_by_type(
+        Depends(
+            HTTPConnection,
+            scope="connection",
+            wire=False,
+        ),
+        HTTPConnection,
+    )
+    container.bind_by_type(
+        Depends(
+            WebSocket,
+            scope="connection",
+            wire=False,
+        ),
+        WebSocket,
+    )
+    container.bind_by_type(
+        Depends(
+            BackgroundTasks,
+            scope="connection",
+            wire=False,
+        ),
+        BackgroundTasks,
+    )
+    container.bind_by_type(
+        Depends(
+            lambda: app.container,
+            scope="app",
+            wire=False,
+        ),
+        BaseContainer,
+        covariant=True,
+    )
+    container.bind_by_type(
+        Depends(
+            lambda: app,
+            scope="app",
+            wire=False,
+        ),
+        App,
+        covariant=True,
+    )
