@@ -16,6 +16,7 @@
 !/mkdocs.yml
 !/codecov.yml
 !/LICENSE.txt
+!/CONTRIBUTING.md
 !/assets/
 
 **/__pycache__
