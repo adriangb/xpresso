@@ -59,6 +59,7 @@ nav:
       - Accessing Responses: "advanced/dependencies/responses.md"
       - Dependency Overrides: "advanced/dependencies/overrides.md"
     - Binders: advanced/binders.md
+  - Contributing: "contributing.md"
 
 markdown_extensions:
   - admonition
