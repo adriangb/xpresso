@@ -2,11 +2,15 @@ from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from typing import AsyncIterator, List
 
+import anyio
+import anyio.abc
+import pytest
 from di import BaseContainer
+from fastapi import WebSocket
 from starlette.responses import Response
 from starlette.testclient import TestClient
 
-from xpresso import App, Depends, Operation, Path
+from xpresso import App, Depends, Operation, Path, WebSocketRoute
 from xpresso.typing import Annotated
 
 
@@ -37,7 +41,7 @@ def test_router_route_dependencies() -> None:
     assert endpoint_dep.o is route_dep.o and route_dep.o is router_dep.o
 
 
-def test_lifespan_dependencies() -> None:
+def test_lifespan_dependencies_are_re_used_in_connection_scope() -> None:
     @dataclass
     class Test:
         foo: str = "foo"
@@ -58,6 +62,70 @@ def test_lifespan_dependencies() -> None:
         resp = client.get("/")
     assert resp.status_code == 200
     assert resp.json() == "bar"
+
+
+@pytest.mark.parametrize("use_lifespan", [True, False])
+def test_app_scope_dependency_is_initialized_in_lifespan_http_endpoint(
+    use_lifespan: bool,
+) -> None:
+    async def dep() -> AsyncIterator[None]:
+        taskinfo = anyio.get_current_task()
+        yield
+        # make sure we are in the same task'
+        # https://github.com/adriangb/xpresso/pull/57/files#r801949751
+        assert taskinfo.id == anyio.get_current_task().id
+
+    Dep = Annotated[None, Depends(dep, scope="app")]
+
+    @asynccontextmanager
+    async def lifespan(t: Dep) -> AsyncIterator[None]:
+        taskinfo = anyio.get_current_task()
+        yield
+        assert taskinfo.id == anyio.get_current_task().id
+
+    async def endpoint(t: Dep) -> None:
+        ...
+
+    app = App([Path("/", get=endpoint)], lifespan=lifespan if use_lifespan else None)
+
+    with TestClient(app=app) as client:
+        resp = client.get("/")
+    assert resp.status_code == 200, resp.content
+
+
+@pytest.mark.parametrize("use_lifespan", [True, False])
+def test_app_scope_dependency_is_initialized_in_lifespan_websocket_endpoint(
+    use_lifespan: bool,
+) -> None:
+    async def dep() -> AsyncIterator[None]:
+        taskinfo = anyio.get_current_task()
+        yield
+        # make sure we are in the same task'
+        # https://github.com/adriangb/xpresso/pull/57/files#r801949751
+        assert taskinfo.id == anyio.get_current_task().id
+
+    Dep = Annotated[None, Depends(dep, scope="app")]
+
+    @asynccontextmanager
+    async def lifespan(t: Dep) -> AsyncIterator[None]:
+        taskinfo = anyio.get_current_task()
+        yield
+        assert taskinfo.id == anyio.get_current_task().id
+
+    async def endpoint(t: Dep, ws: WebSocket) -> None:
+        await ws.accept()
+        await ws.send_text("Hello")
+        await ws.close()
+
+    app = App(
+        [WebSocketRoute("/", endpoint=endpoint)],
+        lifespan=lifespan if use_lifespan else None,
+    )
+
+    with TestClient(app=app) as client:
+        with client.websocket_connect("/") as ws:
+            resp = ws.receive_text()
+    assert resp == "Hello"
 
 
 def test_inject_container() -> None:
