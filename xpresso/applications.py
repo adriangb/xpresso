@@ -92,7 +92,7 @@ class App:
 
         @contextlib.asynccontextmanager
         async def lifespan_ctx(*_: typing.Any) -> typing.AsyncIterator[None]:
-            lifespans = self._setup()
+            lifespans, lifespan_deps = self._setup()
             self._setup_run = True
             original_container = self.container
             async with self.container.enter_scope("app") as container:
@@ -107,7 +107,8 @@ class App:
                     JoinedDependant(
                         dep,
                         siblings=[
-                            Depends(lifespan, scope="app") for lifespan in lifespans
+                            *(Depends(lifespan, scope="app") for lifespan in lifespans),
+                            *lifespan_deps,
                         ],
                     )
                 )
@@ -173,8 +174,14 @@ class App:
         else:  # lifespan
             await self.router(scope, receive, send)
 
-    def _setup(self) -> typing.List[typing.Callable[..., typing.AsyncIterator[None]]]:
+    def _setup(
+        self,
+    ) -> typing.Tuple[
+        typing.List[typing.Callable[..., typing.AsyncIterator[None]]],
+        typing.List[DependantBase[typing.Any]],
+    ]:
         lifespans: typing.List[typing.Callable[..., typing.AsyncIterator[None]]] = []
+        lifespan_dependants: typing.List[DependantBase[typing.Any]] = []
         seen_routers: typing.Set[typing.Any] = set()
         for route in visit_routes(
             app_type=App, router=self.router, nodes=[self, self.router], path=""
@@ -201,6 +208,9 @@ class App:
                         ],
                         container=self.container,
                     )
+                    for dep in operation.dependant.get_flat_subdependants():
+                        if dep.scope == "app":
+                            lifespan_dependants.append(dep)
             elif isinstance(route.route, WebSocketRoute):
                 route.route.solve(
                     dependencies=[
@@ -209,7 +219,10 @@ class App:
                     ],
                     container=self.container,
                 )
-        return lifespans
+                for dep in route.route.dependant.get_flat_subdependants():
+                    if dep.scope == "app":
+                        lifespan_dependants.append(dep)
+        return lifespans, lifespan_dependants
 
     def get_openapi(self) -> openapi_models.OpenAPI:
         return genrate_openapi(
