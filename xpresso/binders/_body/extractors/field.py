@@ -11,7 +11,7 @@ from xpresso.binders.dependants import BodyBinderMarker
 from xpresso.typing import Some
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, eq=False)
 class FieldExtractorBase(BodyExtractor):
     name: str
     field_extractor: BodyExtractor
@@ -28,13 +28,6 @@ class FieldExtractor(FieldExtractorBase):
                 form[self.name], loc=(*loc, self.name)
             )
         )
-
-    # These are implemented to work around pecularities of hashing bound methods on Python 3.7
-    def __hash__(self) -> int:
-        return id(self)  # pragma: no covet
-
-    def __eq__(self, __o: object) -> bool:
-        return self is __o  # pragma: no covet
 
 
 class RepeatedFieldExtractor(FieldExtractorBase):
