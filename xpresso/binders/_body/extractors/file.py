@@ -19,7 +19,7 @@ from xpresso.exceptions import RequestValidationError
 from xpresso.typing import Some
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, eq=False)
 class FileBodyExtractor(BodyExtractor):
     field: ModelField
     media_type_validator: MediaTypeValidator
@@ -85,13 +85,6 @@ class FileBodyExtractor(BodyExtractor):
             # user requested bytes
             return await value.read()  # type: ignore  # UploadFile always returns bytes
         return value
-
-    # These are implemented to work around pecularities of hashing bound methods on Python 3.7
-    def __hash__(self) -> int:
-        return id(self)  # pragma: no covet
-
-    def __eq__(self, __o: object) -> bool:
-        return self is __o  # pragma: no covet
 
 
 @dataclass(frozen=True)

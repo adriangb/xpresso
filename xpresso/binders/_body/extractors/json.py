@@ -30,7 +30,7 @@ class Decoder(Protocol):
         ...
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, eq=False)
 class JsonBodyExtractor(BodyExtractor):
     field: ModelField
     decoder: Decoder

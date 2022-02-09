@@ -21,7 +21,7 @@ from xpresso.binders.dependants import BodyBinderMarker
 from xpresso.typing import Some
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, eq=False)
 class FormDataBodyExtractorBase(BodyExtractor):
     media_type_validator: MediaTypeValidator
     field: ModelField
@@ -58,13 +58,6 @@ class FormDataBodyExtractorBase(BodyExtractor):
             if isinstance(extracted, Some):
                 res[param_name] = extracted.value
         return res
-
-    # These are implemented to work around pecularities of hashing bound methods on Python 3.7
-    def __hash__(self) -> int:
-        return id(self)  # pragma: no covet
-
-    def __eq__(self, __o: object) -> bool:
-        return self is __o  # pragma: no covet
 
 
 class FormDataBodyExtractor(FormDataBodyExtractorBase):
