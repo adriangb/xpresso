@@ -109,6 +109,26 @@ Xpresso takes these ideas and refines them by:
 - Support for [customizing parameter and form serialization].
 - Better performance by implementing [dependency resolution in Rust], [executing dependencies concurrently] and [controlling threading of sync dependencies on a per-dependency basis].
 
+## Current state
+
+This project is under active development.
+It should not be considered "stable" or ready to be used in production.
+It is however ready for experimentation and learning!
+
+### What is implemented and mostly stable?
+
+1. Extraction and OpenAPI documentation of parameters (query, headers, etc.) and request bodies (including multipart requests).
+1. Parameter serialization.
+1. Routing, including applications, routers and routes.
+1. Dependency injection and testing utilities (dependency overrides).
+
+Most of this APIs will be _generally_ stable going forward, although some minor aspects like argument names will probably change at some point.
+
+### What is not implemented or unstable?
+
+1. Low-level API for binders (stuff in `xpresso.binders`): this is public, but should be considered experimental and is likely to change. The high level APIs (`FromPath[str]` and `Annotated[str, PathParam(...)]`) are likely to be stable.
+1. Security dependencies and OpenAPI integration. This part used to exist, but needed some work. It is planned for the future, but we need to think about the scope of these features and the API.
+
 [Starlette]: https://github.com/encode/starlette
 [Pydantic]: https://github.com/samuelcolvin/pydantic/
 [FastAPI]: https://github.com/adriangb/xpresso
