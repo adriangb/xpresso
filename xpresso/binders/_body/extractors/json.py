@@ -52,7 +52,7 @@ class JsonBodyExtractor(BodyExtractor):
         else:
             data_from_stream = await request.body()
         return validate_body_field(
-            Some(await self._decode(data_from_stream, loc=loc)),
+            Some(self._decode(data_from_stream, loc=loc)),
             field=self.field,
             loc=loc,
         )
@@ -64,15 +64,15 @@ class JsonBodyExtractor(BodyExtractor):
         loc: typing.Iterable[typing.Union[str, int]],
     ) -> typing.Any:
         if isinstance(field, UploadFile):
-            return await self._decode(await field.read(), loc=loc)
-        return await self._decode(field, loc=loc)
+            return self._decode(await field.read(), loc=loc)
+        return self._decode(field, loc=loc)
 
     async def extract_from_form(
         self, form: FormData, *, loc: typing.Iterable[typing.Union[str, int]]
     ) -> typing.Optional[Some[typing.Any]]:
         raise NotImplementedError
 
-    async def _decode(
+    def _decode(
         self,
         value: typing.Union[str, bytes],
         loc: typing.Iterable[typing.Union[int, str]],
