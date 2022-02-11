@@ -18,7 +18,7 @@ Here is the example we had previously from the [Dependency Injection - Introduct
 
 We don't want to actually make network calls to HTTPBin in our tests, so we swap out the `httpx.AsyncClient` for one using `httpx.MockTransport`:
 
-```python hl_lines="12-14 16-17"
+```python hl_lines="12-13 15-16"
 --8<-- "tests/test_docs/tutorial/dependencies/test_tutorial_001.py"
 ```
 
@@ -29,10 +29,8 @@ We don't want to actually make network calls to HTTPBin in our tests, so we swap
     You probably should use the context manager form in tests so that you don't leak state from one test to another.
 
 !!! tip
-    We use a lambda here to tell the dependency injection system what parameters to include.
-    But remember that this lambda will be called every time the dependency is requested.
-    You can also create an instance outside of the lambda function and return that if you want to use the same instance everywhere.
-    In this particular test, it doesn't make a difference.
+    Notice how we used a lambda to always return the same instance.
+    Depending on what your dependency is, and what `scope` it was declared with, you may want to return a new instance each time.
 
 !!! note
     Xpresso's `app.dependency_overrides` is just a wrapper around the more advanced functionality offered in [di].
