@@ -44,6 +44,7 @@ _REQUIRED_CONTAINER_SCOPES = ("app", "connection", "endpoint")
 class App:
     router: Router
     container: BaseContainer
+    dependency_overrides: DependencyOverrideManager
 
     __slots__ = (
         "_debug",
