@@ -306,6 +306,33 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#current-state" class="md-nav__link">
+    Current state
+  </a>
+  
+    <nav class="md-nav" aria-label="Current state">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-is-implemented-and-mostly-stable" class="md-nav__link">
+    What is implemented and mostly stable?
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-is-not-implemented-or-unstable" class="md-nav__link">
+    What is not implemented or unstable?
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -899,6 +926,33 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#current-state" class="md-nav__link">
+    Current state
+  </a>
+  
+    <nav class="md-nav" aria-label="Current state">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-is-implemented-and-mostly-stable" class="md-nav__link">
+    What is implemented and mostly stable?
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-is-not-implemented-or-unstable" class="md-nav__link">
+    What is not implemented or unstable?
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1006,6 +1060,23 @@ FastAPI pioneered several ideas that are core to Xpresso's approach:</p>
 <li>Support for <a href="https://xpresso-api.dev/latest/tutorial/query_params/#customizing-deserialization">customizing parameter and form serialization</a>.</li>
 <li>Better performance by implementing <a href="https://github.com/adriangb/graphlib2">dependency resolution in Rust</a>, <a href="https://xpresso-api.dev/latest/advanced/dependencies/performance/#concurrent-execution">executing dependencies concurrently</a> and <a href="https://xpresso-api.dev/latest/advanced/dependencies/performance/#sync-vs-async">controlling threading of sync dependencies on a per-dependency basis</a>.</li>
 </ul>
+<h2 id="current-state">Current state</h2>
+<p>This project is under active development.
+It should not be considered "stable" or ready to be used in production.
+It is however ready for experimentation and learning!</p>
+<h3 id="what-is-implemented-and-mostly-stable">What is implemented and mostly stable?</h3>
+<ol>
+<li>Extraction and OpenAPI documentation of parameters (query, headers, etc.) and request bodies (including multipart requests).</li>
+<li>Parameter serialization.</li>
+<li>Routing, including applications, routers and routes.</li>
+<li>Dependency injection and testing utilities (dependency overrides).</li>
+</ol>
+<p>Most of this APIs will be <em>generally</em> stable going forward, although some minor aspects like argument names will probably change at some point.</p>
+<h3 id="what-is-not-implemented-or-unstable">What is not implemented or unstable?</h3>
+<ol>
+<li>Low-level API for binders (stuff in <code>xpresso.binders</code>): this is public, but should be considered experimental and is likely to change. The high level APIs (<code>FromPath[str]</code> and <code>Annotated[str, PathParam(...)]</code>) are likely to be stable.</li>
+<li>Security dependencies and OpenAPI integration. This part used to exist, but needed some work. It is planned for the future, but we need to think about the scope of these features and the API.</li>
+</ol>
 
               
             </article>
