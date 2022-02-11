@@ -38,142 +38,9 @@ from xpresso.binders._body.openapi.file import OpenAPIFileMarker
 from xpresso.binders._body.openapi.form import OpenAPIFormDataMarker
 from xpresso.binders._body.openapi.form_field import OpenAPIFormFieldMarker
 from xpresso.binders._body.openapi.json import OpenAPIJsonMarker
-from xpresso.binders._parameters.extractors.cookie import CookieParameterExtractorMarker
-from xpresso.binders._parameters.extractors.header import HeaderParameterExtractorMarker
-from xpresso.binders._parameters.extractors.path import PathParameterExtractorMarker
-from xpresso.binders._parameters.extractors.query import QueryParameterExtractorMarker
-from xpresso.binders._parameters.openapi.cookie import OpenAPICookieParameterMarker
-from xpresso.binders._parameters.openapi.header import OpenAPIHeaderParameterMarker
-from xpresso.binders._parameters.openapi.path import OpenAPIPathParameterMarker
-from xpresso.binders._parameters.openapi.query import OpenAPIQueryParameterMarker
-from xpresso.binders.api import SecurityBase
 from xpresso.openapi import models as openapi_models
 
-T = typing.TypeVar("T")
-
 Example = typing.Union[openapi_models.Example, typing.Any]
-
-
-def QueryParam(
-    *,
-    alias: typing.Optional[str] = None,
-    style: openapi_models.QueryParamStyles = "form",
-    explode: bool = True,
-    examples: typing.Optional[typing.Dict[str, Example]] = None,
-    description: typing.Optional[str] = None,
-    deprecated: typing.Optional[bool] = None,
-    include_in_schema: bool = True,
-) -> param_dependants.ParameterBinderMarker:
-    extractor = QueryParameterExtractorMarker(
-        alias=alias,
-        explode=explode,
-        style=style,
-    )
-    openapi = OpenAPIQueryParameterMarker(
-        alias=alias,
-        description=description,
-        style=style,
-        explode=explode,
-        examples=examples,
-        deprecated=deprecated,
-        include_in_schema=include_in_schema,
-    )
-    return param_dependants.ParameterBinderMarker(
-        in_="query",
-        extractor_marker=extractor,
-        openapi_marker=openapi,
-    )
-
-
-def PathParam(
-    *,
-    alias: typing.Optional[str] = None,
-    style: openapi_models.PathParamStyles = "simple",
-    explode: bool = False,
-    examples: typing.Optional[typing.Dict[str, Example]] = None,
-    description: typing.Optional[str] = None,
-    deprecated: typing.Optional[bool] = None,
-    include_in_schema: bool = True,
-) -> param_dependants.ParameterBinderMarker:
-    extractor = PathParameterExtractorMarker(
-        alias=alias,
-        explode=explode,
-        style=style,
-    )
-    openapi = OpenAPIPathParameterMarker(
-        alias=alias,
-        description=description,
-        style=style,
-        explode=explode,
-        examples=examples,
-        deprecated=deprecated,
-        include_in_schema=include_in_schema,
-    )
-    return param_dependants.ParameterBinderMarker(
-        in_="path",
-        extractor_marker=extractor,
-        openapi_marker=openapi,
-    )
-
-
-def HeaderParam(
-    *,
-    convert_underscores: bool = True,
-    alias: typing.Optional[str] = None,
-    explode: bool = False,
-    examples: typing.Optional[typing.Dict[str, Example]] = None,
-    description: typing.Optional[str] = None,
-    deprecated: typing.Optional[bool] = None,
-    include_in_schema: bool = True,
-) -> param_dependants.ParameterBinderMarker:
-    extractor = HeaderParameterExtractorMarker(
-        alias=alias,
-        explode=explode,
-        convert_underscores=convert_underscores,
-    )
-    openapi = OpenAPIHeaderParameterMarker(
-        alias=alias,
-        description=description,
-        explode=explode,
-        style="simple",
-        examples=examples,
-        deprecated=deprecated,
-        include_in_schema=include_in_schema,
-    )
-    return param_dependants.ParameterBinderMarker(
-        in_="header",
-        extractor_marker=extractor,
-        openapi_marker=openapi,
-    )
-
-
-def CookieParam(
-    *,
-    alias: typing.Optional[str] = None,
-    explode: bool = True,
-    examples: typing.Optional[typing.Dict[str, Example]] = None,
-    description: typing.Optional[str] = None,
-    deprecated: typing.Optional[bool] = None,
-    include_in_schema: bool = True,
-) -> param_dependants.ParameterBinderMarker:
-    extractor = CookieParameterExtractorMarker(
-        alias=alias,
-        explode=explode,
-    )
-    openapi = OpenAPICookieParameterMarker(
-        alias=alias,
-        description=description,
-        style="form",
-        explode=explode,
-        examples=examples,
-        deprecated=deprecated,
-        include_in_schema=include_in_schema,
-    )
-    return param_dependants.ParameterBinderMarker(
-        in_="cookie",
-        extractor_marker=extractor,
-        openapi_marker=openapi,
-    )
 
 
 def Json(
@@ -343,27 +210,13 @@ def ContentTypeDiscriminatedBody(
     )
 
 
-def Security(
-    model: typing.Union[SecurityBase, typing.Type[SecurityBase]],
-    *,
-    scopes: typing.Optional[typing.Sequence[str]] = None,
-    scheme_name: typing.Optional[str] = None,
-) -> param_dependants.SecurityBinder:
-    return param_dependants.SecurityBinder(
-        model=model, scopes=scopes, scheme_name=scheme_name
-    )
-
-
 # Convenience type aliases
-FromQuery = Annotated[T, QueryParam()]
-FromHeader = Annotated[T, HeaderParam()]
-FromCookie = Annotated[T, CookieParam()]
-FromPath = Annotated[T, PathParam()]
-FromJson = Annotated[T, Json()]
-FromFile = Annotated[T, File()]
-FromFormField = Annotated[T, FormEncodedField()]
-ExtractField = Annotated[T, FormField()]
-ExtractRepeatedField = Annotated[T, RepeatedFormField()]
-FromFormData = Annotated[T, Form()]
-FromMultipart = Annotated[T, Multipart()]
-ByContentType = Annotated[T, ContentTypeDiscriminatedBody()]
+_T = typing.TypeVar("_T")
+FromJson = Annotated[_T, Json()]
+FromFile = Annotated[_T, File()]
+FromFormField = Annotated[_T, FormEncodedField()]
+ExtractField = Annotated[_T, FormField()]
+ExtractRepeatedField = Annotated[_T, RepeatedFormField()]
+FromFormData = Annotated[_T, Form()]
+FromMultipart = Annotated[_T, Multipart()]
+ByContentType = Annotated[_T, ContentTypeDiscriminatedBody()]
