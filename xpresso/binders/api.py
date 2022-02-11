@@ -1,6 +1,6 @@
 import inspect
 import sys
-from typing import Any, Awaitable, Callable, Dict, Iterable, List, Optional, Union
+from typing import Any, Dict, Iterable, List, Optional, Union
 
 if sys.version_info < (3, 8):
     from typing_extensions import Protocol
@@ -124,9 +124,3 @@ class OpenAPIParameter(Protocol):
 class OpenAPIParameterMarker(Protocol):
     def register_parameter(self, param: inspect.Parameter) -> OpenAPIParameter:
         raise NotImplementedError
-
-
-class SecurityBase:
-    model: models.SecurityScheme
-    scheme_name: str
-    __call__: Callable[..., Awaitable[Any]]

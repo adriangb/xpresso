@@ -1,10 +1,9 @@
 import inspect
 import typing
 
-from di import BaseContainer, Dependant, SyncExecutor
+from di import Dependant
 from di.api.dependencies import CacheKey, DependantBase
 
-import xpresso.openapi.models as openapi_models
 from xpresso.binders.api import (
     BodyExtractor,
     BodyExtractorMarker,
@@ -14,9 +13,7 @@ from xpresso.binders.api import (
     OpenAPIParameterMarker,
     ParameterExtractor,
     ParameterExtractorMarker,
-    SecurityBase,
 )
-from xpresso.exceptions import XpressoError
 
 
 class ParameterBinderMarker(Dependant[typing.Any]):
@@ -94,68 +91,3 @@ class BodyBinderMarker(Dependant[typing.Any]):
             openapi=self.openapi_marker.register_parameter(param),
             extractor=self.extractor_marker.register_parameter(param),
         )
-
-
-class SecurityBinder(Dependant[typing.Any]):
-    _model: typing.Optional[openapi_models.SecurityScheme]
-
-    def __init__(
-        self,
-        *,
-        scheme_name: typing.Optional[str] = None,
-        model: typing.Union[SecurityBase, typing.Type[SecurityBase]],
-        scopes: typing.Optional[typing.Sequence[str]],
-    ) -> None:
-        self.model = model
-        self.scopes = frozenset(scopes or [])
-        if isinstance(model, SecurityBase):
-
-            self._model = model.model
-            self._scheme_name = scheme_name or model.__class__.__name__
-
-            def get_model() -> SecurityBase:
-                assert isinstance(model, SecurityBase)
-                return model
-
-            extractor = model.__class__.__call__
-            self._model_dependant = Dependant(get_model, scope="app")
-            super().__init__(
-                call=extractor,
-                overrides={"self": self._model_dependant},
-                scope="connection",
-            )
-        else:
-            self._model = None
-            self._scheme_name = scheme_name or model.__name__
-            self._model_dependant = Dependant(model, scope="app")
-            super().__init__(
-                call=model.__call__,
-                overrides={"self": self._model_dependant},
-                scope="connection",
-            )
-
-    @property
-    def scheme_name(self) -> str:
-        return self._scheme_name
-
-    def construct_model(
-        self, container: BaseContainer
-    ) -> openapi_models.SecurityScheme:
-        if self._model is not None:
-            return self._model
-        if "app" not in container.current_scopes:
-            raise XpressoError(
-                "Defered security models require a lifespan event to be triggered to be able to generate OpenAPI schemas"
-                "\nIf you are using TestClient, use it as a context manager:"
-                "\n  with TestClient(app) as client:  ..."
-            )
-        solved = container.solve(self._model_dependant)
-        model = container.execute_sync(solved, executor=SyncExecutor())
-        return model.model
-
-    def register_parameter(self, param: inspect.Parameter) -> DependantBase[typing.Any]:
-        return self
-
-    @property
-    def cache_key(self) -> CacheKey:
-        return (self.__class__, self.model)

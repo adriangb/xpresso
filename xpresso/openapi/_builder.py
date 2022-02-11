@@ -12,7 +12,6 @@ from xpresso.openapi._responses import (
     get_response_specs_from_return_type_hints,
     merge_response_models,
 )
-from xpresso.openapi._security import get_security_models, get_security_scheme_name_map
 from xpresso.openapi.constants import REF_PREFIX
 from xpresso.responses import Responses, ResponseSpec
 from xpresso.routing.operation import Operation
@@ -23,7 +22,6 @@ ModelNameMap = Dict[type, str]
 
 Routes = Mapping[str, Tuple[Path, Mapping[str, Operation]]]
 
-SecurityModels = Mapping[binder_dependants.SecurityBinder, models.SecurityScheme]
 
 validation_error_definition = {
     "title": "ValidationError",
@@ -132,7 +130,6 @@ def get_operation(
     route: Operation,
     model_name_map: ModelNameMap,
     components: Dict[str, Any],
-    security_models: Mapping[binder_dependants.SecurityBinder, str],
     tags: List[str],
     response_specs: Responses,
 ) -> models.Operation:
@@ -171,18 +168,6 @@ def get_operation(
     )
     if body_dependant is not None:
         data["requestBody"] = get_request_body(body_dependant, model_name_map, schemas)
-    security_dependants: List[binder_dependants.SecurityBinder] = [
-        dep
-        for dep in route_dependant.get_flat_subdependants()
-        if isinstance(dep, binder_dependants.SecurityBinder)
-    ]
-    if security_dependants:
-        security_schemes = components.get("securitySchemes", None) or {}
-        components["securitySchemes"] = security_schemes
-        data["security"] = [
-            {security_models[dep]: list(dep.scopes)}
-            for dep in sorted(security_dependants, key=lambda dep: security_models[dep])
-        ]
     data["responses"] = get_responses(
         route,
         response_specs=response_specs,
@@ -220,7 +205,6 @@ def get_paths_items(
     visitor: Iterable[VisitedRoute[Any]],
     model_name_map: ModelNameMap,
     components: Dict[str, Any],
-    security_models: Mapping[binder_dependants.SecurityBinder, str],
 ) -> Dict[str, models.PathItem]:
     paths: Dict[str, models.PathItem] = {}
     for visited_route in visitor:
@@ -250,7 +234,6 @@ def get_paths_items(
                     operation,
                     model_name_map=model_name_map,
                     components=components,
-                    security_models=security_models,
                     tags=tags + operation.tags,
                     response_specs={**responses, **operation.responses},
                 )
@@ -306,24 +289,8 @@ def genrate_openapi(
     routes = filter_routes(visitor)
     flat_models = get_flat_models(routes)
     model_name_map = get_model_name_map(flat_models)
-    security_binders = get_security_models(routes, container)
-    security_scheme_name_map = get_security_scheme_name_map(security_binders)
-    security_bider_to_name_map = {
-        binder: security_scheme_name_map[scheme]
-        for binder, scheme in security_binders.items()
-    }
-    components_security_schemes = {
-        name: scheme for scheme, name in security_scheme_name_map.items()
-    }
     components: Dict[str, Any] = {}
-    if components_security_schemes:
-        components["securitySchemes"] = {
-            name: components_security_schemes[name]
-            for name in sorted(components_security_schemes.keys())
-        }
-    paths = get_paths_items(
-        visitor, model_name_map, components, security_bider_to_name_map
-    )
+    paths = get_paths_items(visitor, model_name_map, components)
     return models.OpenAPI(
         openapi=version,
         info=info,
