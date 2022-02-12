@@ -52,6 +52,8 @@ class App:
         "_openapi_servers",
         "_openapi_version",
         "_openapi",
+        "_root_path",
+        "_root_path_in_servers",
         "_setup_run",
         "container",
         "dependency_overrides",
@@ -78,6 +80,8 @@ class App:
         openapi_url: typing.Optional[str] = "/openapi.json",
         docs_url: typing.Optional[str] = "/docs",
         servers: typing.Optional[typing.Iterable[openapi_models.Server]] = None,
+        root_path: str = "",
+        root_path_in_servers: bool = True,
     ) -> None:
         if container is not None:
             if tuple(container.scopes) != _REQUIRED_CONTAINER_SCOPES:
@@ -149,8 +153,10 @@ class App:
             version=version,
             description=description,
         )
-        self._openapi_servers = servers
-        self._openapi: "typing.Optional[openapi_models.OpenAPI]" = None
+        self._openapi_servers = servers or []
+        self._openapi: "typing.Optional[typing.Dict[str, typing.Any]]" = None
+        self._root_path_in_servers = root_path_in_servers
+        self._root_path = root_path
 
     async def __call__(
         self,
@@ -158,6 +164,12 @@ class App:
         receive: starlette.types.Receive,
         send: starlette.types.Send,
     ) -> None:
+        if self._root_path:
+            prefix = scope.get("root_path", None)
+            if prefix:
+                scope["root_path"] = prefix.rstrip("/") + self._root_path
+            else:
+                scope["root_path"] = self._root_path
         scope_type = scope["type"]
         if scope_type == "http" or scope_type == "websocket":
             if not self._setup_run:
@@ -225,7 +237,9 @@ class App:
                         lifespan_dependants.append(dep)
         return lifespans, lifespan_dependants
 
-    def get_openapi(self) -> openapi_models.OpenAPI:
+    def get_openapi(
+        self, servers: typing.List[openapi_models.Server]
+    ) -> openapi_models.OpenAPI:
         return genrate_openapi(
             visitor=visit_routes(
                 app_type=App, router=self.router, nodes=[self, self.router], path=""
@@ -233,7 +247,7 @@ class App:
             container=self.container,
             version=self._openapi_version,
             info=self._openapi_info,
-            servers=self._openapi_servers,
+            servers=servers,
         )
 
     def _get_doc_routes(
@@ -247,10 +261,20 @@ class App:
             openapi_url = openapi_url
 
             async def openapi(req: Request) -> JSONResponse:
+                # get the root_path from the request and not just App._root_path
+                # so that we can use the value set by the ASGI server
+                # since ASGI servers also let you configure this
+                root_path: str = req.scope.get("root_path", "").rstrip("/")  # type: ignore
                 if self._openapi is None:
-                    self._openapi = self.get_openapi()
-                res = JSONResponse(self._openapi.dict(exclude_none=True, by_alias=True))
-                return res
+                    servers = list(self._openapi_servers)
+                    if self._root_path_in_servers and root_path:
+                        server_urls = {s.url for s in servers}
+                        if root_path not in server_urls:
+                            servers.insert(0, openapi_models.Server(url=root_path))
+                    self._openapi = self.get_openapi(servers=servers).dict(
+                        exclude_none=True, by_alias=True
+                    )
+                return JSONResponse(self._openapi)
 
             routes.append(
                 StarletteRoute(
@@ -262,6 +286,7 @@ class App:
             openapi_url = openapi_url
 
             async def swagger_ui_html(req: Request) -> HTMLResponse:
+                # see above for note on why we get root_path from the request
                 root_path: str = req.scope.get("root_path", "").rstrip("/")  # type: ignore  # for Pylance
                 full_openapi_url = root_path + openapi_url  # type: ignore[operator]
                 return get_swagger_ui_html(
