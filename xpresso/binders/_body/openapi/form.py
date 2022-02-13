@@ -60,8 +60,7 @@ class OpenAPIFormDataBody(OpenAPIBody):
     ) -> openapi_models.MediaType:
         encodings: typing.Dict[str, openapi_models.Encoding] = {}
         for field_name, field_openapi in self.field_openapi_providers.items():
-            encoding = field_openapi.get_encoding()
-            if encoding:
+            if encoding := field_openapi.get_encoding():
                 encodings[field_name] = encoding
         return openapi_models.MediaType(
             schema=self.get_schema(model_name_map=model_name_map, schemas=schemas),
@@ -100,21 +99,21 @@ class OpenAPIFormDataMarker(OpenAPIBodyMarker):
 
     def register_parameter(self, param: inspect.Parameter) -> OpenAPIBody:
         form_data_field = model_field_from_param(param)
-        if form_data_field.required is False:
-            required = False
-        else:
-            required = True
-
+        required = form_data_field.required is not False
         field_openapi_providers: typing.Dict[str, OpenAPIBody] = {}
         required_fields: typing.List[str] = []
         # use pydantic to get rid of outer annotated, optional, etc.
         annotation = form_data_field.type_
         for field_param in inspect.signature(annotation).parameters.values():
-            marker: typing.Optional[BodyBinderMarker] = None
-            for param_marker in get_markers_from_parameter(field_param):
-                if isinstance(param_marker, BodyBinderMarker):
-                    marker = param_marker
-                    break
+            marker: typing.Optional[BodyBinderMarker] = next(
+                (
+                    param_marker
+                    for param_marker in get_markers_from_parameter(field_param)
+                    if isinstance(param_marker, BodyBinderMarker)
+                ),
+                None,
+            )
+
             field_openapi: OpenAPIBodyMarker
             if marker is None:
                 # use the defaults

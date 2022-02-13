@@ -74,8 +74,10 @@ class JsonableEncoder(Encoder):
         return None
 
     def __call__(
-        self, obj: Any, custom_encoder: Dict[Any, Callable[[Any], Any]] = {}
+        self, obj: Any, custom_encoder: Dict[Any, Callable[[Any], Any]] = None
     ) -> Any:
+        if custom_encoder is None:
+            custom_encoder = {}
         custom_encoder = {**self.custom_encoder, **custom_encoder}
         if isinstance(obj, BaseModel):
             encoder = getattr(obj.__config__, "json_encoders", {})
@@ -113,10 +115,10 @@ class JsonableEncoder(Encoder):
                     encoded_dict[encoded_key] = encoded_value
             return encoded_dict
         if isinstance(obj, (list, set, frozenset, GeneratorType, tuple)):
-            encoded_list: List[Any] = []
-            for item in cast(Sequence[Any], obj):
-                encoded_list.append(self(item, custom_encoder=custom_encoder))
-            return encoded_list
+            return [
+                self(item, custom_encoder=custom_encoder)
+                for item in cast(Sequence[Any], obj)
+            ]
 
         custom = self.apply_custom_encoder(obj, custom_encoder=custom_encoder)
         if isinstance(custom, Some):
@@ -137,5 +139,5 @@ class JsonableEncoder(Encoder):
                 data = vars(obj)
             except Exception as e:
                 errors.append(e)
-                raise ValueError(errors)
+                raise ValueError(errors) from e
         return self(data, custom_encoder=custom_encoder)

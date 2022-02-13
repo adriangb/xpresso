@@ -49,11 +49,7 @@ class OpenAPIContentTypeDiscriminatedMarker(OpenAPIBodyMarker):
 
     def register_parameter(self, param: inspect.Parameter) -> OpenAPIBody:
         field = model_field_from_param(param)
-        if field.required is False:
-            required = False
-        else:
-            required = True
-
+        required = field.required is not False
         sub_body_providers: typing.Dict[str, OpenAPIBody] = {}
 
         annotation = param.annotation
@@ -71,11 +67,15 @@ class OpenAPIContentTypeDiscriminatedMarker(OpenAPIBodyMarker):
                 annotation=arg,
                 default=param.default,
             )
-            marker: typing.Optional[BodyBinderMarker] = None
-            for param_marker in get_markers_from_parameter(sub_body_param):
-                if isinstance(param_marker, BodyBinderMarker):
-                    marker = param_marker
-                    break
+            marker: typing.Optional[BodyBinderMarker] = next(
+                (
+                    param_marker
+                    for param_marker in get_markers_from_parameter(sub_body_param)
+                    if isinstance(param_marker, BodyBinderMarker)
+                ),
+                None,
+            )
+
             if marker is None:
                 raise TypeError(f"Type annotation is missing body marker: {arg}")
             sub_body_openapi = marker.openapi_marker

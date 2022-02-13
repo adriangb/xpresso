@@ -77,10 +77,7 @@ class OpenAPIFileMarker(OpenAPIBodyMarker):
     def register_parameter(self, param: inspect.Parameter) -> OpenAPIBody:
         field = model_field_from_param(param)
         examples = parse_examples(self.examples) if self.examples else None
-        if field.required is False:
-            required = False
-        else:
-            required = True
+        required = field.required is not False
         return OpenAPIFileBody(
             media_type=self.media_type,
             description=self.description,
