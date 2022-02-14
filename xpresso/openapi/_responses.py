@@ -38,9 +38,9 @@ def _get_response_models_from_return_hint(
                         description=description,
                         media_type=tp.media_type,
                     )
+            elif inspect.isclass(tp) and issubclass(tp, NoneType):
+                return [ResponseSpec(description=description)]
             else:
-                if inspect.isclass(tp) and issubclass(tp, NoneType):
-                    return [ResponseSpec(description=description)]
                 tps.append(tp)
         if tps:
             res["application/json"] = JsonResponseSpec(
@@ -55,9 +55,9 @@ def _get_response_models_from_return_hint(
                     description=description,
                     media_type=tp.media_type,
                 )
+        elif inspect.isclass(tp) and issubclass(tp, NoneType):
+            return [ResponseSpec(description=description)]
         else:
-            if inspect.isclass(tp) and issubclass(tp, NoneType):
-                return [ResponseSpec(description=description)]
             res["application/json"] = JsonResponseSpec(
                 description=description,
                 model=tp,
@@ -104,28 +104,26 @@ def get_response(
     model_name_map: ModelNameMap,
     schemas: Dict[str, Any],
 ) -> models.Response:
-    if spec.model is not None and spec.media_type is not None:
-        schema = _get_response_schema(spec.model, model_name_map, schemas)
-        examples: Optional[Dict[str, models.Example]]
-        if spec.examples:
-            examples = {
-                n: ex if isinstance(ex, models.Example) else models.Example(value=ex)
-                for n, ex in spec.examples.items()
-            }
-        else:
-            examples = None
-        content = {spec.media_type: {"schema": schema, "examples": examples}}
-        model = models.Response(
-            description=spec.description, headers=spec.headers, content=content
-        )
-    else:
-        model = models.Response(
+    if spec.model is None or spec.media_type is None:
+        return models.Response(
             description=spec.description,
             headers=spec.headers,
             content=None,
         )
 
-    return model
+    schema = _get_response_schema(spec.model, model_name_map, schemas)
+    examples: Optional[Dict[str, models.Example]]
+    if spec.examples:
+        examples = {
+            n: ex if isinstance(ex, models.Example) else models.Example(value=ex)
+            for n, ex in spec.examples.items()
+        }
+    else:
+        examples = None
+    content = {spec.media_type: {"schema": schema, "examples": examples}}
+    return models.Response(
+        description=spec.description, headers=spec.headers, content=content
+    )
 
 
 def merge_response_models(
@@ -139,10 +137,12 @@ def merge_response_models(
             headers=mod.headers,
             content=mod.content,
         )
-    descriptions: List[str] = []
-    for m in mods:
-        if m.content and m.description:
-            descriptions.append(f"- {next(iter(m.content.keys()))}: {m.description}")
+    descriptions: List[str] = [
+        f"- {next(iter(m.content.keys()))}: {m.description}"
+        for m in mods
+        if m.content and m.description
+    ]
+
     description = "\n".join(descriptions)
     if default_description:
         description = description or default_description

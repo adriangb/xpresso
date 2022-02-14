@@ -100,11 +100,7 @@ class OpenAPIFormDataMarker(OpenAPIBodyMarker):
 
     def register_parameter(self, param: inspect.Parameter) -> OpenAPIBody:
         form_data_field = model_field_from_param(param)
-        if form_data_field.required is False:
-            required = False
-        else:
-            required = True
-
+        required = form_data_field.required is not False
         field_openapi_providers: typing.Dict[str, OpenAPIBody] = {}
         required_fields: typing.List[str] = []
         # use pydantic to get rid of outer annotated, optional, etc.
@@ -115,6 +111,7 @@ class OpenAPIFormDataMarker(OpenAPIBodyMarker):
                 if isinstance(param_marker, BodyBinderMarker):
                     marker = param_marker
                     break
+
             field_openapi: OpenAPIBodyMarker
             if marker is None:
                 # use the defaults

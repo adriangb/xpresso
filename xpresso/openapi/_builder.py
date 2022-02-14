@@ -45,7 +45,7 @@ validation_error_response_definition = {
         "detail": {
             "title": "Detail",
             "type": "array",
-            "items": {"$ref": REF_PREFIX + "ValidationError"},
+            "items": {"$ref": f"{REF_PREFIX}ValidationError"},
         }
     },
 }
@@ -56,14 +56,12 @@ def get_parameters(
     model_name_map: ModelNameMap,
     schemas: Dict[str, Any],
 ) -> Optional[List[models.ConcreteParameter]]:
-    parameters: List[models.ConcreteParameter] = []
-    for dependant in deps:
-        if dependant.openapi and dependant.openapi.include_in_schema:
-            parameters.append(
-                dependant.openapi.get_openapi(
-                    model_name_map=model_name_map, schemas=schemas
-                )
-            )
+    parameters: List[models.ConcreteParameter] = [
+        dependant.openapi.get_openapi(model_name_map=model_name_map, schemas=schemas)
+        for dependant in deps
+        if dependant.openapi and dependant.openapi.include_in_schema
+    ]
+
     if parameters:
         return list(sorted(parameters, key=lambda param: param.name))
     return None
@@ -179,17 +177,18 @@ def get_operation(
     if schemas:
         components["schemas"] = {**components.get("schemas", {}), **schemas}
     http422 = str(HTTP_422_UNPROCESSABLE_ENTITY)
-    if (data.get("parameters", None) or data.get("requestBody", None)) and not any(
-        status in data["responses"] for status in (http422, "4XX", "default")
+    if ((data.get("parameters", None) or data.get("requestBody", None))) and all(
+        status not in data["responses"] for status in (http422, "4XX", "default")
     ):
         data["responses"][http422] = {
             "description": "Validation Error",
             "content": {
                 "application/json": {
-                    "schema": {"$ref": REF_PREFIX + "HTTPValidationError"}
+                    "schema": {"$ref": f"{REF_PREFIX}HTTPValidationError"}
                 }
             },
         }
+
         if "ValidationError" not in schemas:
             components["schemas"] = components.get("schemas", None) or {}
             components["schemas"].update(
@@ -226,17 +225,18 @@ def get_paths_items(
                 continue
             tags.extend(path_item.tags)
             responses.update(path_item.responses)
-            operations: Dict[str, models.Operation] = {}
-            for method, operation in path_item.operations.items():
-                if not operation.include_in_schema:
-                    continue
-                operations[method.lower()] = get_operation(
+            operations: Dict[str, models.Operation] = {
+                method.lower(): get_operation(
                     operation,
                     model_name_map=model_name_map,
                     components=components,
                     tags=tags + operation.tags,
                     response_specs={**responses, **operation.responses},
                 )
+                for method, operation in path_item.operations.items()
+                if operation.include_in_schema
+            }
+
             paths[visited_route.path] = models.PathItem(
                 description=visited_route.route.description,
                 summary=visited_route.route.summary,
@@ -253,11 +253,12 @@ def filter_routes(visitor: Iterable[VisitedRoute[Any]]) -> Routes:
             path_item = visited_route.route
             if not path_item.include_in_schema:
                 continue
-            operations: Dict[str, Operation] = {}
-            for method, operation in path_item.operations.items():
-                if not operation.include_in_schema:
-                    continue
-                operations[method.lower()] = operation
+            operations: Dict[str, Operation] = {
+                method.lower(): operation
+                for method, operation in path_item.operations.items()
+                if operation.include_in_schema
+            }
+
             res[visited_route.path] = (path_item, operations)
     return res
 

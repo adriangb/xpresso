@@ -79,7 +79,7 @@ class JsonBodyExtractor(BodyExtractor):
     ) -> typing.Union[bytes, UploadFile]:
         try:
             decoded = self.decoder(value)
-        except Exception:
+        except Exception as e:
             raise RequestValidationError(
                 [
                     ErrorWrapper(
@@ -87,7 +87,7 @@ class JsonBodyExtractor(BodyExtractor):
                         loc=tuple(loc),
                     )
                 ]
-            )
+            ) from e
         return decoded
 
 

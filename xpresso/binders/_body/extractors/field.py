@@ -58,11 +58,13 @@ class FieldExtractorMarkerBase(BodyExtractorMarker):
 
         field_marker: typing.Optional[BodyExtractorMarker] = None
         for marker in get_markers_from_parameter(param):
-            if isinstance(marker, BodyBinderMarker):
-                if marker.extractor_marker is not self:
-                    # the outermost marker must be the field marker (us)
-                    # so the first one that isn't us is the inner marker
-                    field_marker = marker.extractor_marker
+            if (
+                isinstance(marker, BodyBinderMarker)
+                and marker.extractor_marker is not self
+            ):
+                # the outermost marker must be the field marker (us)
+                # so the first one that isn't us is the inner marker
+                field_marker = marker.extractor_marker
         if field_marker is None:
             raise TypeError(
                 "No field marker found"

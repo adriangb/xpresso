@@ -159,7 +159,7 @@ class App:
         send: starlette.types.Send,
     ) -> None:
         scope_type = scope["type"]
-        if scope_type == "http" or scope_type == "websocket":
+        if scope_type in ["http", "websocket"]:
             if not self._setup_run:
                 self._setup()
             extensions = scope.get("extensions", None) or {}
@@ -249,8 +249,9 @@ class App:
             async def openapi(req: Request) -> JSONResponse:
                 if self._openapi is None:
                     self._openapi = self.get_openapi()
-                res = JSONResponse(self._openapi.dict(exclude_none=True, by_alias=True))
-                return res
+                return JSONResponse(
+                    self._openapi.dict(exclude_none=True, by_alias=True)
+                )
 
             routes.append(
                 StarletteRoute(
@@ -266,7 +267,7 @@ class App:
                 full_openapi_url = root_path + openapi_url  # type: ignore[operator]
                 return get_swagger_ui_html(
                     openapi_url=full_openapi_url,
-                    title=self._openapi_info.title + " - Swagger UI",
+                    title=f"{self._openapi_info.title} - Swagger UI",
                     oauth2_redirect_url=None,
                     init_oauth=None,
                 )

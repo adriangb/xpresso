@@ -58,11 +58,13 @@ class OpenAPIFieldMarkerBase(OpenAPIBodyMarker):
     def register_parameter(self, param: inspect.Parameter) -> OpenAPIBody:
         field_marker: typing.Optional[OpenAPIBodyMarker] = None
         for marker in get_markers_from_parameter(param):
-            if isinstance(marker, BodyBinderMarker):
-                if marker.openapi_marker is not self:
-                    # the outermost marker must be the field marker (us)
-                    # so the first one that isn't us is the inner marker
-                    field_marker = marker.openapi_marker
+            if (
+                isinstance(marker, BodyBinderMarker)
+                and marker.openapi_marker is not self
+            ):
+                # the outermost marker must be the field marker (us)
+                # so the first one that isn't us is the inner marker
+                field_marker = marker.openapi_marker
         if field_marker is None:
             raise TypeError(
                 "No field marker found"
