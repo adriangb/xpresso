@@ -159,7 +159,7 @@ class App:
         send: starlette.types.Send,
     ) -> None:
         scope_type = scope["type"]
-        if scope_type in ["http", "websocket"]:
+        if scope_type == "http" or scope_type == "websocket":
             if not self._setup_run:
                 self._setup()
             extensions = scope.get("extensions", None) or {}
