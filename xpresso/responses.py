@@ -33,11 +33,11 @@ __all__ = (
 def get_response(request: Request) -> Response:
     try:
         return request.scope["extensions"]["xpresso"]["response"]  # type: ignore[return-type]
-    except KeyError as e:
+    except KeyError:
         raise LookupError(
             "xpresso.responses.get_response was called"
             " before the endpoint has finished executing or the endpoint raised an exception"
-        ) from e
+        )
 
 
 def set_response(request: Request, response: Response) -> None:

@@ -67,14 +67,11 @@ class OpenAPIContentTypeDiscriminatedMarker(OpenAPIBodyMarker):
                 annotation=arg,
                 default=param.default,
             )
-            marker: typing.Optional[BodyBinderMarker] = next(
-                (
-                    param_marker
-                    for param_marker in get_markers_from_parameter(sub_body_param)
-                    if isinstance(param_marker, BodyBinderMarker)
-                ),
-                None,
-            )
+            marker: typing.Optional[BodyBinderMarker] = None
+            for param_marker in get_markers_from_parameter(sub_body_param):
+                if isinstance(param_marker, BodyBinderMarker):
+                    marker = param_marker
+                    break
 
             if marker is None:
                 raise TypeError(f"Type annotation is missing body marker: {arg}")

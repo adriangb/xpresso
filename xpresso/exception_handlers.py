@@ -10,7 +10,8 @@ encoder = JsonableEncoder()
 
 async def http_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     assert isinstance(exc, HTTPException)
-    if headers := getattr(exc, "headers", None):
+    headers = getattr(exc, "headers", None)
+    if headers:
         return JSONResponse(
             {"detail": exc.detail}, status_code=exc.status_code, headers=headers
         )

@@ -145,7 +145,7 @@ def get_operation(
     schemas: Dict[str, Any] = {}
     route_dependant = route.dependant
     assert route_dependant is not None
-    if parameters := get_parameters(
+    parameters = get_parameters(
         [
             dep
             for dep in route_dependant.get_flat_subdependants()
@@ -153,7 +153,8 @@ def get_operation(
         ],
         model_name_map,
         schemas,
-    ):
+    )
+    if parameters:
         data["parameters"] = parameters
     body_dependant = next(
         (

@@ -109,15 +109,11 @@ class FormDataBodyExtractorMarkerBase(BodyExtractorMarker):
         # use pydantic to get rid of outer annotated, optional, etc.
         annotation = form_data_field.type_
         for param_name, field_param in inspect.signature(annotation).parameters.items():
-            marker: typing.Optional[BodyBinderMarker] = next(
-                (
-                    param_marker
-                    for param_marker in get_markers_from_parameter(field_param)
-                    if isinstance(param_marker, BodyBinderMarker)
-                ),
-                None,
-            )
-
+            marker: typing.Optional[BodyBinderMarker] = None
+            for param_marker in get_markers_from_parameter(field_param):
+                if isinstance(param_marker, BodyBinderMarker):
+                    marker = param_marker
+                    break
             extractor_marker: BodyExtractorMarker
             if marker is None:
                 # use the defaults
