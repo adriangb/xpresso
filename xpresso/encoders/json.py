@@ -74,7 +74,7 @@ class JsonableEncoder(Encoder):
         return None
 
     def __call__(
-        self, obj: Any, custom_encoder: Dict[Any, Callable[[Any], Any]] = None
+        self, obj: Any, custom_encoder: Dict[Any, Callable[[Any], Any]] = {}
     ) -> Any:
         if custom_encoder is None:
             custom_encoder = {}
