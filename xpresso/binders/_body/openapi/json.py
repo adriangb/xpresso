@@ -65,10 +65,7 @@ class OpenAPIJsonMarker(OpenAPIBodyMarker):
     def register_parameter(self, param: inspect.Parameter) -> OpenAPIBody:
         examples = parse_examples(self.examples) if self.examples else None
         field = model_field_from_param(param)
-        if field.required is False:
-            required = False
-        else:
-            required = True
+        required = field.required is not False
         return OpenAPIJsonBody(
             description=self.description,
             examples=examples,

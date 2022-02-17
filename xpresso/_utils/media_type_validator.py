@@ -24,10 +24,7 @@ class MediaTypeValidator:
         if media_type is None:
             return False
         media_type = next(iter(media_type.split(";"))).lower()
-        for accepted in self.accepted:
-            if accepted.match(media_type):
-                return True
-        return False
+        return any(accepted.match(media_type) for accepted in self.accepted)
 
     def validate(
         self,

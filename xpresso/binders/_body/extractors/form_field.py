@@ -30,7 +30,7 @@ class FormFieldBodyExtractor(BodyExtractor, BodyExtractorMarker):
     ) -> typing.Optional[Some[typing.Any]]:
         try:
             return self.extractor(name=self.name, params=form.multi_items())
-        except InvalidSerialization:
+        except InvalidSerialization as e:
             raise RequestValidationError(
                 [
                     ErrorWrapper(
@@ -38,7 +38,7 @@ class FormFieldBodyExtractor(BodyExtractor, BodyExtractorMarker):
                         loc=tuple((*loc, self.name)),
                     )
                 ]
-            )
+            ) from e
         except UnexpectedFileReceived as exc:
             raise RequestValidationError(
                 [
@@ -47,7 +47,7 @@ class FormFieldBodyExtractor(BodyExtractor, BodyExtractorMarker):
                         loc=tuple((*loc, self.name)),
                     )
                 ]
-            )
+            ) from exc
 
 
 @dataclass(frozen=True)
