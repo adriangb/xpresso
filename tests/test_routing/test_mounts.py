@@ -1,9 +1,10 @@
 """Tests for experimental OpenAPI inspired routing"""
 from typing import Any, Dict
 
+import pytest
 from di import BaseContainer
 
-from xpresso import App, Depends, FromPath, Path
+from xpresso import App, Depends, FromPath, Path, Request
 from xpresso.routing.mount import Mount
 from xpresso.testclient import TestClient
 
@@ -342,3 +343,44 @@ def test_mounted_xpresso_app_dependencies_shared_containers() -> None:
     resp = client.get("/mount")
     assert resp.status_code == 200, resp.content
     assert resp.json() == "injected"
+
+
+@pytest.mark.parametrize(
+    "root_path_outer,root_path_inner,client_path,expected",
+    [
+        ("", "", "/mount/app", "/mount"),
+        ("/v1/api", "", "/mount/app", "/v1/api/mount"),
+        ("", "/v1/api", "/mount/app", "/mount/v1/api"),
+        ("/v1/api", "/foo/bar", "/mount/app", "/v1/api/mount/foo/bar"),
+    ],
+)
+def test_root_path_on_mounts(
+    root_path_outer: str,
+    root_path_inner: str,
+    client_path: str,
+    expected: str,
+) -> None:
+    async def endpoint(request: Request) -> str:
+        return request.scope["root_path"]
+
+    inner_app = App(
+        routes=[Path(path="/app", get=endpoint, name="inner-app")],
+        root_path=root_path_inner,
+    )
+
+    app = App(
+        routes=[
+            Mount(
+                path="/mount",
+                app=inner_app,
+            ),
+        ],
+        root_path=root_path_outer,
+    )
+
+    client = TestClient(app)
+
+    resp = client.get(client_path)
+
+    assert resp.status_code == 200, resp.content
+    assert resp.json() == expected
