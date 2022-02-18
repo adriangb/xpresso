@@ -1,4 +1,4 @@
-from typing import Annotated, Any, List, TypeVar, Union, cast
+from typing import Any, List, TypeVar, Union, cast
 
 from pydantic import BaseModel
 from starlette.requests import Request
@@ -20,6 +20,7 @@ from xpresso.binders._security.oauth import (  # noqa: F401
 from xpresso.binders.api import NamedSecurityScheme
 from xpresso.binders.api import SecurityScheme as SecurityScheme  # noqa: F401
 from xpresso.binders.dependants import SecurityBinderMarker
+from xpresso.typing import Annotated
 
 
 class SecurityModel(BaseModel, SecurityScheme):
