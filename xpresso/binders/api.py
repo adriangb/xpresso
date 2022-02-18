@@ -1,6 +1,8 @@
 import inspect
 import sys
-from typing import Any, Dict, Iterable, List, Optional, Union
+from typing import Any, Dict, Iterable, List, NamedTuple, Optional, Union
+
+from fastapi import WebSocket
 
 if sys.version_info < (3, 8):
     from typing_extensions import Protocol
@@ -123,4 +125,25 @@ class OpenAPIParameter(Protocol):
 
 class OpenAPIParameterMarker(Protocol):
     def register_parameter(self, param: inspect.Parameter) -> OpenAPIParameter:
+        raise NotImplementedError
+
+
+class NamedSecurityScheme(NamedTuple):
+    name: str
+    scheme: models.SecurityScheme
+
+
+class SecurityScheme:
+    __slots__ = ()
+
+    @classmethod
+    async def extract(cls, conn: Union[Request, WebSocket]) -> Any:
+        raise NotImplementedError
+
+    @classmethod
+    def get_openapi(
+        cls,
+    ) -> Union[
+        NamedSecurityScheme, List[NamedSecurityScheme], List[List[NamedSecurityScheme]]
+    ]:
         raise NotImplementedError

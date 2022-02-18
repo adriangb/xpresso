@@ -1,5 +1,11 @@
 import inspect
+import sys
 import typing
+
+if sys.version_info < (3, 9):
+    from typing_extensions import get_args
+else:
+    from typing import get_args
 
 from di import Dependant
 from di.api.dependencies import CacheKey, DependantBase
@@ -7,12 +13,14 @@ from di.api.dependencies import CacheKey, DependantBase
 from xpresso.binders.api import (
     BodyExtractor,
     BodyExtractorMarker,
+    NamedSecurityScheme,
     OpenAPIBody,
     OpenAPIBodyMarker,
     OpenAPIParameter,
     OpenAPIParameterMarker,
     ParameterExtractor,
     ParameterExtractorMarker,
+    SecurityScheme,
 )
 
 
@@ -91,3 +99,40 @@ class BodyBinderMarker(Dependant[typing.Any]):
             openapi=self.openapi_marker.register_parameter(param),
             extractor=self.extractor_marker.register_parameter(param),
         )
+
+
+class SecurityBinder(Dependant[typing.Any]):
+    def __init__(
+        self,
+        *,
+        scheme_or_model: typing.Type[SecurityScheme],
+    ) -> None:
+        super().__init__(call=scheme_or_model.extract, scope="connection")
+        self.scheme_or_model = scheme_or_model
+
+    @property
+    def cache_key(self) -> CacheKey:
+        # if this is a single security scheme, we can identify it by name
+        oai = self.scheme_or_model.get_openapi()
+        if isinstance(oai, NamedSecurityScheme):
+            return oai.name
+        # otherwise, we identiy the SecurityModel class
+        som = self.scheme_or_model
+
+        class CK:
+            def __hash__(self) -> int:
+                return hash(som)
+
+            def __eq__(self, __o: object) -> bool:
+                return __o is som
+
+        return CK()
+
+
+class SecurityBinderMarker(Dependant[typing.Any]):
+    def __init__(self) -> None:
+        super().__init__(call=None, scope="connection")
+
+    def register_parameter(self, param: inspect.Parameter) -> DependantBase[typing.Any]:
+        scheme_or_model = next(iter(get_args(param.annotation)))
+        return SecurityBinder(scheme_or_model=scheme_or_model)

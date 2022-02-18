@@ -37,6 +37,7 @@ from xpresso.routing.operation import Operation
 from xpresso.routing.pathitem import Path
 from xpresso.routing.router import Router
 from xpresso.routing.websockets import WebSocketRoute
+from xpresso.security import Security, SecurityModel
 from xpresso.websockets import WebSocket
 
 __all__ = (
@@ -75,4 +76,6 @@ __all__ = (
     "ByContentType",
     "WebSocketRoute",
     "WebSocket",
+    "Security",
+    "SecurityModel",
 )
