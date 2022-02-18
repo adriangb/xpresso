@@ -22,6 +22,7 @@ from xpresso.binders.api import SecurityScheme as SecurityScheme  # noqa: F401
 from xpresso.binders.dependants import SecurityBinderMarker
 from xpresso.typing import Annotated
 
+
 class SecurityModel(BaseModel, SecurityScheme):
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
