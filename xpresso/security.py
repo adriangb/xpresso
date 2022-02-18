@@ -1,7 +1,7 @@
-from typing import Any, List, TypeVar, Union, cast
+from typing import Any, List, Union, cast
 
 from pydantic import BaseModel
-from starlette.requests import Request
+from starlette.requests import HTTPConnection, Request
 from starlette.websockets import WebSocket
 
 from xpresso.binders._security.apikey import APIKeyCookie as APIKeyCookie  # noqa: F401
@@ -19,8 +19,12 @@ from xpresso.binders._security.oauth import (  # noqa: F401
 )
 from xpresso.binders.api import NamedSecurityScheme
 from xpresso.binders.api import SecurityScheme as SecurityScheme  # noqa: F401
-from xpresso.binders.dependants import SecurityBinderMarker
+from xpresso.dependencies.models import Depends
 from xpresso.typing import Annotated
+
+Connection = Annotated[
+    Union[Request, WebSocket], Depends(HTTPConnection, scope="connection", wire=False)
+]
 
 
 class SecurityModel(BaseModel, SecurityScheme):
@@ -33,10 +37,10 @@ class SecurityModel(BaseModel, SecurityScheme):
                 )
 
     @classmethod
-    async def extract(cls, conn: Union[Request, WebSocket]) -> Any:
+    async def __call__(cls, conn: Connection) -> Any:
         return cls(
             **{
-                field_name: await cast(SecurityScheme, field.type_).extract(conn)
+                field_name: await cast(SecurityScheme, field.type_).__call__(conn)
                 for field_name, field in cls.__fields__.items()
             }
         )
@@ -59,8 +63,3 @@ class SecurityModel(BaseModel, SecurityScheme):
             if not all(isinstance(oai, NamedSecurityScheme) for oai in openapi):
                 raise TypeError
         return res
-
-
-T = TypeVar("T")
-
-Security = Annotated[T, SecurityBinderMarker()]

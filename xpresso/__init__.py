@@ -37,7 +37,7 @@ from xpresso.routing.operation import Operation
 from xpresso.routing.pathitem import Path
 from xpresso.routing.router import Router
 from xpresso.routing.websockets import WebSocketRoute
-from xpresso.security import Security, SecurityModel
+from xpresso.security import SecurityModel
 from xpresso.websockets import WebSocket
 
 __all__ = (
@@ -70,12 +70,11 @@ __all__ = (
     "RepeatedFormField",
     "FormField",
     "FromFile",
-    "status",
     "Request",
     "Response",
+    "status",
+    "SecurityModel",
     "ByContentType",
     "WebSocketRoute",
     "WebSocket",
-    "Security",
-    "SecurityModel",
 )

@@ -3,7 +3,7 @@ from typing import Any, Dict, Generator
 import pytest
 from pydantic import BaseModel
 
-from xpresso import App, Depends, Path, Security
+from xpresso import App, Depends, Path
 from xpresso.security import APIKeyHeader
 from xpresso.testclient import TestClient
 from xpresso.typing import Annotated
@@ -17,7 +17,7 @@ class User(BaseModel):
     username: str
 
 
-def get_current_user(key: Security[APIKey]):
+def get_current_user(key: APIKey):
     user = User(username=key.api_key)
     return user
 

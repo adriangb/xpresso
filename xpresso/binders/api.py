@@ -137,7 +137,7 @@ class SecurityScheme:
     __slots__ = ()
 
     @classmethod
-    async def extract(cls, conn: Union[Request, WebSocket]) -> Any:
+    async def __call__(cls, conn: Union[Request, WebSocket]) -> Any:
         raise NotImplementedError
 
     @classmethod
