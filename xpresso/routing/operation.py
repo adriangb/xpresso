@@ -1,11 +1,10 @@
 import typing
 
-from di import AsyncExecutor, BaseContainer, ConcurrentAsyncExecutor
+from di import AsyncExecutor, BaseContainer, ConcurrentAsyncExecutor, JoinedDependant
 from di.api.dependencies import DependantBase
 from di.api.executor import AsyncExecutorProtocol
 from di.api.providers import DependencyProvider as Endpoint
 from di.api.solved import SolvedDependant
-from di.dependant import JoinedDependant
 from starlette.datastructures import URLPath
 from starlette.requests import HTTPConnection, Request
 from starlette.responses import JSONResponse, Response
@@ -81,7 +80,9 @@ class Operation(BaseRoute):
         responses: typing.Optional[Responses] = None,
         # xpresso params
         name: typing.Optional[str] = None,
-        dependencies: typing.Optional[typing.Sequence[Depends]] = None,
+        dependencies: typing.Optional[
+            typing.Sequence[DependantBase[typing.Any]]
+        ] = None,
         execute_dependencies_concurrently: bool = False,
         response_factory: typing.Callable[[typing.Any], Response] = JSONResponse,
         response_encoder: Encoder = JsonableEncoder(),
