@@ -37,7 +37,7 @@ class SecurityModel(BaseModel, SecurityScheme):
                 )
 
     @classmethod
-    async def __call__(cls, conn: Connection) -> Any:
+    async def extract(cls, conn: Connection) -> Any:
         return cls(
             **{
                 field_name: await cast(SecurityScheme, field.type_).extract(conn)

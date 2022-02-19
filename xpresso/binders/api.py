@@ -141,7 +141,7 @@ class SecurityScheme:
         raise NotImplementedError
 
     @classmethod
-    async def __di_dependency__(cls) -> Depends:
+    def __di_dependency__(cls) -> Depends:
         return Depends(cls.extract)
 
     @classmethod
