@@ -173,19 +173,12 @@ description = "Autowiring dependency injection"
 category = "main"
 optional = false
 python-versions = ">=3.7,<4"
-develop = false
 
 [package.dependencies]
-anyio = "~3"
+anyio = ">=3,<4"
 graphlib2 = ">=0.2.13"
 importlib-metadata = {version = ">=3", markers = "python_version < \"3.8\""}
 typing-extensions = {version = ">=3", markers = "python_version < \"3.9\""}
-
-[package.source]
-type = "git"
-url = "https://github.com/adriangb/di.git"
-reference = "seperate-marker-and-dependant"
-resolved_reference = "43babf78fa758c87683256dba6ef616c2dc54c76"
 
 [[package]]
 name = "distlib"
@@ -1061,7 +1054,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7,<4"
-content-hash = "db8016a325565d1aa91bff84a6a049abf0a58c22b4f89ad983e0bb431ed108dc"
+content-hash = "ebc00e866b2e30cd0a88d6a82fb65cbadc824e94670978e49ca2779a4ed64fbc"
 
 [metadata.files]
 anyio = [
@@ -1228,7 +1221,10 @@ coverage = [
     {file = "coverage-6.3.1-pp36.pp37.pp38-none-any.whl", hash = "sha256:463e52616ea687fd323888e86bf25e864a3cc6335a043fad6bbb037dbf49bbe2"},
     {file = "coverage-6.3.1.tar.gz", hash = "sha256:6c3f6158b02ac403868eea390930ae64e9a9a2a5bbfafefbb920d29258d9f2f8"},
 ]
-di = []
+di = [
+    {file = "di-0.58.0-py3-none-any.whl", hash = "sha256:a0b9dbe9bb20233da87832a991749e65110f55dbb9ba942b8cfdafe75431d2ef"},
+    {file = "di-0.58.0.tar.gz", hash = "sha256:98258aae89a7c28e7eaf1f0aec08323d69c4167f92e33d214566c285590a965d"},
+]
 distlib = [
     {file = "distlib-0.3.4-py2.py3-none-any.whl", hash = "sha256:6564fe0a8f51e734df6333d08b8b94d4ea8ee6b99b5ed50613f731fd4089f34b"},
     {file = "distlib-0.3.4.zip", hash = "sha256:e4b58818180336dc9c529bfb9a0b58728ffc09ad92027a3f30b7cd91e3458579"},
