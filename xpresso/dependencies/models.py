@@ -19,7 +19,7 @@ T = typing.TypeVar("T")
 Scope = Literal["app", "connection", "endpoint"]
 
 
-class Depends(di.Marker):
+class Depends(di.Marker, di.Dependant[typing.Any]):
     scope: Scope
 
     def __init__(
@@ -41,32 +41,12 @@ class Depends(di.Marker):
     def from_callable(
         self, call: typing.Optional[DependencyProvider]
     ) -> DependantBase[typing.Any]:
-        return Dependant(
+        return Depends(
             call=call,
             scope=self.scope,
             use_cache=self.use_cache,
             wire=self.wire,
             sync_to_thread=self.sync_to_thread,
-        )
-
-
-class Dependant(di.Dependant[typing.Any]):
-    scope: Scope
-
-    def __init__(
-        self,
-        call: typing.Optional[DependencyProvider] = None,
-        scope: Scope = "connection",
-        use_cache: bool = True,
-        wire: bool = True,
-        sync_to_thread: bool = False,
-    ) -> None:
-        super().__init__(
-            call=call,
-            scope=scope,
-            use_cache=use_cache,
-            wire=wire,
-            sync_to_thread=sync_to_thread,
         )
 
     def initialize_sub_dependant(

@@ -13,7 +13,7 @@ from di import BaseContainer
 from di.api.dependencies import DependantBase
 from di.api.providers import DependencyProvider
 
-from xpresso.dependencies.models import Dependant
+from xpresso.dependencies.models import Depends
 
 
 def get_type(param: inspect.Parameter) -> type:
@@ -36,9 +36,9 @@ class DependencyOverrideManager:
             param: typing.Optional[inspect.Parameter],
             dependant: DependantBase[typing.Any],
         ) -> typing.Optional[DependantBase[typing.Any]]:
-            if not isinstance(dependant, Dependant):
+            if not isinstance(dependant, Depends):
                 return None
-            dep = Dependant(
+            dep = Depends(
                 replacement,
                 scope=dependant.scope,
                 use_cache=dependant.use_cache,

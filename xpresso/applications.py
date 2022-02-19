@@ -17,7 +17,7 @@ from starlette.websockets import WebSocket
 from xpresso._utils.asgi_scope_extension import XpressoASGIExtension
 from xpresso._utils.overrides import DependencyOverrideManager
 from xpresso._utils.routing import visit_routes
-from xpresso.dependencies.models import Dependant
+from xpresso.dependencies.models import Depends
 from xpresso.exception_handlers import (
     http_exception_handler,
     validation_exception_handler,
@@ -103,19 +103,16 @@ class App:
             async with self.container.enter_scope("app") as container:
                 self.container = container
                 if lifespan is not None:
-                    dep = Dependant(
+                    dep = Depends(
                         _wrap_lifespan_as_async_generator(lifespan), scope="app"
                     )
                 else:
-                    dep = Dependant(lambda: None, scope="app")
+                    dep = Depends(lambda: None, scope="app")
                 solved = self.container.solve(
                     JoinedDependant(
                         dep,
                         siblings=[
-                            *(
-                                Dependant(lifespan, scope="app")
-                                for lifespan in lifespans
-                            ),
+                            *(Depends(lifespan, scope="app") for lifespan in lifespans),
                             *lifespan_deps,
                         ],
                     )
@@ -355,11 +352,11 @@ def _wrap_lifespan_as_async_generator(
 
 def _register_framework_dependencies(container: BaseContainer, app: App):
     container.bind_by_type(
-        Dependant(Request, scope="connection", wire=False),
+        Depends(Request, scope="connection", wire=False),
         Request,
     )
     container.bind_by_type(
-        Dependant(
+        Depends(
             HTTPConnection,
             scope="connection",
             wire=False,
@@ -367,7 +364,7 @@ def _register_framework_dependencies(container: BaseContainer, app: App):
         HTTPConnection,
     )
     container.bind_by_type(
-        Dependant(
+        Depends(
             WebSocket,
             scope="connection",
             wire=False,
@@ -375,7 +372,7 @@ def _register_framework_dependencies(container: BaseContainer, app: App):
         WebSocket,
     )
     container.bind_by_type(
-        Dependant(
+        Depends(
             BackgroundTasks,
             scope="connection",
             wire=False,
@@ -383,7 +380,7 @@ def _register_framework_dependencies(container: BaseContainer, app: App):
         BackgroundTasks,
     )
     container.bind_by_type(
-        Dependant(
+        Depends(
             lambda: app.container,
             scope="app",
             wire=False,
@@ -392,7 +389,7 @@ def _register_framework_dependencies(container: BaseContainer, app: App):
         covariant=True,
     )
     container.bind_by_type(
-        Dependant(
+        Depends(
             lambda: app,
             scope="app",
             wire=False,

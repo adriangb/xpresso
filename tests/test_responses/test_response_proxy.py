@@ -13,7 +13,7 @@ if sys.version_info < (3, 9):
 else:
     from typing import Annotated
 
-from xpresso import App, Dependant, Depends, Path
+from xpresso import App, Depends, Path
 from xpresso.exceptions import XpressoError
 from xpresso.responses import get_response, set_response
 
@@ -83,7 +83,7 @@ def test_set_response() -> None:
             Path(
                 "/",
                 get=endpoint,
-                dependencies=[Dependant(dependency, scope="endpoint")],
+                dependencies=[Depends(dependency, scope="endpoint")],
             )
         ]
     )
@@ -107,7 +107,7 @@ def test_set_response_operation_scope() -> None:
             Path(
                 "/",
                 get=endpoint,
-                dependencies=[Dependant(dependency, scope="connection")],
+                dependencies=[Depends(dependency, scope="connection")],
             )
         ]
     )
