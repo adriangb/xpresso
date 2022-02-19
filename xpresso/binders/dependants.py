@@ -7,7 +7,7 @@ if sys.version_info < (3, 9):
 else:
     from typing import get_args
 
-from di import Dependant
+from di import Dependant, Marker
 from di.api.dependencies import CacheKey, DependantBase
 
 from xpresso.binders.api import (
@@ -24,7 +24,7 @@ from xpresso.binders.api import (
 )
 
 
-class ParameterBinderMarker(Dependant[typing.Any]):
+class ParameterBinderMarker(Marker):
     def __init__(
         self,
         *,
@@ -83,7 +83,7 @@ class BodyBinder(Dependant[typing.Any]):
         self.extractor = extractor
 
 
-class BodyBinderMarker(Dependant[typing.Any]):
+class BodyBinderMarker(Marker):
     def __init__(
         self,
         *,

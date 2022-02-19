@@ -65,7 +65,7 @@ class App:
         routes: typing.Optional[typing.Sequence[BaseRoute]] = None,
         *,
         container: typing.Optional[BaseContainer] = None,
-        dependencies: typing.Optional[typing.List[Depends]] = None,
+        dependencies: typing.Optional[typing.List[DependantBase[typing.Any]]] = None,
         debug: bool = False,
         middleware: typing.Optional[typing.Sequence[Middleware]] = None,
         exception_handlers: typing.Optional[ExceptionHandlers] = None,
