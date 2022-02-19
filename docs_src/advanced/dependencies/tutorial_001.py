@@ -1,6 +1,6 @@
 import time
 
-from xpresso import App, Depends, Operation, Path
+from xpresso import App, Dependant, Operation, Path
 
 
 def slow_dependency() -> None:
@@ -19,7 +19,7 @@ app = App(
                 endpoint=slow_endpoint,
                 sync_to_thread=True,
                 dependencies=[
-                    Depends(slow_dependency, sync_to_thread=True)
+                    Dependant(slow_dependency, sync_to_thread=True)
                 ],
             ),
         )

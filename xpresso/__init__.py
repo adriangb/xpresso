@@ -20,7 +20,7 @@ from xpresso.bodies import (
     RepeatedFormField,
 )
 from xpresso.datastructures import UploadFile
-from xpresso.dependencies.models import Depends
+from xpresso.dependencies.models import Dependant, Depends
 from xpresso.exceptions import HTTPException
 from xpresso.parameters import (
     CookieParam,
@@ -53,6 +53,7 @@ __all__ = (
     "File",
     "Multipart",
     "Depends",
+    "Dependant",
     "App",
     "Router",
     "UploadFile",

@@ -3,7 +3,7 @@ from uuid import UUID, uuid4
 
 from xpresso import (
     App,
-    Depends,
+    Dependant,
     FromPath,
     HTTPException,
     Path,
@@ -44,7 +44,7 @@ app = App(
         Path(
             path="/items/{item_name}",
             get=read_items,
-            dependencies=[Depends(trace, scope="endpoint")],
+            dependencies=[Dependant(trace, scope="endpoint")],
         ),
     ]
 )

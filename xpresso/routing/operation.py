@@ -1,11 +1,10 @@
 import typing
 
-from di import AsyncExecutor, BaseContainer, ConcurrentAsyncExecutor
+from di import AsyncExecutor, BaseContainer, ConcurrentAsyncExecutor, JoinedDependant
 from di.api.dependencies import DependantBase
 from di.api.executor import AsyncExecutorProtocol
 from di.api.providers import DependencyProvider as Endpoint
 from di.api.solved import SolvedDependant
-from di.dependant import JoinedDependant
 from starlette.datastructures import URLPath
 from starlette.requests import HTTPConnection, Request
 from starlette.responses import JSONResponse, Response
@@ -15,7 +14,7 @@ from starlette.types import ASGIApp, Receive, Scope, Send
 import xpresso._utils.asgi_scope_extension as asgi_scope_extension
 import xpresso.binders.dependants as param_dependants
 import xpresso.openapi.models as openapi_models
-from xpresso.dependencies.models import Depends
+from xpresso.dependencies.models import Dependant
 from xpresso.encoders.api import Encoder
 from xpresso.encoders.json import JsonableEncoder
 from xpresso.responses import Responses
@@ -81,7 +80,9 @@ class Operation(BaseRoute):
         responses: typing.Optional[Responses] = None,
         # xpresso params
         name: typing.Optional[str] = None,
-        dependencies: typing.Optional[typing.Sequence[Depends]] = None,
+        dependencies: typing.Optional[
+            typing.Sequence[DependantBase[typing.Any]]
+        ] = None,
         execute_dependencies_concurrently: bool = False,
         response_factory: typing.Callable[[typing.Any], Response] = JSONResponse,
         response_encoder: Encoder = JsonableEncoder(),
@@ -122,7 +123,7 @@ class Operation(BaseRoute):
     ) -> None:
         self.dependant = container.solve(
             JoinedDependant(
-                Depends(
+                Dependant(
                     self.endpoint, scope="endpoint", sync_to_thread=self.sync_to_thread
                 ),
                 siblings=[*dependencies, *(self.dependencies or ())],

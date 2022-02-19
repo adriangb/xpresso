@@ -10,7 +10,7 @@ from fastapi import WebSocket
 from starlette.responses import Response
 from starlette.testclient import TestClient
 
-from xpresso import App, Depends, Operation, Path, WebSocketRoute
+from xpresso import App, Dependant, Depends, Operation, Path, WebSocketRoute
 from xpresso.typing import Annotated
 
 
@@ -31,8 +31,10 @@ def test_router_route_dependencies() -> None:
         return Response()
 
     app = App(
-        routes=[Path("/", get=Operation(endpoint, dependencies=[Depends(route_dep)]))],
-        dependencies=[Depends(router_dep)],
+        routes=[
+            Path("/", get=Operation(endpoint, dependencies=[Dependant(route_dep)]))
+        ],
+        dependencies=[Dependant(router_dep)],
     )
 
     with TestClient(app=app) as client:

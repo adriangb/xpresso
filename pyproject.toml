@@ -36,7 +36,7 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = ">=3.7,<4"
-di = "~0.56"
+di = {git = "https://github.com/adriangb/di.git", branch = "seperate-marker-and-dependant"}
 anyio = "~3"
 starlette = ">=0.16.0,<1"
 importlib-metadata = {version = ">=3", python = "<3.8"}

@@ -2,7 +2,7 @@ from typing import Generator, List
 
 from xpresso import (
     App,
-    Depends,
+    Dependant,
     FromPath,
     HTTPException,
     Path,
@@ -43,7 +43,9 @@ app = App(
             path="/items/{item_name}",
             get=read_items,
             dependencies=[
-                Depends(log_response_status_code, scope="connection")
+                Dependant(
+                    log_response_status_code, scope="connection"
+                )
             ],
         ),
     ]
