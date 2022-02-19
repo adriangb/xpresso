@@ -2,8 +2,6 @@ import inspect
 import sys
 from typing import Any, Dict, Iterable, List, NamedTuple, Optional, Union
 
-from fastapi import WebSocket
-
 if sys.version_info < (3, 8):
     from typing_extensions import Protocol
 else:
@@ -11,7 +9,9 @@ else:
 
 from starlette.datastructures import FormData, UploadFile
 from starlette.requests import HTTPConnection, Request
+from starlette.websockets import WebSocket
 
+from xpresso.dependencies.models import Depends
 from xpresso.openapi import models
 from xpresso.typing import Some
 
@@ -137,8 +137,12 @@ class SecurityScheme:
     __slots__ = ()
 
     @classmethod
-    async def __call__(cls, conn: Union[Request, WebSocket]) -> Any:
+    def extract(cls, conn: Union[Request, WebSocket]) -> Any:
         raise NotImplementedError
+
+    @classmethod
+    async def __di_dependency__(cls) -> Depends:
+        return Depends(cls.extract)
 
     @classmethod
     def get_openapi(

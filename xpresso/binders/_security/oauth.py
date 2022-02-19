@@ -69,7 +69,7 @@ class OAuth2(SecurityScheme):
         self.token = token
 
     @classmethod
-    async def __call__(cls, conn: HTTPConnection) -> Optional[OAuth2]:  # type: ignore  # for Pylance
+    async def extract(cls, conn: HTTPConnection) -> Optional[OAuth2]:  # type: ignore  # for Pylance
         authorization: Optional[str] = conn.headers.get("Authorization")
         if not authorization:
             if cls.unauthenticated_error:
@@ -114,7 +114,7 @@ class OAuth2PasswordBearer(OAuth2):
         )
 
     @classmethod
-    async def __call__(cls, conn: HTTPConnection) -> Optional[OAuth2PasswordBearer]:
+    async def extract(cls, conn: HTTPConnection) -> Optional[OAuth2PasswordBearer]:
         authorization: Optional[str] = conn.headers.get("Authorization")
         if authorization:
             scheme, param = get_authorization_scheme_param(authorization)
@@ -155,7 +155,7 @@ class OAuth2AuthorizationCodeBearer(OAuth2):
         )
 
     @classmethod
-    async def __call__(
+    async def extract(
         cls, conn: HTTPConnection
     ) -> Optional[OAuth2AuthorizationCodeBearer]:
         authorization: Optional[str] = conn.headers.get("Authorization")

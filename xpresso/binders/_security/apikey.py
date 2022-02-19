@@ -46,7 +46,7 @@ class APIKeyQuery(APIKeyBase):
     in_ = "query"
 
     @classmethod
-    async def __call__(cls, conn: HTTPConnection) -> Optional[APIKeyQuery]:
+    async def extract(cls, conn: HTTPConnection) -> Optional[APIKeyQuery]:
         api_key: Optional[str] = conn.query_params.get(cls.name)
         if not api_key:
             if cls.unauthorized_error:
@@ -60,7 +60,7 @@ class APIKeyHeader(APIKeyBase):
     in_ = "header"
 
     @classmethod
-    async def __call__(cls, conn: HTTPConnection) -> Optional[APIKeyHeader]:
+    async def extract(cls, conn: HTTPConnection) -> Optional[APIKeyHeader]:
         api_key: Optional[str] = conn.headers.get(cls.name)
         if not api_key:
             if cls.unauthorized_error:
@@ -74,7 +74,7 @@ class APIKeyCookie(APIKeyBase):
     in_ = "cookie"
 
     @classmethod
-    async def __call__(cls, conn: HTTPConnection) -> Optional[APIKeyCookie]:
+    async def extract(cls, conn: HTTPConnection) -> Optional[APIKeyCookie]:
         api_key: Optional[str] = conn.cookies.get(cls.name)
         if not api_key:
             if cls.unauthorized_error:
