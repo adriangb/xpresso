@@ -168,24 +168,17 @@ toml = ["tomli"]
 
 [[package]]
 name = "di"
-version = "0.57.0"
+version = "0.58.1"
 description = "Autowiring dependency injection"
 category = "main"
 optional = false
 python-versions = ">=3.7,<4"
-develop = false
 
 [package.dependencies]
-anyio = "~3"
+anyio = ">=3,<4"
 graphlib2 = ">=0.2.13"
 importlib-metadata = {version = ">=3", markers = "python_version < \"3.8\""}
 typing-extensions = {version = ">=3", markers = "python_version < \"3.9\""}
-
-[package.source]
-type = "git"
-url = "https://github.com/adriangb/di.git"
-reference = "async-call-construction"
-resolved_reference = "d1bd56fc75cf02f6a91c5026b8fb158ff42bda81"
 
 [[package]]
 name = "distlib"
@@ -1061,7 +1054,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7,<4"
-content-hash = "71c27eff748dfaffe80f849c4b2924086f98e005bda3503eddddb126c5d475d2"
+content-hash = "e8bf5caa8d7a03590de42ebc656d6a1e1a2df5d289159f37554fec0c73806936"
 
 [metadata.files]
 anyio = [
@@ -1228,7 +1221,10 @@ coverage = [
     {file = "coverage-6.3.1-pp36.pp37.pp38-none-any.whl", hash = "sha256:463e52616ea687fd323888e86bf25e864a3cc6335a043fad6bbb037dbf49bbe2"},
     {file = "coverage-6.3.1.tar.gz", hash = "sha256:6c3f6158b02ac403868eea390930ae64e9a9a2a5bbfafefbb920d29258d9f2f8"},
 ]
-di = []
+di = [
+    {file = "di-0.58.1-py3-none-any.whl", hash = "sha256:ded89b13f7c4e3549e54d33a6943d2a79a339de992b7136438837d0f0ccc2ef6"},
+    {file = "di-0.58.1.tar.gz", hash = "sha256:f31798743fac85bb631283915c4ffbd32a539e2d292f81e270517123d329ecdc"},
+]
 distlib = [
     {file = "distlib-0.3.4-py2.py3-none-any.whl", hash = "sha256:6564fe0a8f51e734df6333d08b8b94d4ea8ee6b99b5ed50613f731fd4089f34b"},
     {file = "distlib-0.3.4.zip", hash = "sha256:e4b58818180336dc9c529bfb9a0b58728ffc09ad92027a3f30b7cd91e3458579"},

@@ -6,7 +6,7 @@ if sys.version_info < (3, 9):
 else:
     from typing import Annotated
 
-from di import Dependant
+from di import Marker
 from pydantic import BaseModel
 from starlette.responses import Response
 from starlette.testclient import TestClient
@@ -18,7 +18,7 @@ Data = typing.List[typing.Tuple[str, str]]
 
 
 def test_non_field_markers_are_ignored() -> None:
-    class RandomMarker(Dependant[typing.Any]):
+    class RandomMarker(Marker):
         pass
 
     class FormDataModel(BaseModel):

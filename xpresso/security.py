@@ -40,7 +40,7 @@ class SecurityModel(BaseModel, SecurityScheme):
     async def __call__(cls, conn: Connection) -> Any:
         return cls(
             **{
-                field_name: await cast(SecurityScheme, field.type_).__call__(conn)
+                field_name: await cast(SecurityScheme, field.type_).extract(conn)
                 for field_name, field in cls.__fields__.items()
             }
         )
