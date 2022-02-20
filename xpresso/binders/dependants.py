@@ -38,12 +38,6 @@ class ParameterBinderMarker(Marker):
 
 
 class ParameterBinder(Dependant[typing.Any]):
-    __slots__ = (
-        "in_",
-        "alias",
-        "openapi",
-    )
-
     def __init__(
         self,
         in_: str,
@@ -62,8 +56,6 @@ class ParameterBinder(Dependant[typing.Any]):
 
 
 class BodyBinder(Dependant[typing.Any]):
-    __slots__ = ("openapi", "extractor")
-
     def __init__(
         self,
         *,
