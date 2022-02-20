@@ -1,12 +1,7 @@
-import sys
 import typing
 
-if sys.version_info < (3, 9):
-    from typing_extensions import Annotated
-else:
-    from typing import Annotated
-
 import xpresso.binders.dependants as param_dependants
+from xpresso._utils.compat import Annotated
 from xpresso.binders._parameters.extractors.cookie import CookieParameterExtractorMarker
 from xpresso.binders._parameters.extractors.header import HeaderParameterExtractorMarker
 from xpresso.binders._parameters.extractors.path import PathParameterExtractorMarker

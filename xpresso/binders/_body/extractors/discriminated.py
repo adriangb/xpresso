@@ -1,16 +1,11 @@
 import inspect
-import sys
 import typing
-
-if sys.version_info < (3, 9):
-    from typing_extensions import Annotated, get_args, get_origin
-else:
-    from typing import Annotated, get_origin, get_args
 
 from di.typing import get_markers_from_parameter
 from starlette.datastructures import UploadFile
 from starlette.requests import Request
 
+from xpresso._utils.compat import Annotated, get_args, get_origin
 from xpresso.binders.api import BodyExtractor
 from xpresso.binders.dependants import BodyBinderMarker
 from xpresso.exceptions import HTTPException

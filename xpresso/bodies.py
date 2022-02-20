@@ -1,19 +1,9 @@
 import json
-import sys
 import typing
-
-if sys.version_info < (3, 9):
-    from typing_extensions import Annotated
-else:
-    from typing import Annotated
-
-if sys.version_info < (3, 8):
-    from typing_extensions import Literal
-else:
-    from typing import Literal
 
 import xpresso.binders.dependants as param_dependants
 import xpresso.openapi.models as openapi_models
+from xpresso._utils.compat import Annotated, Literal
 from xpresso.binders._body.extractors.discriminated import (
     ContentTypeDiscriminatedExtractorMarker,
 )

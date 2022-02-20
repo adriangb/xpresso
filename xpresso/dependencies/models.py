@@ -1,17 +1,13 @@
 from __future__ import annotations
 
 import inspect
-import sys
 import typing
-
-if sys.version_info < (3, 8):
-    from typing_extensions import Literal
-else:
-    from typing import Literal
 
 import di
 from di.api.dependencies import DependantBase
 from di.api.providers import DependencyProvider
+
+from xpresso._utils.compat import Literal
 
 T = typing.TypeVar("T")
 
