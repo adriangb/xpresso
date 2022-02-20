@@ -12,7 +12,7 @@ from xpresso.exceptions import RequestValidationError, WebSocketValidationError
 from xpresso.typing import Some
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, eq=False)
 class ParameterExtractorBase(ParameterExtractor):
     field: ModelField
     loc: typing.Tuple[str, ...]
@@ -29,23 +29,15 @@ class ParameterExtractorBase(ParameterExtractor):
             if self.field.required is False:
                 return self.field.get_default()
             else:
-                if connection.scope["type"] == "websocket":
-                    raise WebSocketValidationError(
-                        [
-                            ErrorWrapper(
-                                ValueError(f"Missing required {self.in_} parameter"),
-                                loc=self.loc,
-                            )
-                        ]
+                err = [
+                    ErrorWrapper(
+                        ValueError(f"Missing required {self.in_} parameter"),
+                        loc=self.loc,
                     )
-                raise RequestValidationError(
-                    [
-                        ErrorWrapper(
-                            ValueError(f"Missing required {self.in_} parameter"),
-                            loc=self.loc,
-                        )
-                    ]
-                )
+                ]
+                if connection.scope["type"] == "websocket":
+                    raise WebSocketValidationError(err)
+                raise RequestValidationError(err)
         val, errs = self.field.validate(values.value, {}, loc=self.loc)
         if errs:
             if isinstance(errs, ErrorWrapper):
