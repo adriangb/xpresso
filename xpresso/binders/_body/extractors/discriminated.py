@@ -1,7 +1,6 @@
 import inspect
 import sys
 import typing
-from dataclasses import dataclass
 
 if sys.version_info < (3, 9):
     from typing_extensions import Annotated, get_args, get_origin
@@ -9,16 +8,22 @@ else:
     from typing import Annotated, get_origin, get_args
 
 from di.typing import get_markers_from_parameter
+from starlette.datastructures import UploadFile
 from starlette.requests import Request
 
-from xpresso.binders.api import BodyExtractor, BodyExtractorMarker
+from xpresso.binders.api import BodyExtractor
 from xpresso.binders.dependants import BodyBinderMarker
 from xpresso.exceptions import HTTPException
 
 
-@dataclass(frozen=True, eq=False)
-class ContentTypeDiscriminatedExtractor(BodyExtractor):
-    sub_body_extractors: typing.Iterable[BodyExtractor]
+class ContentTypeDiscriminatedExtractor:
+    __slots__ = ("sub_body_extractors",)
+
+    def __init__(
+        self,
+        sub_body_extractors: typing.Iterable[BodyExtractor],
+    ) -> None:
+        self.sub_body_extractors = sub_body_extractors
 
     async def extract_from_request(self, request: Request) -> typing.Any:
         media_type = request.headers.get("content-type", None)
@@ -32,9 +37,19 @@ class ContentTypeDiscriminatedExtractor(BodyExtractor):
         else:
             raise HTTPException(status_code=415, detail="Content-Type header missing")
 
+    def matches_media_type(self, media_type: typing.Optional[str]) -> bool:
+        raise NotImplementedError
 
-@dataclass(frozen=True)
-class ContentTypeDiscriminatedExtractorMarker(BodyExtractorMarker):
+    async def extract_from_field(
+        self,
+        field: typing.Union[str, UploadFile],
+        *,
+        loc: typing.Iterable[typing.Union[str, int]],
+    ) -> typing.Any:
+        raise NotImplementedError
+
+
+class ContentTypeDiscriminatedExtractorMarker(typing.NamedTuple):
     def register_parameter(self, param: inspect.Parameter) -> BodyExtractor:
         sub_body_extractors: typing.List[BodyExtractor] = []
 

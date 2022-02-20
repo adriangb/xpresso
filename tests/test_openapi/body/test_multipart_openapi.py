@@ -58,7 +58,8 @@ def test_file() -> None:
                                     "properties": {
                                         "file": {"type": "string", "format": "binary"}
                                     },
-                                }
+                                },
+                                "encoding": {"file": {}},
                             }
                         },
                         "required": True,

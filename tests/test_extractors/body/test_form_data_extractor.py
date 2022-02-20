@@ -220,23 +220,6 @@ def test_array_of_json_from_repeated_form_field_with_alias() -> None:
     assert resp.status_code == 200, resp.text
 
 
-def test_nested_form_data():
-    class InnerFormDataModel(BaseModel):
-        field: FromFormField[str]
-
-    class OuterFormDataModel(BaseModel):
-        field: ExtractField[FromFormData[InnerFormDataModel]]
-
-    async def test(form: FromFormData[OuterFormDataModel]) -> None:
-        return None
-
-    app = App([Path("/", post=test)])
-
-    with TestClient(app) as client:
-        resp = client.post("/", data={"field": "field%3Dabc"})
-        assert resp.status_code == 200, resp.content
-
-
 def test_dissallow_mismatched_media_type():
     class FormDataModel(BaseModel):
         field: FromFormField[str]

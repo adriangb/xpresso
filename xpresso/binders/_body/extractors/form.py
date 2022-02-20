@@ -1,31 +1,36 @@
 import inspect
 import typing
-from dataclasses import dataclass
-from urllib.parse import unquote_plus
 
-from di.typing import get_markers_from_parameter
 from pydantic.fields import ModelField
-from starlette.datastructures import FormData, Headers, UploadFile
-from starlette.formparsers import FormParser
+from starlette.datastructures import FormData, UploadFile
 from starlette.requests import Request
 
+from xpresso._utils.compat import get_args
 from xpresso._utils.media_type_validator import MediaTypeValidator
 from xpresso._utils.media_type_validator import (
     get_validator as get_media_type_validator,
 )
-from xpresso._utils.typing import model_field_from_param
+from xpresso._utils.typing import Some, model_field_from_param
 from xpresso.binders._body.extractors.body_field_validation import validate_body_field
-from xpresso.binders._body.extractors.form_field import FormFieldBodyExtractorMarker
-from xpresso.binders.api import BodyExtractor, BodyExtractorMarker
-from xpresso.binders.dependants import BodyBinderMarker
-from xpresso.typing import Some
+from xpresso.binders._body.extractors.form_encoded_field import (
+    FormEncodedFieldExtractorMarker,
+)
+from xpresso.binders._body.form_field import FormDataExtractor, FormFieldMarker
+from xpresso.binders.api import BodyExtractor
 
 
-@dataclass(frozen=True, eq=False)
-class FormDataBodyExtractorBase(BodyExtractor):
-    media_type_validator: MediaTypeValidator
-    field: ModelField
-    field_extractors: typing.Dict[str, BodyExtractor]
+class FormDataBodyExtractor:
+    __slots__ = ("media_type_validator", "field", "field_extractors")
+
+    def __init__(
+        self,
+        media_type_validator: MediaTypeValidator,
+        field: ModelField,
+        field_extractors: typing.Mapping[str, FormDataExtractor],
+    ) -> None:
+        self.media_type_validator = media_type_validator
+        self.field = field
+        self.field_extractors = field_extractors
 
     def matches_media_type(self, media_type: typing.Optional[str]) -> bool:
         return self.media_type_validator.matches(media_type)
@@ -59,91 +64,44 @@ class FormDataBodyExtractorBase(BodyExtractor):
                 res[param_name] = extracted.value
         return res
 
-
-class FormDataBodyExtractor(FormDataBodyExtractorBase):
     async def extract_from_field(
         self,
         field: typing.Union[str, UploadFile],
         *,
         loc: typing.Iterable[typing.Union[str, int]],
-    ) -> typing.Optional[Some[typing.Any]]:
-        if isinstance(field, UploadFile):
-
-            async def stream_gen() -> typing.AsyncGenerator[bytes, None]:
-                yield await field.read()  # type: ignore # UploadFile always returns bytes
-                yield b""
-
-            stream = stream_gen()
-
-            form = await FormParser(Headers(), stream=stream).parse()
-
-        else:
-            forms = field.split("&")
-            items = typing.cast(
-                typing.List[typing.Tuple[str, str]],
-                [tuple(unquote_plus(f).split("=", maxsplit=1)) for f in forms],
-            )
-            form = FormData(items)  # type: ignore[arg-type]
-
-        return await self._extract(form, loc=loc)
+    ) -> typing.Any:
+        raise NotImplementedError
 
 
-class MultipartBodyExtractor(FormDataBodyExtractorBase):
-    pass
-
-
-@dataclass(frozen=True)
-class FormDataBodyExtractorMarkerBase(BodyExtractorMarker):
+class FormDataBodyExtractorMarker(typing.NamedTuple):
     enforce_media_type: bool
-    media_type: typing.ClassVar[str]
-    cls: typing.ClassVar[
-        typing.Union[
-            typing.Type[FormDataBodyExtractor], typing.Type[MultipartBodyExtractor]
-        ]
-    ]
+    media_type: str
 
     def register_parameter(self, param: inspect.Parameter) -> BodyExtractor:
         form_data_field = model_field_from_param(param)
 
-        field_extractors: typing.Dict[str, BodyExtractor] = {}
+        field_extractors: typing.Dict[str, FormDataExtractor] = {}
         # use pydantic to get rid of outer annotated, optional, etc.
-        annotation = form_data_field.type_
-        for param_name, field_param in inspect.signature(annotation).parameters.items():
-            marker: typing.Optional[BodyBinderMarker] = None
-            for param_marker in get_markers_from_parameter(field_param):
-                if isinstance(param_marker, BodyBinderMarker):
-                    marker = param_marker
+        # use pydantic to get rid of outer annotated, optional, etc.
+        model = form_data_field.type_
+        for field_param in inspect.signature(model).parameters.values():
+            for m in get_args(field_param.annotation):
+                if isinstance(m, FormFieldMarker):
+                    field_extractor = m.extractor_marker.register_parameter(field_param)
                     break
-            extractor_marker: BodyExtractorMarker
-            if marker is None:
-                # use the defaults
-                extractor_marker = FormFieldBodyExtractorMarker(
+            else:
+                field_extractor = FormEncodedFieldExtractorMarker(
                     alias=None,
                     style="form",
                     explode=True,
-                )
-            else:
-                extractor_marker = marker.extractor_marker
-            extractor = extractor_marker.register_parameter(field_param)
-            field_extractors[param_name] = extractor
+                ).register_parameter(field_param)
+            field_extractors[field_param.name] = field_extractor
         if self.enforce_media_type and self.media_type:
             media_type_validator = get_media_type_validator(self.media_type)
         else:
             media_type_validator = get_media_type_validator(None)
-        return self.cls(
+        return FormDataBodyExtractor(
             media_type_validator=media_type_validator,
             field_extractors=field_extractors,
             field=form_data_field,
         )
-
-
-@dataclass(frozen=True)
-class FormDataBodyExtractorMarker(FormDataBodyExtractorMarkerBase):
-    media_type = "application/x-www-form-urlencoded"
-    cls = FormDataBodyExtractor
-
-
-@dataclass(frozen=True)
-class MultipartBodyExtractorMarker(FormDataBodyExtractorMarkerBase):
-    media_type = "multipart/form-data"
-    cls = MultipartBodyExtractor

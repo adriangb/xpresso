@@ -16,6 +16,8 @@ from pydantic.fields import (
 from pydantic.schema import TypeModelOrEnum
 from pydantic.schema import get_model_name_map as get_model_name_map_pydantic
 
+from xpresso._utils.compat import Annotated, get_args, get_origin
+
 T = typing.TypeVar("T")
 
 
@@ -69,3 +71,29 @@ def is_mapping_like(field: ModelField) -> bool:
         or inspect.isclass(field.type_)
         and issubclass(field.type_, BaseModel)
     )
+
+
+class Some(typing.Generic[T]):
+    __slots__ = ("value",)
+
+    def __init__(self, value: T) -> None:
+        self.value = value
+
+    def __repr__(self) -> str:
+        return f"Some({repr(self.value)})"
+
+
+def get_markers_from_annotation(
+    param: inspect.Parameter,
+    *,
+    marker_cls: typing.Type[T],
+) -> typing.Generator[T, None, None]:
+    if get_origin(param.annotation) is Annotated:
+        # reverse the arguments so that in the case of
+        # Annotated[Annotated[T, InnerDependant()], OuterDependant()]
+        # we discover "outer" first
+        # This is a somewhat arbitrary choice, but it is the convention we'll go with
+        # See https://www.python.org/dev/peps/pep-0593/#id18 for more details
+        for arg in reversed(get_args(param.annotation)):
+            if isinstance(arg, marker_cls):
+                yield arg

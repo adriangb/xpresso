@@ -57,6 +57,7 @@ openapi_schema: Dict[str, Any] = {
                             "encoding": {
                                 "name": {"style": "form", "explode": True},
                                 "tags": {"style": "form", "explode": True},
+                                "files": {},
                             },
                         }
                     },

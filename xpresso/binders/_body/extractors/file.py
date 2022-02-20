@@ -1,29 +1,34 @@
 import inspect
 import typing
-from dataclasses import dataclass
 
 from pydantic.error_wrappers import ErrorWrapper
 from pydantic.fields import ModelField
-from starlette.datastructures import FormData, UploadFile
+from starlette.datastructures import UploadFile
 from starlette.requests import Request
 
 from xpresso._utils.media_type_validator import MediaTypeValidator
 from xpresso._utils.media_type_validator import (
     get_validator as get_media_type_validator,
 )
-from xpresso._utils.typing import model_field_from_param
+from xpresso._utils.typing import Some, model_field_from_param
 from xpresso.binders._body.extractors.body_field_validation import validate_body_field
 from xpresso.binders._utils.stream_to_bytes import convert_stream_to_bytes
-from xpresso.binders.api import BodyExtractor, BodyExtractorMarker
+from xpresso.binders.api import BodyExtractor
 from xpresso.exceptions import RequestValidationError
-from xpresso.typing import Some
 
 
-@dataclass(frozen=True, eq=False)
-class FileBodyExtractor(BodyExtractor):
-    field: ModelField
-    media_type_validator: MediaTypeValidator
-    consume: bool
+class FileBodyExtractor:
+    __slots__ = ("field", "media_type_validator", "consume")
+
+    def __init__(
+        self,
+        field: ModelField,
+        media_type_validator: MediaTypeValidator,
+        consume: bool,
+    ) -> None:
+        self.field = field
+        self.media_type_validator = media_type_validator
+        self.consume = consume
 
     def matches_media_type(self, media_type: typing.Optional[str]) -> bool:
         return self.media_type_validator.matches(media_type)
@@ -62,11 +67,6 @@ class FileBodyExtractor(BodyExtractor):
     ) -> typing.Any:
         return await self._extract(field, loc=loc)
 
-    async def extract_from_form(
-        self, form: FormData, *, loc: typing.Iterable[typing.Union[str, int]]
-    ) -> typing.Optional[Some[typing.Any]]:
-        raise NotImplementedError
-
     async def _extract(
         self,
         value: typing.Union[str, UploadFile],
@@ -87,8 +87,7 @@ class FileBodyExtractor(BodyExtractor):
         return value
 
 
-@dataclass(frozen=True)
-class FileBodyExtractorMarker(BodyExtractorMarker):
+class FileBodyExtractorMarker(typing.NamedTuple):
     media_type: typing.Optional[str]
     enforce_media_type: bool
     consume: bool

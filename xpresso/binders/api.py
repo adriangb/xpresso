@@ -1,21 +1,15 @@
-import inspect
-import sys
 from typing import Any, Dict, Iterable, List, Optional, Union
 
-if sys.version_info < (3, 8):
-    from typing_extensions import Protocol
-else:
-    from typing import Protocol
-
-from starlette.datastructures import FormData, UploadFile
+from starlette.datastructures import UploadFile
 from starlette.requests import HTTPConnection, Request
 
-from xpresso.openapi import models
-from xpresso.typing import Some
+import xpresso.openapi.models as openapi_models
+from xpresso._utils.compat import Protocol
 
-Model = type
-ModelNameMap = Dict[Model, str]
-Schemas = Dict[str, Union[models.Schema, models.Reference]]
+
+class ParameterExtractor(Protocol):
+    def extract(self, connection: HTTPConnection) -> Any:
+        raise NotImplementedError
 
 
 class BodyExtractor(Protocol):
@@ -23,15 +17,11 @@ class BodyExtractor(Protocol):
         """Extract from top level request"""
         raise NotImplementedError
 
-    async def extract_from_form(
-        self,
-        form: FormData,
-        *,
-        loc: Iterable[Union[str, int]],
-    ) -> Optional[Some[Any]]:
-        """Extract from a form"""
+    def matches_media_type(self, media_type: Optional[str]) -> bool:
+        """Check if this extractor can extract the given media type"""
         raise NotImplementedError
 
+    # APIs to support being a field in a FormData or Multipart request
     async def extract_from_field(
         self,
         field: Union[str, UploadFile],
@@ -41,86 +31,75 @@ class BodyExtractor(Protocol):
         """Extract from a form field"""
         raise NotImplementedError
 
-    def matches_media_type(self, media_type: Optional[str]) -> bool:
-        """Check if this extractor can extract the given media type"""
-        raise NotImplementedError
+
+Model = type
+ModelNameMap = Dict[Model, str]
+Schemas = Dict[str, Union[openapi_models.Schema, openapi_models.Reference]]
 
 
-class BodyExtractorMarker(Protocol):
-    def register_parameter(self, param: inspect.Parameter) -> BodyExtractor:
-        """Hook to pull information from the Python parameter/field this body is attached to"""
-        raise NotImplementedError
-
-
-class ParameterExtractor(Protocol):
-    def extract(
-        self,
-        connection: HTTPConnection,
-    ) -> Any:
-        raise NotImplementedError
-
-
-class ParameterExtractorMarker(Protocol):
-    def register_parameter(self, param: inspect.Parameter) -> ParameterExtractor:
-        """Hook to pull information from the Python parameter/field this body is attached to"""
-        raise NotImplementedError
-
-
-class OpenAPIBody(Protocol):
-    include_in_schema: bool
+class _SupportsGetModels(Protocol):
+    @property
+    def include_in_schema(self) -> bool:
+        ...
 
     def get_models(self) -> List[type]:
-        """The type representing this parameter.
+        """Collect all of the types that OpenAPI schemas will be
+        produced from.
 
-        This is used as the key to deduplicate references and schema names.
+        Xpresso will then assign a schema name to each type and pass
+        that back via the ModelNameMap parameter.
+
+        This ensures that all schema models have a unique name,
+        even if their Python class names conflict.
         """
         raise NotImplementedError
 
-    def get_openapi(
+
+class OpenAPIParameter(_SupportsGetModels, Protocol):
+    @property
+    def name(self) -> str:
+        ...
+
+    @property
+    def in_(self) -> openapi_models.ParameterLocations:
+        ...
+
+    def get_openapi_parameter(
         self, model_name_map: ModelNameMap, schemas: Schemas
-    ) -> models.RequestBody:
+    ) -> openapi_models.ConcreteParameter:
+        """Generate the OpenAPI spec for this parameter"""
         raise NotImplementedError
 
-    def get_schema(
+
+class OpenAPIBody(_SupportsGetModels, Protocol):
+    def get_openapi_body(
         self, model_name_map: ModelNameMap, schemas: Schemas
-    ) -> models.Schema:
+    ) -> openapi_models.RequestBody:
+        """Generate the OpenAPI spec for this request body"""
         raise NotImplementedError
 
-    def get_media_type_string(self) -> str:
-        raise NotImplementedError
-
-    def get_openapi_media_type(
+    # APIs to support being a field in a FormData or Multipart request
+    def get_field_encoding(
         self, model_name_map: ModelNameMap, schemas: Schemas
-    ) -> models.MediaType:
+    ) -> openapi_models.Encoding:
+        """Get the Encoding for this field.
+
+        If this is a URL-encoded form field (as part of
+        an application/x-www-form-urlencoded) the Encoding
+        MAY include the `style` and `explode` sections.
+
+        For all other field types, it can only include the
+        `contentType` and `Headers` section.
+        """
         raise NotImplementedError
 
-    def get_encoding(self) -> Optional[models.Encoding]:
-        raise NotImplementedError
-
-    def get_field_name(self) -> str:
-        raise NotImplementedError
-
-
-class OpenAPIBodyMarker(Protocol):
-    def register_parameter(self, param: inspect.Parameter) -> OpenAPIBody:
-        raise NotImplementedError
-
-
-class OpenAPIParameter(Protocol):
-    in_: str
-    name: str
-    include_in_schema: bool
-
-    def get_openapi(
+    def get_field_schema(
         self, model_name_map: ModelNameMap, schemas: Schemas
-    ) -> models.ConcreteParameter:
-        raise NotImplementedError
+    ) -> openapi_models.Schema:
+        """Get the Schema for this field.
 
-    def get_models(self) -> List[type]:
-        """Used as the key to deduplicate references and schema names"""
-        raise NotImplementedError
-
-
-class OpenAPIParameterMarker(Protocol):
-    def register_parameter(self, param: inspect.Parameter) -> OpenAPIParameter:
+        This will be used to assemble the Form's schema,
+        which is an object schema having as properties the schemas
+        for each field.
+        """
         raise NotImplementedError

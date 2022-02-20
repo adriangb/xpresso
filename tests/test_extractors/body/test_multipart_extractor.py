@@ -18,7 +18,6 @@ from xpresso import (
     ExtractRepeatedField,
     FormEncodedField,
     FromFile,
-    FromFormData,
     FromFormField,
     FromJson,
     FromMultipart,
@@ -349,27 +348,6 @@ def test_form_field_deep_object() -> None:
         ("form_deep_object[a]", "1"),
         ("form_deep_object[b]", "2"),
     ]
-
-    with TestClient(app) as client:
-        resp = client.post("/", files=files, data=data)
-    assert resp.status_code == 200, resp.text
-
-
-def test_nested_form_data():
-    class InnerFormDataModel(BaseModel):
-        field: FromFormField[str]
-
-    class FormDataModel(BaseModel):
-        file: ExtractField[FromFormData[InnerFormDataModel]]
-
-    async def test(body: FromMultipart[FormDataModel]) -> Response:
-        assert body.file.field == "abc"
-        return Response()
-
-    app = App([Path("/", post=test)])
-
-    files: Files = [("file", ("file.txt", b"field=abc"))]
-    data: Data = []
 
     with TestClient(app) as client:
         resp = client.post("/", files=files, data=data)

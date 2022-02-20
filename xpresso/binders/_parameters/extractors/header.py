@@ -1,28 +1,22 @@
 import functools
 import inspect
-import sys
 from dataclasses import dataclass
 from typing import Any, ClassVar, Dict, Iterable, List, Optional, Tuple, cast
-
-if sys.version_info < (3, 8):
-    from typing_extensions import Protocol
-else:
-    from typing import Protocol
 
 from pydantic.error_wrappers import ErrorWrapper
 from pydantic.fields import ModelField
 from starlette.requests import HTTPConnection
 
-from xpresso._utils.typing import is_mapping_like, is_sequence_like
+from xpresso._utils.compat import Protocol
+from xpresso._utils.typing import Some, is_mapping_like, is_sequence_like
 from xpresso.binders._parameters.extractors.base import (
     ParameterExtractorBase,
     get_basic_param_info,
 )
 from xpresso.binders._utils.grouped import grouped
-from xpresso.binders.api import ParameterExtractor, ParameterExtractorMarker
+from xpresso.binders.api import ParameterExtractor
 from xpresso.binders.exceptions import InvalidSerialization
 from xpresso.exceptions import RequestValidationError, WebSocketValidationError
-from xpresso.typing import Some
 
 
 def collect_scalar(value: Optional[str]) -> Optional[Some[str]]:
@@ -85,7 +79,7 @@ ERRORS = {
 }
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, eq=False)
 class HeaderParameterExtractor(ParameterExtractorBase):
     extractor: Extractor
     in_: ClassVar[str] = "header"
@@ -118,7 +112,7 @@ class HeaderParameterExtractor(ParameterExtractorBase):
 
 
 @dataclass(frozen=True)
-class HeaderParameterExtractorMarker(ParameterExtractorMarker):
+class HeaderParameterExtractorMarker:
     alias: Optional[str]
     explode: bool
     convert_underscores: bool

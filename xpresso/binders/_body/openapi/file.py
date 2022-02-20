@@ -1,24 +1,17 @@
 import inspect
-import sys
 import typing
-from dataclasses import dataclass
 
-if sys.version_info < (3, 8):
-    from typing_extensions import Literal
-else:
-    from typing import Literal
-
+from xpresso._utils.compat import Literal
 from xpresso._utils.typing import model_field_from_param
 from xpresso.binders._utils.examples import parse_examples
-from xpresso.binders.api import ModelNameMap, OpenAPIBody, OpenAPIBodyMarker, Schemas
+from xpresso.binders.api import ModelNameMap, OpenAPIBody, Schemas
 from xpresso.openapi import models as openapi_models
 
 
-@dataclass(frozen=True)
-class OpenAPIFileBody(OpenAPIBody):
+class OpenAPIFileBody(typing.NamedTuple):
     media_type: typing.Optional[str]
     description: typing.Optional[str]
-    examples: typing.Optional[typing.Mapping[str, openapi_models.Example]]
+    examples: typing.Optional[openapi_models.Examples]
     format: Literal["binary", "base64"]
     required: bool
     nullable: bool
@@ -27,7 +20,7 @@ class OpenAPIFileBody(OpenAPIBody):
     def get_models(self) -> typing.List[type]:
         return []
 
-    def get_schema(
+    def get_field_schema(
         self, model_name_map: ModelNameMap, schemas: Schemas
     ) -> openapi_models.Schema:
         return openapi_models.Schema(
@@ -38,14 +31,16 @@ class OpenAPIFileBody(OpenAPIBody):
         self, model_name_map: ModelNameMap, schemas: Schemas
     ) -> openapi_models.MediaType:
         return openapi_models.MediaType(
-            schema=self.get_schema(model_name_map=model_name_map, schemas=schemas),
+            schema=self.get_field_schema(
+                model_name_map=model_name_map, schemas=schemas
+            ),
             examples=self.examples,  # type: ignore[arg-type]
         )
 
     def get_media_type_string(self) -> str:
         return self.media_type or "*/*"
 
-    def get_openapi(
+    def get_openapi_body(
         self, model_name_map: ModelNameMap, schemas: Schemas
     ) -> openapi_models.RequestBody:
         return openapi_models.RequestBody(
@@ -58,14 +53,13 @@ class OpenAPIFileBody(OpenAPIBody):
             },
         )
 
-    def get_encoding(self) -> typing.Optional[openapi_models.Encoding]:
-        if self.media_type:
-            return openapi_models.Encoding(contentType=self.media_type)
-        return None
+    def get_field_encoding(
+        self, model_name_map: ModelNameMap, schemas: Schemas
+    ) -> openapi_models.Encoding:
+        return openapi_models.Encoding(contentType=self.media_type)
 
 
-@dataclass(frozen=True)
-class OpenAPIFileMarker(OpenAPIBodyMarker):
+class OpenAPIFileMarker(typing.NamedTuple):
     media_type: typing.Optional[str]
     description: typing.Optional[str]
     examples: typing.Optional[
