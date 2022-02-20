@@ -63,7 +63,7 @@ def _get_response_models_from_return_hint(
 def get_response_specs_from_return_type_hints(
     endpoint: Callable[..., Any]
 ) -> List[ResponseSpec]:
-    hints = get_type_hints(endpoint, include_extras=True)  # type: ignore[call-arg]
+    hints = get_type_hints(endpoint, include_extras=True)
     if "return" not in hints:
         return []
     return _get_response_models_from_return_hint(hints["return"])
