@@ -10,7 +10,7 @@ from xpresso.binders._parameters.extractors.base import (
     get_basic_param_info,
 )
 from xpresso.binders._utils.forms import Extractor, get_extractor
-from xpresso.binders.api import ParameterExtractor, ParameterExtractorMarker
+from xpresso.binders.api import ParameterExtractor
 from xpresso.binders.exceptions import InvalidSerialization
 from xpresso.exceptions import RequestValidationError, WebSocketValidationError
 
@@ -46,7 +46,7 @@ class QueryParameterExtractor(ParameterExtractorBase):
 
 
 @dataclass(frozen=True)
-class QueryParameterExtractorMarker(ParameterExtractorMarker):
+class QueryParameterExtractorMarker:
     alias: Optional[str]
     explode: bool
     style: str

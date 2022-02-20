@@ -2,21 +2,15 @@
 """
 import functools
 import re
-import sys
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union, cast
-
-if sys.version_info < (3, 8):
-    from typing_extensions import Protocol
-else:
-    from typing import Protocol
 
 from pydantic.fields import ModelField
 from starlette.datastructures import UploadFile
 
-from xpresso._utils.typing import is_mapping_like, is_sequence_like
+from xpresso._utils.compat import Protocol
+from xpresso._utils.typing import Some, is_mapping_like, is_sequence_like
 from xpresso.binders._utils.grouped import grouped
 from xpresso.binders.exceptions import InvalidSerialization
-from xpresso.typing import Some
 
 
 class UnexpectedFileReceived(TypeError):

@@ -1,56 +1,54 @@
 import inspect
-import sys
 import typing
-from dataclasses import dataclass
-
-if sys.version_info < (3, 9):
-    from typing_extensions import Annotated, get_args, get_origin
-else:
-    from typing import Annotated, get_origin, get_args
 
 from di.typing import get_markers_from_parameter
 
+from xpresso._utils.compat import Annotated, get_args, get_origin
 from xpresso._utils.typing import model_field_from_param
-from xpresso.binders.api import ModelNameMap, OpenAPIBody, OpenAPIBodyMarker, Schemas
+from xpresso.binders.api import ModelNameMap, OpenAPIBody, Schemas
 from xpresso.binders.dependants import BodyBinderMarker
 from xpresso.openapi import models as openapi_models
 
 
-@dataclass(frozen=True)
-class OpenAPIContentTypeDiscriminated(OpenAPIBody):
-    sub_body_providers: typing.Mapping[str, OpenAPIBody]
+class OpenAPIContentTypeDiscriminated(typing.NamedTuple):
+    sub_body_providers: typing.Iterable[OpenAPIBody]
     description: typing.Optional[str]
     required: typing.Optional[bool]
-    include_in_schema = True
+    include_in_schema: bool
 
     def get_models(self) -> typing.List[type]:
-        return [
-            model
-            for provider in self.sub_body_providers.values()
-            for model in provider.get_models()
-        ]
+        return [model for b in self.sub_body_providers for model in b.get_models()]
 
-    def get_openapi(
+    def get_openapi_body(
         self, model_name_map: ModelNameMap, schemas: Schemas
     ) -> openapi_models.RequestBody:
+        content: typing.Dict[str, openapi_models.MediaType] = {}
+        for body in self.sub_body_providers:
+            content.update(body.get_openapi_body(model_name_map, schemas).content)
         return openapi_models.RequestBody(
             description=self.description,
             required=self.required,
-            content={
-                media_type: provider.get_openapi_media_type(model_name_map, schemas)
-                for media_type, provider in self.sub_body_providers.items()
-            },
+            content=content,
         )
 
+    def get_field_encoding(
+        self, model_name_map: ModelNameMap, schemas: Schemas
+    ) -> openapi_models.Encoding:
+        raise NotImplementedError
 
-@dataclass(frozen=True)
-class OpenAPIContentTypeDiscriminatedMarker(OpenAPIBodyMarker):
+    def get_field_schema(
+        self, model_name_map: ModelNameMap, schemas: Schemas
+    ) -> openapi_models.Schema:
+        raise NotImplementedError
+
+
+class OpenAPIContentTypeDiscriminatedMarker(typing.NamedTuple):
     description: typing.Optional[str]
 
     def register_parameter(self, param: inspect.Parameter) -> OpenAPIBody:
         field = model_field_from_param(param)
         required = field.required is not False
-        sub_body_providers: typing.Dict[str, OpenAPIBody] = {}
+        sub_body_providers: typing.List[OpenAPIBody] = []
 
         annotation = param.annotation
         origin = get_origin(annotation)
@@ -67,21 +65,19 @@ class OpenAPIContentTypeDiscriminatedMarker(OpenAPIBodyMarker):
                 annotation=arg,
                 default=param.default,
             )
-            marker: typing.Optional[BodyBinderMarker] = None
             for param_marker in get_markers_from_parameter(sub_body_param):
                 if isinstance(param_marker, BodyBinderMarker):
                     marker = param_marker
                     break
-
-            if marker is None:
+            else:
                 raise TypeError(f"Type annotation is missing body marker: {arg}")
             sub_body_openapi = marker.openapi_marker
             provider = sub_body_openapi.register_parameter(sub_body_param)
             if provider.include_in_schema:
-                media_type = provider.get_media_type_string()
-                sub_body_providers[media_type] = provider
+                sub_body_providers.append(provider)
         return OpenAPIContentTypeDiscriminated(
             sub_body_providers=sub_body_providers,
             description=self.description,
             required=None if required else False,
+            include_in_schema=True,
         )

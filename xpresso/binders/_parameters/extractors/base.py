@@ -6,14 +6,12 @@ from pydantic.error_wrappers import ErrorWrapper
 from pydantic.fields import ModelField
 from starlette.requests import HTTPConnection
 
-from xpresso._utils.typing import model_field_from_param
-from xpresso.binders.api import ParameterExtractor
+from xpresso._utils.typing import Some, model_field_from_param
 from xpresso.exceptions import RequestValidationError, WebSocketValidationError
-from xpresso.typing import Some
 
 
 @dataclass(frozen=True, eq=False)
-class ParameterExtractorBase(ParameterExtractor):
+class ParameterExtractorBase:
     field: ModelField
     loc: typing.Tuple[str, ...]
     name: str

@@ -1,12 +1,6 @@
 import inspect
-import sys
 from collections import ChainMap
 from typing import Any, Callable, Dict, Iterable, List, Optional, TypeVar, Union
-
-if sys.version_info < (3, 9):
-    from typing_extensions import get_args, get_origin, get_type_hints
-else:
-    from typing import get_origin, get_args, get_type_hints
 
 from pydantic import BaseConfig
 from pydantic.fields import ModelField
@@ -14,6 +8,7 @@ from pydantic.schema import field_schema, get_flat_models_from_field
 from pydantic.typing import NoneType
 from starlette.responses import Response
 
+from xpresso._utils.compat import get_args, get_origin, get_type_hints
 from xpresso._utils.typing import get_model_name_map
 from xpresso.openapi import models
 from xpresso.openapi.constants import REF_PREFIX

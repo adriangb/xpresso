@@ -1,29 +1,20 @@
 import inspect
-import sys
 import typing
-from dataclasses import dataclass
 
-if sys.version_info < (3, 8):
-    from typing_extensions import Literal
-else:
-    from typing import Literal
-
-from di.typing import get_markers_from_parameter
-
+from xpresso._utils.compat import Literal, get_args
 from xpresso._utils.typing import model_field_from_param
-from xpresso.binders._body.openapi.form_field import OpenAPIFormFieldMarker
+from xpresso.binders._body.form_field import FormFieldMarker, FormFieldOpenAPIProvider
+from xpresso.binders._body.openapi.form_encoded_field import OpenAPIFormFieldMarker
 from xpresso.binders._utils.examples import parse_examples
-from xpresso.binders.api import ModelNameMap, OpenAPIBody, OpenAPIBodyMarker, Schemas
-from xpresso.binders.dependants import BodyBinderMarker
+from xpresso.binders.api import ModelNameMap, OpenAPIBody, Schemas
 from xpresso.openapi import models as openapi_models
 
 
-@dataclass(frozen=True)
-class OpenAPIFormDataBody(OpenAPIBody):
-    field_openapi_providers: typing.Mapping[str, OpenAPIBody]
+class OpenAPIFormDataBody(typing.NamedTuple):
+    field_openapi_providers: typing.Mapping[str, FormFieldOpenAPIProvider]
     required_fields: typing.List[str]
     description: typing.Optional[str]
-    examples: typing.Optional[typing.Mapping[str, openapi_models.Example]]
+    examples: typing.Optional[openapi_models.Examples]
     media_type: Literal[
         "multipart/form-data",
         "application/x-www-form-urlencoded",
@@ -43,7 +34,7 @@ class OpenAPIFormDataBody(OpenAPIBody):
         self, model_name_map: ModelNameMap, schemas: Schemas
     ) -> openapi_models.Schema:
         properties = {
-            field_name: field_openapi.get_schema(
+            field_name: field_openapi.get_field_schema(
                 model_name_map=model_name_map, schemas=schemas
             )
             for field_name, field_openapi in self.field_openapi_providers.items()
@@ -60,34 +51,38 @@ class OpenAPIFormDataBody(OpenAPIBody):
     ) -> openapi_models.MediaType:
         encodings: typing.Dict[str, openapi_models.Encoding] = {}
         for field_name, field_openapi in self.field_openapi_providers.items():
-            encoding = field_openapi.get_encoding()
-            if encoding:
-                encodings[field_name] = encoding
+            encoding = field_openapi.get_field_encoding(model_name_map, schemas)
+            encodings[field_name] = encoding
         return openapi_models.MediaType(
             schema=self.get_schema(model_name_map=model_name_map, schemas=schemas),
             examples=self.examples,  # type: ignore[arg-type]
             encoding=encodings or None,
         )
 
-    def get_media_type_string(self) -> str:
-        return self.media_type
-
-    def get_openapi(
+    def get_openapi_body(
         self, model_name_map: ModelNameMap, schemas: Schemas
     ) -> openapi_models.RequestBody:
         return openapi_models.RequestBody(
             description=self.description,
             required=self.required,
             content={
-                self.get_media_type_string(): self.get_openapi_media_type(
-                    model_name_map, schemas
-                )
+                self.media_type: self.get_openapi_media_type(model_name_map, schemas)
             },
         )
 
+    # Nested forms are not supported
+    def get_field_encoding(
+        self, model_name_map: ModelNameMap, schemas: Schemas
+    ) -> openapi_models.Encoding:
+        raise NotImplementedError
 
-@dataclass(frozen=True)
-class OpenAPIFormDataMarker(OpenAPIBodyMarker):
+    def get_field_schema(
+        self, model_name_map: ModelNameMap, schemas: Schemas
+    ) -> openapi_models.Schema:
+        raise NotImplementedError
+
+
+class OpenAPIFormDataMarker(typing.NamedTuple):
     description: typing.Optional[str]
     examples: typing.Optional[
         typing.Dict[str, typing.Union[openapi_models.Example, typing.Any]]
@@ -101,32 +96,25 @@ class OpenAPIFormDataMarker(OpenAPIBodyMarker):
     def register_parameter(self, param: inspect.Parameter) -> OpenAPIBody:
         form_data_field = model_field_from_param(param)
         required = form_data_field.required is not False
-        field_openapi_providers: typing.Dict[str, OpenAPIBody] = {}
+        field_openapi_providers: typing.Dict[str, FormFieldOpenAPIProvider] = {}
         required_fields: typing.List[str] = []
         # use pydantic to get rid of outer annotated, optional, etc.
-        annotation = form_data_field.type_
-        for field_param in inspect.signature(annotation).parameters.values():
-            marker: typing.Optional[BodyBinderMarker] = None
-            for param_marker in get_markers_from_parameter(field_param):
-                if isinstance(param_marker, BodyBinderMarker):
-                    marker = param_marker
+        model = form_data_field.type_
+        for field_param in inspect.signature(model).parameters.values():
+            for m in get_args(field_param.annotation):
+                if isinstance(m, FormFieldMarker):
+                    field_openapi = m.openapi_marker.register_parameter(field_param)
                     break
-
-            field_openapi: OpenAPIBodyMarker
-            if marker is None:
-                # use the defaults
+            else:
                 field_openapi = OpenAPIFormFieldMarker(
                     alias=None,
                     style="form",
                     explode=True,
                     include_in_schema=True,
-                )
-            else:
-                field_openapi = marker.openapi_marker
-            provider = field_openapi.register_parameter(field_param)
-            field_name = provider.get_field_name()
-            if provider.include_in_schema:
-                field_openapi_providers[field_name] = provider
+                ).register_parameter(field_param)
+            field_name = field_openapi.field_name
+            if field_openapi.include_in_schema:
+                field_openapi_providers[field_name] = field_openapi
                 field = model_field_from_param(field_param)
                 if field.required is not False:
                     required_fields.append(field_name)

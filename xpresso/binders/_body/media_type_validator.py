@@ -10,6 +10,8 @@ from xpresso.exceptions import RequestValidationError
 
 
 class MediaTypeValidator:
+    __slots__ = ("accepted",)
+
     def __init__(self, media_type: typing.Optional[str]) -> None:
         if media_type is None:
             self.accepted = None

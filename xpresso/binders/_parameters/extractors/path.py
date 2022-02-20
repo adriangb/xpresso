@@ -7,16 +7,15 @@ from pydantic.error_wrappers import ErrorWrapper
 from pydantic.fields import ModelField
 from starlette.requests import HTTPConnection
 
-from xpresso._utils.typing import is_mapping_like, is_sequence_like
+from xpresso._utils.typing import Some, is_mapping_like, is_sequence_like
 from xpresso.binders._parameters.extractors.base import (
     ParameterExtractorBase,
     get_basic_param_info,
 )
 from xpresso.binders._utils.grouped import grouped
-from xpresso.binders.api import ParameterExtractor, ParameterExtractorMarker
+from xpresso.binders.api import ParameterExtractor
 from xpresso.binders.exceptions import InvalidSerialization
 from xpresso.exceptions import RequestValidationError, WebSocketValidationError
-from xpresso.typing import Some
 
 
 def collect_scalar(name: str, style: str, explode: bool, value: str) -> str:
@@ -141,7 +140,7 @@ class PathParameterExtractor(ParameterExtractorBase):
 
 
 @dataclass(frozen=True)
-class PathParameterExtractorMarker(ParameterExtractorMarker):
+class PathParameterExtractorMarker:
     alias: Optional[str]
     explode: bool
     style: str

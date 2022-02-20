@@ -12,7 +12,7 @@ import msgpack  # type: ignore[import]
 from pydantic import BaseModel
 
 from xpresso import Request
-from xpresso.binders.api import BodyExtractor, BodyExtractorMarker
+from xpresso.binders.api import BodyExtractor
 
 
 @dataclass(frozen=True)
@@ -28,7 +28,7 @@ class MsgPackBodyExtractor(BodyExtractor):
         return self.model.parse_obj(deserialized_obj)
 
 
-class MsgPackBodyExtractorMarker(BodyExtractorMarker):
+class MsgPackBodyExtractorMarker:
     def register_parameter(
         self, param: inspect.Parameter
     ) -> BodyExtractor:

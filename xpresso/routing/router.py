@@ -1,10 +1,4 @@
-import sys
 import typing
-
-if sys.version_info < (3, 8):
-    from typing_extensions import Protocol
-else:
-    from typing import Protocol
 
 import starlette.middleware
 from di.api.dependencies import DependantBase
@@ -12,6 +6,7 @@ from starlette.routing import BaseRoute
 from starlette.routing import Router as StarletteRouter
 from starlette.types import Receive, Scope, Send
 
+from xpresso._utils.compat import Protocol
 from xpresso.responses import Responses
 
 

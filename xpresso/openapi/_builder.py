@@ -57,7 +57,9 @@ def get_parameters(
     schemas: Dict[str, Any],
 ) -> Optional[List[models.ConcreteParameter]]:
     parameters: List[models.ConcreteParameter] = [
-        dependant.openapi.get_openapi(model_name_map=model_name_map, schemas=schemas)
+        dependant.openapi.get_openapi_parameter(
+            model_name_map=model_name_map, schemas=schemas
+        )
         for dependant in deps
         if dependant.openapi and dependant.openapi.include_in_schema
     ]
@@ -73,7 +75,7 @@ def get_request_body(
     schemas: Dict[str, Any],
 ) -> models.RequestBody:
     if dependant.openapi and dependant.openapi.include_in_schema:
-        return dependant.openapi.get_openapi(
+        return dependant.openapi.get_openapi_body(
             model_name_map=model_name_map, schemas=schemas
         )
     return models.RequestBody(content={})

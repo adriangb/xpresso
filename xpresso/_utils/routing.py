@@ -1,15 +1,10 @@
-import sys
 import typing
 from dataclasses import dataclass
-
-if sys.version_info < (3, 8):
-    from typing_extensions import Protocol
-else:
-    from typing import Protocol
 
 from starlette.routing import BaseRoute, Mount
 from starlette.routing import Router as StarletteRouter
 
+from xpresso._utils.compat import Protocol
 from xpresso.routing.pathitem import Path
 from xpresso.routing.router import Router as XpressoRouter
 from xpresso.routing.websockets import WebSocketRoute

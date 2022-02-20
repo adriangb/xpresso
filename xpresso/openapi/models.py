@@ -1,12 +1,6 @@
 from __future__ import annotations
 
-import sys
 from typing import Any, Dict, List, Mapping, Optional, Union
-
-if sys.version_info < (3, 8):
-    from typing_extensions import Literal
-else:
-    from typing import Literal
 
 from pydantic import BaseConfig, BaseModel, Extra, Field
 from pydantic.networks import AnyUrl
@@ -16,6 +10,9 @@ try:
     from pydantic import EmailStr
 except ImportError:  # pragma: no cover
     EmailStr = str  # type: ignore
+
+
+from xpresso._utils.compat import Annotated, Literal
 
 
 class FrozenBaseModel(BaseModel):
@@ -69,7 +66,7 @@ class Server(FrozenBaseModel):
 
 
 class Reference(FrozenBaseModel):
-    ref: str = Field(alias="$ref")
+    ref: Annotated[str, Field(alias="$ref")]
 
 
 class Discriminator(FrozenBaseModel):
@@ -91,28 +88,28 @@ class ExternalDocumentation(FrozenBaseModel):
 
 
 class Schema(FrozenBaseModel):
-    ref: Optional[str] = Field(default=None, alias="$ref")
+    ref: Annotated[Optional[str], Field(alias="$ref")] = None
     title: Optional[str] = None
     multipleOf: Optional[float] = None
     maximum: Optional[float] = None
     exclusiveMaximum: Optional[float] = None
     minimum: Optional[float] = None
     exclusiveMinimum: Optional[float] = None
-    maxLength: Optional[int] = Field(default=None, ge=0)
-    minLength: Optional[int] = Field(default=None, ge=0)
+    maxLength: Annotated[Optional[int], Field(ge=0)] = None
+    minLength: Annotated[Optional[int], Field(ge=0)]
     pattern: Optional[str] = None
-    maxItems: Optional[int] = Field(default=None, ge=0)
-    minItems: Optional[int] = Field(default=None, ge=0)
+    maxItems: Annotated[Optional[int], Field(ge=0)]
+    minItems: Annotated[Optional[int], Field(ge=0)]
     uniqueItems: Optional[bool] = None
-    maxProperties: Optional[int] = Field(default=None, ge=0)
-    minProperties: Optional[int] = Field(default=None, ge=0)
+    maxProperties: Annotated[Optional[int], Field(ge=0)]
+    minProperties: Annotated[Optional[int], Field(ge=0)]
     required: Optional[List[str]] = None
     enum: Optional[List[Any]] = None
     type: Optional[str] = None
     allOf: Optional[List[Schema]] = None
     oneOf: Optional[List[Schema]] = None
     anyOf: Optional[List[Schema]] = None
-    not_: Optional[Schema] = Field(default=None, alias="not")
+    not_: Annotated[Optional[Schema], Field(alias="not")]
     items: Optional[Union[Schema, List[Schema]]] = None
     properties: Optional[Dict[str, Schema]] = None
     additionalProperties: Optional[Union[Schema, Reference, bool]] = None
@@ -127,14 +124,17 @@ class Schema(FrozenBaseModel):
     externalDocs: Optional[ExternalDocumentation] = None
     deprecated: Optional[bool] = None
     example: Optional[Any] = None
-    examples: Optional[Dict[str, Any]] = None
+    examples: Optional[Examples] = None
 
 
 class Example(FrozenBaseModel):
     summary: Optional[str] = None
     description: Optional[str] = None
     value: Any = None
-    external_value: Optional[str] = Field(default=None, alias="externalValue")
+    external_value: Annotated[Optional[str], Field(alias="externalValue")]
+
+
+Examples = Mapping[str, Union[Example, Reference]]
 
 
 class Encoding(FrozenBaseModel):
@@ -146,7 +146,7 @@ class Encoding(FrozenBaseModel):
 
 class MediaType(FrozenBaseModel):
     schema_: Optional[Union[Schema, Reference]] = Field(alias="schema")
-    examples: Optional[Dict[str, Union[Example, Reference]]] = None
+    examples: Optional[Examples] = None
     encoding: Optional[Dict[str, Encoding]] = None
 
 
@@ -157,8 +157,8 @@ class ParameterBase(FrozenBaseModel):
     # Serialization rules for simple scenarios
     style: Optional[str] = None
     explode: Optional[bool] = None
-    schema_: Optional[Union[Schema, Reference]] = Field(None, alias="schema")
-    examples: Optional[Dict[str, Union[Example, Reference]]] = None
+    schema_: Annotated[Optional[Union[Schema, Reference]], Field(alias="schema")]
+    examples: Optional[Examples] = None
     # Serialization rules for more complex scenarios
     content: Optional[Dict[str, MediaType]] = None
 
@@ -169,26 +169,26 @@ class ConcreteParameter(ParameterBase):
 
 
 class Header(ConcreteParameter):
-    in_: Literal["header"] = Field("header", alias="in")
+    in_: Annotated[Literal["header"], Field(alias="in")] = "header"
     style: HeaderParamStyles = "simple"
     explode: bool = False
 
 
 class Query(ConcreteParameter):
-    in_: Literal["query"] = Field("query", alias="in")
+    in_: Annotated[Literal["query"], Field(alias="in")] = "query"
     style: QueryParamStyles = "form"
     explode: bool = True
 
 
 class Path(ConcreteParameter):
-    in_: Literal["path"] = Field("path", alias="in")
+    in_: Annotated[Literal["path"], Field(alias="in")] = "path"
     style: PathParamStyles = "simple"
     explode: bool = False
     required: Literal[True] = True
 
 
 class Cookie(ConcreteParameter):
-    in_: Literal["cookie"] = Field("cookie", alias="in")
+    in_: Annotated[Literal["cookie"], Field(alias="in")] = "cookie"
     style: CookieParamStyles = "form"
     explode: bool = True
 
@@ -218,7 +218,7 @@ class ResponseHeader(FrozenBaseModel):
     style: HeaderParamStyles = "simple"
     explode: bool = False
     schema_: Optional[Union[Schema, Reference]] = Field(None, alias="schema")
-    examples: Optional[Dict[str, Union[Example, Reference]]] = None
+    examples: Optional[Examples] = None
     # Serialization rules for more complex scenarios
     content: Optional[Dict[str, MediaType]] = None
 
@@ -250,7 +250,7 @@ class Operation(FrozenBaseModel):
 
 
 class PathItem(FrozenBaseModel):
-    ref: Optional[str] = Field(None, alias="$ref")
+    ref: Annotated[Optional[str], Field(alias="$ref")] = None
     summary: Optional[str] = None
     description: Optional[str] = None
     get: Optional[Operation] = None
@@ -281,7 +281,7 @@ APIKeyLocation = Literal["query", "header", "cookie"]
 
 class APIKey(SecurityBase):
     name: str
-    in_: APIKeyLocation = Field(alias="in")
+    in_: Annotated[APIKeyLocation, Field(alias="in")]
     type: Literal["apiKey"] = "apiKey"
 
 
@@ -344,7 +344,7 @@ class Components(FrozenBaseModel):
     schemas: Optional[Dict[str, Union[Schema, Reference]]] = None
     responses: Optional[Dict[str, Union[Response, Reference]]] = None
     parameters: Optional[Dict[str, Union[Parameter, Reference]]] = None
-    examples: Optional[Dict[str, Union[Example, Reference]]] = None
+    examples: Optional[Examples] = None
     requestBodies: Optional[Dict[str, Union[RequestBody, Reference]]] = None
     headers: Optional[Dict[str, Union[Header, Reference]]] = None
     securitySchemes: Optional[Dict[str, Union[SecurityScheme, Reference]]] = None

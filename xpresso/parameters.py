@@ -1,20 +1,12 @@
-import sys
 import typing
 
-if sys.version_info < (3, 9):
-    from typing_extensions import Annotated
-else:
-    from typing import Annotated
-
 import xpresso.binders.dependants as param_dependants
+from xpresso._utils.compat import Annotated
 from xpresso.binders._parameters.extractors.cookie import CookieParameterExtractorMarker
 from xpresso.binders._parameters.extractors.header import HeaderParameterExtractorMarker
 from xpresso.binders._parameters.extractors.path import PathParameterExtractorMarker
 from xpresso.binders._parameters.extractors.query import QueryParameterExtractorMarker
-from xpresso.binders._parameters.openapi.cookie import OpenAPICookieParameterMarker
-from xpresso.binders._parameters.openapi.header import OpenAPIHeaderParameterMarker
-from xpresso.binders._parameters.openapi.path import OpenAPIPathParameterMarker
-from xpresso.binders._parameters.openapi.query import OpenAPIQueryParameterMarker
+from xpresso.binders._parameters.openapi import OpenAPIParameterMarker
 from xpresso.openapi import models as openapi_models
 
 Example = typing.Union[openapi_models.Example, typing.Any]
@@ -35,7 +27,7 @@ def QueryParam(
         explode=explode,
         style=style,
     )
-    openapi = OpenAPIQueryParameterMarker(
+    openapi = OpenAPIParameterMarker(
         alias=alias,
         description=description,
         style=style,
@@ -43,6 +35,7 @@ def QueryParam(
         examples=examples,
         deprecated=deprecated,
         include_in_schema=include_in_schema,
+        param_cls=openapi_models.Query,
     )
     return param_dependants.ParameterBinderMarker(
         in_="query",
@@ -66,7 +59,7 @@ def PathParam(
         explode=explode,
         style=style,
     )
-    openapi = OpenAPIPathParameterMarker(
+    openapi = OpenAPIParameterMarker(
         alias=alias,
         description=description,
         style=style,
@@ -74,6 +67,8 @@ def PathParam(
         examples=examples,
         deprecated=deprecated,
         include_in_schema=include_in_schema,
+        param_cls=openapi_models.Path,
+        required=True,
     )
     return param_dependants.ParameterBinderMarker(
         in_="path",
@@ -97,7 +92,7 @@ def HeaderParam(
         explode=explode,
         convert_underscores=convert_underscores,
     )
-    openapi = OpenAPIHeaderParameterMarker(
+    openapi = OpenAPIParameterMarker(
         alias=alias,
         description=description,
         explode=explode,
@@ -105,6 +100,7 @@ def HeaderParam(
         examples=examples,
         deprecated=deprecated,
         include_in_schema=include_in_schema,
+        param_cls=openapi_models.Header,
     )
     return param_dependants.ParameterBinderMarker(
         in_="header",
@@ -126,7 +122,7 @@ def CookieParam(
         alias=alias,
         explode=explode,
     )
-    openapi = OpenAPICookieParameterMarker(
+    openapi = OpenAPIParameterMarker(
         alias=alias,
         description=description,
         style="form",
@@ -134,6 +130,7 @@ def CookieParam(
         examples=examples,
         deprecated=deprecated,
         include_in_schema=include_in_schema,
+        param_cls=openapi_models.Cookie,
     )
     return param_dependants.ParameterBinderMarker(
         in_="cookie",

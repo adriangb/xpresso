@@ -5,7 +5,7 @@ from xpresso.openapi import models as openapi_models
 
 def parse_examples(
     examples: Mapping[str, Union[openapi_models.Example, Any]]
-) -> Mapping[str, openapi_models.Example]:
+) -> openapi_models.Examples:
     return {
         k: v
         if isinstance(v, openapi_models.Example)

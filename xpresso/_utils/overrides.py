@@ -1,18 +1,13 @@
 import contextlib
 import inspect
-import sys
 import typing
 from types import TracebackType
-
-if sys.version_info < (3, 9):
-    from typing_extensions import Annotated, get_args, get_origin
-else:
-    from typing import Annotated, get_origin, get_args
 
 from di import BaseContainer
 from di.api.dependencies import DependantBase
 from di.api.providers import DependencyProvider
 
+from xpresso._utils.compat import Annotated, get_args, get_origin
 from xpresso.dependencies.models import Depends
 
 

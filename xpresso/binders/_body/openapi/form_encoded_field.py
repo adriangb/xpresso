@@ -1,37 +1,35 @@
 import inspect
 import typing
-from dataclasses import dataclass
 
 from pydantic.fields import ModelField
 from pydantic.schema import get_flat_models_from_field
 
 from xpresso._utils.schemas import openapi_schema_from_pydantic_field
 from xpresso._utils.typing import model_field_from_param
-from xpresso.binders.api import ModelNameMap, OpenAPIBody, OpenAPIBodyMarker, Schemas
+from xpresso.binders._body.form_field import FormFieldOpenAPIProvider
+from xpresso.binders.api import ModelNameMap, Schemas
 from xpresso.openapi import models as openapi_models
 
 
-@dataclass(frozen=True)
-class OpenAPIFormField(OpenAPIBody):
+class OpenAPIFormEncodedField(typing.NamedTuple):
+    field_name: str
+    include_in_schema: bool
     alias: typing.Optional[str]
     style: str
     explode: bool
-    name: str
     field: ModelField
-    include_in_schema: bool
 
     def get_models(self) -> typing.List[type]:
         return list(get_flat_models_from_field(self.field, set()))
 
-    def get_field_name(self) -> str:
-        return self.name
-
-    def get_schema(
+    def get_field_schema(
         self, model_name_map: ModelNameMap, schemas: Schemas
     ) -> openapi_models.Schema:
         return openapi_schema_from_pydantic_field(self.field, model_name_map, schemas)
 
-    def get_encoding(self) -> typing.Optional[openapi_models.Encoding]:
+    def get_field_encoding(
+        self, model_name_map: ModelNameMap, schemas: Schemas
+    ) -> openapi_models.Encoding:
         return openapi_models.Encoding(
             contentType=None,
             style=self.style,
@@ -39,21 +37,20 @@ class OpenAPIFormField(OpenAPIBody):
         )
 
 
-@dataclass(frozen=True)
-class OpenAPIFormFieldMarker(OpenAPIBodyMarker):
+class OpenAPIFormFieldMarker(typing.NamedTuple):
     alias: typing.Optional[str]
     style: str
     explode: bool
     include_in_schema: bool
 
-    def register_parameter(self, param: inspect.Parameter) -> OpenAPIBody:
+    def register_parameter(self, param: inspect.Parameter) -> FormFieldOpenAPIProvider:
         field = model_field_from_param(param)
-        name = self.alias or field.alias
-        return OpenAPIFormField(
+        field_name = self.alias or field.alias
+        return OpenAPIFormEncodedField(
             alias=self.alias,
             style=self.style,
             explode=self.explode,
-            name=name,
+            field_name=field_name,
             field=field,
             include_in_schema=self.include_in_schema,
         )
