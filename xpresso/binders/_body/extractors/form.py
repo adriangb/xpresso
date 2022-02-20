@@ -6,16 +6,16 @@ from starlette.datastructures import FormData, UploadFile
 from starlette.requests import Request
 
 from xpresso._utils.compat import get_args
-from xpresso._utils.media_type_validator import MediaTypeValidator
-from xpresso._utils.media_type_validator import (
-    get_validator as get_media_type_validator,
-)
 from xpresso._utils.typing import Some, model_field_from_param
 from xpresso.binders._body.extractors.body_field_validation import validate_body_field
 from xpresso.binders._body.extractors.form_encoded_field import (
     FormEncodedFieldExtractorMarker,
 )
 from xpresso.binders._body.form_field import FormDataExtractor, FormFieldMarker
+from xpresso.binders._body.media_type_validator import MediaTypeValidator
+from xpresso.binders._body.media_type_validator import (
+    get_validator as get_media_type_validator,
+)
 from xpresso.binders.api import BodyExtractor
 
 

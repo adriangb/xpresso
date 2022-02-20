@@ -7,12 +7,12 @@ from starlette.datastructures import UploadFile
 from starlette.requests import Request
 
 from xpresso._utils.compat import Protocol
-from xpresso._utils.media_type_validator import MediaTypeValidator
-from xpresso._utils.media_type_validator import (
-    get_validator as get_media_type_validator,
-)
 from xpresso._utils.typing import Some, model_field_from_param
 from xpresso.binders._body.extractors.body_field_validation import validate_body_field
+from xpresso.binders._body.media_type_validator import MediaTypeValidator
+from xpresso.binders._body.media_type_validator import (
+    get_validator as get_media_type_validator,
+)
 from xpresso.binders._utils.stream_to_bytes import convert_stream_to_bytes
 from xpresso.binders.api import BodyExtractor
 from xpresso.exceptions import RequestValidationError
