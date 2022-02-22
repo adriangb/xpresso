@@ -11,9 +11,9 @@ from starlette.responses import JSONResponse, Response
 from starlette.routing import BaseRoute, NoMatchFound, get_name
 from starlette.types import ASGIApp, Receive, Scope, Send
 
-import xpresso._utils.asgi_scope_extension as asgi_scope_extension
 import xpresso.binders.dependants as param_dependants
 import xpresso.openapi.models as openapi_models
+from xpresso._utils.asgi import XpressoHTTPExtension
 from xpresso.dependencies.models import Depends
 from xpresso.encoders.api import Encoder
 from xpresso.encoders.json import JsonableEncoder
@@ -41,26 +41,32 @@ class _OperationApp:
         receive: Receive,
         send: Send,
     ) -> None:
-        request = Request(scope=scope, receive=receive, send=send)
+        xpresso_scope: XpressoHTTPExtension = scope["extensions"]["xpresso"]
+        if xpresso_scope.request is None:
+            request = Request(scope=scope, receive=receive, send=send)
+            xpresso_scope.request = request
+        else:
+            request = xpresso_scope.request
         values: typing.Dict[typing.Any, typing.Any] = {
             Request: request,
             HTTPConnection: request,
         }
-        xpresso_scope: asgi_scope_extension.XpressoASGIExtension = scope["extensions"][
-            "xpresso"
-        ]
-        async with xpresso_scope["container"].enter_scope("endpoint") as container:
-            endpoint_return = await container.execute_async(
-                self.dependant,
-                values=values,
-                executor=self.executor,
-            )
-            if isinstance(endpoint_return, Response):
-                response = endpoint_return
-            else:
-                response = self.response_factory(self.response_encoder(endpoint_return))
-            xpresso_scope["response"] = response
-        await response(scope, receive, send)
+        async with xpresso_scope.container.enter_scope("connection") as container:
+            async with container.enter_scope("endpoint") as container:
+                endpoint_return = await container.execute_async(
+                    self.dependant,
+                    values=values,
+                    executor=self.executor,
+                )
+                if isinstance(endpoint_return, Response):
+                    response = endpoint_return
+                else:
+                    response = self.response_factory(
+                        self.response_encoder(endpoint_return)
+                    )
+                xpresso_scope.response = response
+            await response(scope, receive, send)
+            xpresso_scope.response_sent = True
 
 
 class Operation(BaseRoute):

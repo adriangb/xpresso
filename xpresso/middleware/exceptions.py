@@ -5,6 +5,7 @@ from starlette.exceptions import ExceptionMiddleware as StarletteExceptionMiddle
 from starlette.requests import Request
 from starlette.types import Message, Receive, Scope, Send
 
+from xpresso._utils.asgi import XpressoHTTPExtension
 from xpresso.exceptions import HTTPException
 
 
@@ -46,5 +47,7 @@ class ExceptionMiddleware(StarletteExceptionMiddleware):
                 response = await handler(request, exc)  # type: ignore
             else:
                 response = await run_in_threadpool(handler, request, exc)  # type: ignore
-            scope["extensions"]["xpresso"]["response"] = response
+            extension: XpressoHTTPExtension = scope["extensions"]["xpresso"]
+            extension.response = response
             await response(scope, receive, sender)
+            extension.response_sent = True
