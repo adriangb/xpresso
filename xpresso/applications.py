@@ -14,7 +14,7 @@ from starlette.routing import BaseRoute
 from starlette.routing import Route as StarletteRoute
 from starlette.websockets import WebSocket
 
-from xpresso._utils.asgi_scope_extension import XpressoASGIExtension
+from xpresso._utils.asgi import XpressoHTTPExtension, XpressoWebSocketExtension
 from xpresso._utils.overrides import DependencyOverrideManager
 from xpresso._utils.routing import visit_routes
 from xpresso.dependencies.models import Depends
@@ -171,21 +171,25 @@ class App:
             else:
                 scope["root_path"] = self._root_path
         scope_type = scope["type"]
-        if scope_type in ["http", "websocket"]:
-            if not self._setup_run:
-                self._setup()
-            extensions = scope.get("extensions", None) or {}
-            scope["extensions"] = extensions
-            xpresso_asgi_extension: XpressoASGIExtension = extensions.get("xpresso", None) or {}  # type: ignore[assignment]
-            extensions["xpresso"] = xpresso_asgi_extension
-            async with self.container.enter_scope("connection") as container:
-                xpresso_asgi_extension["response_sent"] = False
-                xpresso_asgi_extension["container"] = container
-                await self.router(scope, receive, send)
-                xpresso_asgi_extension["response_sent"] = True
-            return
-        else:  # lifespan
+        if scope_type == "lifespan":
             await self.router(scope, receive, send)
+            return
+        # http or websocket
+        if not self._setup_run:
+            self._setup()
+        if "extensions" not in scope:
+            scope["extensions"] = extensions = {}
+        else:
+            extensions = scope["extensions"]
+        if scope_type == "http":
+            if "xpresso" not in extensions:
+                extensions["xpresso"] = XpressoHTTPExtension(container=self.container)
+        else:  # websocket
+            if "xpresso" not in extensions:
+                extensions["xpresso"] = XpressoWebSocketExtension(
+                    container=self.container
+                )
+        await self.router(scope, receive, send)
 
     def _setup(
         self,

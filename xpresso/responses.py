@@ -9,7 +9,7 @@ from starlette.responses import (
     StreamingResponse,
 )
 
-from xpresso._utils.asgi_scope_extension import XpressoASGIExtension
+from xpresso._utils.asgi import XpressoHTTPExtension
 from xpresso.exceptions import XpressoError
 from xpresso.openapi.models import Example, ResponseHeader
 from xpresso.requests import Request
@@ -31,22 +31,22 @@ __all__ = (
 
 
 def get_response(request: Request) -> Response:
-    try:
-        return request.scope["extensions"]["xpresso"]["response"]  # type: ignore[return-type]
-    except KeyError:
+    xpresso_extension: XpressoHTTPExtension = request.scope["extensions"]["xpresso"]  # type: ignore  # for Pylance
+    if xpresso_extension.response is None:
         raise LookupError(
             "xpresso.responses.get_response was called"
             " before the endpoint has finished executing or the endpoint raised an exception"
         )
+    return xpresso_extension.response
 
 
 def set_response(request: Request, response: Response) -> None:
-    xpresso_scope: XpressoASGIExtension = request.scope["extensions"]["xpresso"]
-    if xpresso_scope["response_sent"]:
+    xpresso_extension: XpressoHTTPExtension = request.scope["extensions"]["xpresso"]  # type: ignore  # for Pylance
+    if xpresso_extension.response_sent:
         raise XpressoError(
             'set_response() can only be used from "endpoint" scoped dependendencies'
         )
-    xpresso_scope["response"] = response  # type: ignore[assignment]
+    xpresso_extension.response = response
 
 
 class ResponseSpec(BaseModel):

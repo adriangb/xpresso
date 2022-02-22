@@ -11,7 +11,7 @@ from di.api.executor import AsyncExecutorProtocol
 from di.api.providers import DependencyProvider as Endpoint
 from di.api.solved import SolvedDependant
 
-import xpresso._utils.asgi_scope_extension as asgi_scope_extension
+from xpresso._utils.asgi import XpressoWebSocketExtension
 from xpresso.dependencies.models import Depends
 
 
@@ -32,20 +32,23 @@ class _WebSocketRoute:
         receive: starlette.types.Receive,
         send: starlette.types.Send,
     ) -> None:
-        ws = starlette.websockets.WebSocket(scope=scope, receive=receive, send=send)
+        xpresso_scope: XpressoWebSocketExtension = scope["extensions"]["xpresso"]
+        if xpresso_scope.websocket is None:
+            ws = starlette.websockets.WebSocket(scope=scope, receive=receive, send=send)
+            xpresso_scope.websocket = ws
+        else:
+            ws = xpresso_scope.websocket
         values: typing.Dict[typing.Any, typing.Any] = {
             starlette.websockets.WebSocket: ws,
             starlette.requests.HTTPConnection: ws,
         }
-        xpresso_scope: asgi_scope_extension.XpressoASGIExtension = scope["extensions"][
-            "xpresso"
-        ]
-        async with xpresso_scope["container"].enter_scope("endpoint") as container:
-            await container.execute_async(
-                self.dependant,
-                values=values,
-                executor=self.executor,
-            )
+        async with xpresso_scope.container.enter_scope("connection") as container:
+            async with container.enter_scope("endpoint") as container:
+                await container.execute_async(
+                    self.dependant,
+                    values=values,
+                    executor=self.executor,
+                )
 
 
 class WebSocketRoute(starlette.routing.WebSocketRoute):
