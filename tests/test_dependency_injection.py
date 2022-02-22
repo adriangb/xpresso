@@ -158,3 +158,21 @@ def test_inject_app() -> None:
     with TestClient(app=app) as client:
         resp = client.get("/")
     assert resp.status_code == 200
+
+
+def test_default_scope_for_autowired_deps() -> None:
+    """Child dependencies of an "endpoint" scoped dep (often the endpoint itself)
+    should have a "connection" scope so that they are compatible with the default scope of Depends().
+    """
+
+    class Dep:
+        pass
+
+    async def endpoint(d1: Dep, d2: Annotated[Dep, Depends()]) -> None:
+        ...
+
+    app = App([Path("/", get=endpoint)])
+
+    with TestClient(app=app) as client:
+        resp = client.get("/")
+    assert resp.status_code == 200

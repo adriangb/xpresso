@@ -48,18 +48,9 @@ class Depends(di.Marker, di.Dependant[typing.Any]):
     def initialize_sub_dependant(
         self, param: inspect.Parameter
     ) -> DependantBase[typing.Any]:
+        child_scope: Scope = "app" if self.scope == "app" else "connection"
         if param.default is param.empty:
-            # try to auto-wire
-            return Depends(
-                call=None,
-                scope=self.scope,
-                use_cache=self.use_cache,
-            ).register_parameter(param)
-        # has a default parameter but we create a dependency anyway just for binds
-        # but do not wire it to make autowiring less brittle and less magic
-        return Depends(
-            call=None,
-            scope=self.scope,
-            use_cache=self.use_cache,
-            wire=False,
-        ).register_parameter(param)
+            return Depends(scope=child_scope).register_parameter(param)
+        # create a dependency marker so that we can apply binds
+        # but default to using the default value if there are no binds
+        return Depends(scope=child_scope, wire=False).register_parameter(param)
