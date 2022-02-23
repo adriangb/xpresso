@@ -6,6 +6,7 @@ import typing
 import di
 from di.api.dependencies import DependantBase
 from di.api.providers import DependencyProvider
+from di.dependant import InjectableClass
 
 from xpresso._utils.compat import Literal
 
@@ -54,3 +55,29 @@ class Depends(di.Marker, di.Dependant[typing.Any]):
         # create a dependency marker so that we can apply binds
         # but default to using the default value if there are no binds
         return Depends(scope=child_scope, wire=False).register_parameter(param)
+
+
+class Injectable(InjectableClass):
+    __slots__ = ()
+
+    def __init_subclass__(
+        cls,
+        call: typing.Optional[DependencyProvider] = None,
+        scope: Scope = "connection",
+        use_cache: bool = True,
+        **kwargs: typing.Any,
+    ) -> None:
+        return super().__init_subclass__(call, scope, use_cache, **kwargs)
+
+
+class Singleton(Injectable):
+    __slots__ = ()
+
+    def __init_subclass__(
+        cls,
+        call: typing.Optional[DependencyProvider] = None,
+        scope: Scope = "app",
+        use_cache: bool = True,
+        **kwargs: typing.Any,
+    ) -> None:
+        return super().__init_subclass__(call, scope, use_cache, **kwargs)
