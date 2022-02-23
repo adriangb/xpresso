@@ -3,7 +3,7 @@ import inspect
 import typing
 from types import TracebackType
 
-from di import BaseContainer
+from di import BaseContainer, Dependant
 from di.api.dependencies import DependantBase
 from di.api.providers import DependencyProvider
 
@@ -31,11 +31,12 @@ class DependencyOverrideManager:
             param: typing.Optional[inspect.Parameter],
             dependant: DependantBase[typing.Any],
         ) -> typing.Optional[DependantBase[typing.Any]]:
-            if not isinstance(dependant, Depends):
+            if not isinstance(dependant, Dependant):
                 return None
+            scope = dependant.scope
             dep = Depends(
                 replacement,
-                scope=dependant.scope,
+                scope=scope,  # type: ignore[arg-type]
                 use_cache=dependant.use_cache,
                 wire=dependant.wire,
                 sync_to_thread=dependant.sync_to_thread,
