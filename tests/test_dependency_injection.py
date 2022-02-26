@@ -9,7 +9,7 @@ from di import BaseContainer
 from starlette.responses import Response
 from starlette.testclient import TestClient
 
-from xpresso import App, Depends, Operation, Path, WebSocketRoute, WebSocket
+from xpresso import App, Depends, Operation, Path, WebSocket, WebSocketRoute
 from xpresso.typing import Annotated
 
 
