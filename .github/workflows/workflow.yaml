@@ -65,11 +65,7 @@ jobs:
           # test Starlette
           - python: "3.x"
             os: ubuntu-latest
-            starlette-version: "starlette==0.17.1"
-            pydantic-version: "lockfile"
-          - python: "3.x"
-            os: ubuntu-latest
-            starlette-version: "starlette==0.18.0"
+            starlette-version: "starlette==0.16.0"
             pydantic-version: "lockfile"
           - python: "3.x"
             os: ubuntu-latest
@@ -94,20 +90,23 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - name: Install and configure Poetry
-        uses: snok/install-poetry@v1.3.0
+        uses: snok/install-poetry@v1.3.1
       - name: Test
         env:
           STARLETTE: ${{ matrix.starlette-version }}
-          PYDANTIC_VERSION: ${{ matrix.pydantic-version }}
+          PYDANTIC: ${{ matrix.pydantic-version }}
         run: |
-          make init
-          if [ "$STARLETTE_VERSION" != "lockfile" ]
+          if [ "$STARLETTE" != "lockfile" ]
           then
-              pip install ${STARLETTE}
+              poetry remove --dev fastapi
+              poetry remove starlette
+              poetry add ${STARLETTE}
           fi
-          if [ "$PYDANTIC_VERSION" != "lockfile" ]
+          if [ "$PYDANTIC" != "lockfile" ]
           then
-              pip install ${PYDANTIC_VERSION}
+              poetry remove pydantic
+              poetry add ${PYDANTIC}
+              poetry lock --no-update
           fi
           make test
       - name: Export Coverage Report

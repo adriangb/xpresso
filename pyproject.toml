@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "xpresso"
-version = "0.22.0"
+version = "0.22.1"
 description = "A developer centric, performant Python web framework"
 authors = ["Adrian Garcia Badaracco <adrian@adriangb.com>"]
 readme = "README.md"
@@ -41,7 +41,7 @@ anyio = "~3"
 starlette = ">=0.16.0,<1"
 importlib-metadata = {version = ">=3", python = "<3.8"}
 typing-extensions = {version = ">=3", python = "<3.9"}
-pydantic = "~1"
+pydantic = "^1.9.0"
 
 [tool.poetry.dev-dependencies]
 # linting
@@ -63,7 +63,6 @@ mkdocs-material = "~8"
 mkautodoc = "~0"
 mike = "~1"
 # benchmarks
-starlette = "~0"
 fastapi = ">=0.70.0"
 httpx = "<2"
 asgi-lifespan = "~1"

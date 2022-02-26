@@ -150,9 +150,9 @@ class Operation(BaseRoute):
 
     def url_path_for(self, name: str, **path_params: str) -> URLPath:
         if path_params:
-            raise NoMatchFound()
+            raise NoMatchFound(name, path_params)
         if name != self.name:
-            raise NoMatchFound()
+            raise NoMatchFound(name, path_params)
         return URLPath("/")
 
     def __eq__(self, __o: object) -> bool:
