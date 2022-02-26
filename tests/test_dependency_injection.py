@@ -6,11 +6,10 @@ import anyio
 import anyio.abc
 import pytest
 from di import BaseContainer
-from fastapi import WebSocket
 from starlette.responses import Response
 from starlette.testclient import TestClient
 
-from xpresso import App, Depends, Operation, Path, WebSocketRoute
+from xpresso import App, Depends, Operation, Path, WebSocketRoute, WebSocket
 from xpresso.typing import Annotated
 
 
