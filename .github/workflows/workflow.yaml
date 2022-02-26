@@ -94,18 +94,18 @@ jobs:
       - name: Test
         env:
           STARLETTE: ${{ matrix.starlette-version }}
-          PYDANTIC_VERSION: ${{ matrix.pydantic-version }}
+          PYDANTIC: ${{ matrix.pydantic-version }}
         run: |
-          if [ "$STARLETTE_VERSION" != "lockfile" ]
+          if [ "$STARLETTE" != "lockfile" ]
           then
               poetry remove --dev fastapi
               poetry remove starlette
               poetry add ${STARLETTE}
           fi
-          if [ "$PYDANTIC_VERSION" != "lockfile" ]
+          if [ "$PYDANTIC" != "lockfile" ]
           then
               poetry remove pydantic
-              poetry add ${PYDANTIC_VERSION}
+              poetry add ${PYDANTIC}
               poetry lock --no-update
           fi
           make test
