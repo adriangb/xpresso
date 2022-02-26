@@ -96,20 +96,20 @@ class Schema(FrozenBaseModel):
     minimum: Optional[float] = None
     exclusiveMinimum: Optional[float] = None
     maxLength: Annotated[Optional[int], Field(ge=0)] = None
-    minLength: Annotated[Optional[int], Field(ge=0)]
+    minLength: Annotated[Optional[int], Field(ge=0)] = None
     pattern: Optional[str] = None
-    maxItems: Annotated[Optional[int], Field(ge=0)]
-    minItems: Annotated[Optional[int], Field(ge=0)]
+    maxItems: Annotated[Optional[int], Field(ge=0)] = None
+    minItems: Annotated[Optional[int], Field(ge=0)] = None
     uniqueItems: Optional[bool] = None
-    maxProperties: Annotated[Optional[int], Field(ge=0)]
-    minProperties: Annotated[Optional[int], Field(ge=0)]
+    maxProperties: Annotated[Optional[int], Field(ge=0)] = None
+    minProperties: Annotated[Optional[int], Field(ge=0)] = None
     required: Optional[List[str]] = None
     enum: Optional[List[Any]] = None
     type: Optional[str] = None
     allOf: Optional[List[Schema]] = None
     oneOf: Optional[List[Schema]] = None
     anyOf: Optional[List[Schema]] = None
-    not_: Annotated[Optional[Schema], Field(alias="not")]
+    not_: Annotated[Optional[Schema], Field(alias="not")] = None
     items: Optional[Union[Schema, List[Schema]]] = None
     properties: Optional[Dict[str, Schema]] = None
     additionalProperties: Optional[Union[Schema, Reference, bool]] = None

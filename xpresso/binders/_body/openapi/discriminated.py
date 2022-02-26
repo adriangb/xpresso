@@ -65,11 +65,10 @@ class OpenAPIContentTypeDiscriminatedMarker(typing.NamedTuple):
                 annotation=arg,
                 default=param.default,
             )
-            for param_marker in get_markers_from_parameter(sub_body_param):
-                if isinstance(param_marker, BodyBinderMarker):
-                    marker = param_marker
-                    break
-            else:
+            marker = next(
+                get_markers_from_parameter(sub_body_param, BodyBinderMarker), None
+            )
+            if marker is None:
                 raise TypeError(f"Type annotation is missing body marker: {arg}")
             sub_body_openapi = marker.openapi_marker
             provider = sub_body_openapi.register_parameter(sub_body_param)

@@ -8,11 +8,10 @@ import starlette.websockets
 from di import AsyncExecutor, BaseContainer, ConcurrentAsyncExecutor, JoinedDependant
 from di.api.dependencies import DependantBase
 from di.api.executor import AsyncExecutorProtocol
-from di.api.providers import DependencyProvider as Endpoint
 from di.api.solved import SolvedDependant
 
 from xpresso._utils.asgi import XpressoWebSocketExtension
-from xpresso.dependencies.models import Depends
+from xpresso._utils.endpoint_dependant import Endpoint, EndpointDependant
 
 
 class _WebSocketRoute:
@@ -81,7 +80,7 @@ class WebSocketRoute(starlette.routing.WebSocketRoute):
     ) -> None:
         self.dependant = container.solve(
             JoinedDependant(
-                Depends(self.endpoint, scope="endpoint"),
+                EndpointDependant(self.endpoint),
                 siblings=[*dependencies, *(self.dependencies or ())],
             )
         )

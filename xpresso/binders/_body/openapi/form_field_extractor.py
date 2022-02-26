@@ -53,17 +53,14 @@ class OpenAPIFieldMarker(typing.NamedTuple):
     repeated: bool
 
     def register_parameter(self, param: inspect.Parameter) -> FormFieldOpenAPIProvider:
-        for marker in get_markers_from_parameter(param):
-            if isinstance(marker, BodyBinderMarker):
-                field_marker = marker
-                break
-        else:
+        marker = next(get_markers_from_parameter(param, BodyBinderMarker), None)
+        if marker is None:
             raise TypeError(
                 "No field marker found"
                 "\n You must include a valid field marker using ExtractField[AsJson[...]]"
                 " or Annotated[..., Json(), Field()]"
             )
-        openapi_provider = field_marker.openapi_marker.register_parameter(param)
+        openapi_provider = marker.openapi_marker.register_parameter(param)
         field_name = self.alias or model_field_from_param(param).alias
         if self.repeated:
             return OpenAPIRepeatedField(

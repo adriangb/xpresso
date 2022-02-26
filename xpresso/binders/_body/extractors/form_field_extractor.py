@@ -61,17 +61,14 @@ class FieldExtractorMarker(typing.NamedTuple):
     def register_parameter(self, param: inspect.Parameter) -> FormDataExtractor:
         field = model_field_from_param(param)
         field_name = self.alias or field.alias
-        for marker in get_markers_from_parameter(param):
-            if isinstance(marker, BodyBinderMarker):
-                field_marker = marker
-                break
-        else:
+        marker = next(get_markers_from_parameter(param, BodyBinderMarker), None)
+        if marker is None:
             raise TypeError(
                 "No field marker found"
                 "\n You must include a valid field marker using ExtractField[AsJson[...]]"
                 " or Annotated[..., Json(), Field()]"
             )
-        field_extractor = field_marker.extractor_marker.register_parameter(param)
+        field_extractor = marker.extractor_marker.register_parameter(param)
         if self.repeated:
             return RepeatedFieldExtractor(
                 field_name=field_name, field_extractor=field_extractor

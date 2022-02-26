@@ -1,8 +1,8 @@
 import inspect
 import typing
 
-from di import Dependant
-from di.api.dependencies import CacheKey, DependantBase, MarkerBase
+from di import Dependant, Marker
+from di.api.dependencies import CacheKey, DependantBase
 
 from xpresso._utils.compat import Protocol
 from xpresso.binders.api import (
@@ -38,7 +38,7 @@ class ParameterBinder(Dependant[typing.Any]):
         return (self.__class__, self.openapi.name, self.in_)
 
 
-class ParameterBinderMarker(MarkerBase):
+class ParameterBinderMarker(Marker):
     def __init__(
         self,
         *,
@@ -75,7 +75,7 @@ class BodyBinder(Dependant[typing.Any]):
         return (self.__class__, id(self))
 
 
-class BodyBinderMarker(MarkerBase):
+class BodyBinderMarker(Marker):
     def __init__(
         self,
         *,

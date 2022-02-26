@@ -1,12 +1,12 @@
 from typing import Any
 
-from di.dependant import InjectableClass
+from di.dependant import Injectable
 from pydantic import BaseSettings
 
 from xpresso.dependencies.models import Scope
 
 
-class Config(InjectableClass, BaseSettings):
+class Config(Injectable, BaseSettings):
     def __init_subclass__(
         cls, scope: Scope = "app", use_cache: bool = True, **kwargs: Any
     ) -> None:

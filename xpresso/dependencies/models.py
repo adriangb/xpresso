@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-import inspect
 import typing
 
 import di
-from di.api.dependencies import DependantBase
 from di.api.providers import DependencyProvider
-from di.dependant import InjectableClass
+from di.dependant import Injectable as InjectableBase
 
 from xpresso._utils.compat import Literal
 
@@ -35,29 +33,8 @@ class Depends(di.Marker, di.Dependant[typing.Any]):
             sync_to_thread=sync_to_thread,
         )
 
-    def from_callable(
-        self, call: typing.Optional[DependencyProvider]
-    ) -> DependantBase[typing.Any]:
-        return Depends(
-            call=call,
-            scope=self.scope,
-            use_cache=self.use_cache,
-            wire=self.wire,
-            sync_to_thread=self.sync_to_thread,
-        )
 
-    def initialize_sub_dependant(
-        self, param: inspect.Parameter
-    ) -> DependantBase[typing.Any]:
-        child_scope: Scope = "app" if self.scope == "app" else "connection"
-        if param.default is param.empty:
-            return Depends(scope=child_scope).register_parameter(param)
-        # create a dependency marker so that we can apply binds
-        # but default to using the default value if there are no binds
-        return Depends(scope=child_scope, wire=False).register_parameter(param)
-
-
-class Injectable(InjectableClass):
+class Injectable(InjectableBase):
     __slots__ = ()
 
     def __init_subclass__(
@@ -70,7 +47,7 @@ class Injectable(InjectableClass):
         return super().__init_subclass__(call, scope, use_cache, **kwargs)
 
 
-class Singleton(Injectable):
+class Singleton(InjectableBase):
     __slots__ = ()
 
     def __init_subclass__(

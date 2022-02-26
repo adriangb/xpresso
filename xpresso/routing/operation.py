@@ -3,7 +3,6 @@ import typing
 from di import AsyncExecutor, BaseContainer, ConcurrentAsyncExecutor, JoinedDependant
 from di.api.dependencies import DependantBase
 from di.api.executor import AsyncExecutorProtocol
-from di.api.providers import DependencyProvider as Endpoint
 from di.api.solved import SolvedDependant
 from starlette.datastructures import URLPath
 from starlette.requests import HTTPConnection, Request
@@ -14,7 +13,7 @@ from starlette.types import ASGIApp, Receive, Scope, Send
 import xpresso.binders.dependants as param_dependants
 import xpresso.openapi.models as openapi_models
 from xpresso._utils.asgi import XpressoHTTPExtension
-from xpresso.dependencies.models import Depends
+from xpresso._utils.endpoint_dependant import Endpoint, EndpointDependant
 from xpresso.encoders.api import Encoder
 from xpresso.encoders.json import JsonableEncoder
 from xpresso.responses import Responses
@@ -129,9 +128,7 @@ class Operation(BaseRoute):
     ) -> None:
         self.dependant = container.solve(
             JoinedDependant(
-                Depends(
-                    self.endpoint, scope="endpoint", sync_to_thread=self.sync_to_thread
-                ),
+                EndpointDependant(self.endpoint, sync_to_thread=self.sync_to_thread),
                 siblings=[*dependencies, *(self.dependencies or ())],
             )
         )
