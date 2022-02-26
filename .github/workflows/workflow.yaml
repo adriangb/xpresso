@@ -100,6 +100,7 @@ jobs:
           STARLETTE: ${{ matrix.starlette-version }}
           PYDANTIC_VERSION: ${{ matrix.pydantic-version }}
         run: |
+          pip install -U pip setuptools wheel
           make init
           if [ "$STARLETTE_VERSION" != "lockfile" ]
           then
