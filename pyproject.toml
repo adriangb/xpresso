@@ -53,6 +53,7 @@ pre-commit = "~2"
 # testing
 pytest = "~6"
 pytest-cov = { version = "~3"}
+pytest-sugar = "~0"
 coverage = {extras = ["toml"], version = "~6"}
 requests = "~2"
 python-multipart = "~0"

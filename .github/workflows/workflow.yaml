@@ -100,15 +100,15 @@ jobs:
           STARLETTE: ${{ matrix.starlette-version }}
           PYDANTIC_VERSION: ${{ matrix.pydantic-version }}
         run: |
-          pip install -U pip setuptools wheel
-          make init
           if [ "$STARLETTE_VERSION" != "lockfile" ]
           then
-              pip install ${STARLETTE}
+              poetry remove starlette
+              poetry add ${STARLETTE}
           fi
           if [ "$PYDANTIC_VERSION" != "lockfile" ]
           then
-              pip install ${PYDANTIC_VERSION}
+              poetry remove pydantic
+              poetry add ${PYDANTIC_VERSION}
           fi
           make test
       - name: Export Coverage Report
