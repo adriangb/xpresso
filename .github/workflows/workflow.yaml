@@ -98,10 +98,9 @@ jobs:
         run: |
           if [ "$STARLETTE_VERSION" != "lockfile" ]
           then
-              poetry remove starlette
               poetry remove --dev fastapi
+              poetry remove starlette
               poetry add ${STARLETTE}
-              poetry lock --no-update
           fi
           if [ "$PYDANTIC_VERSION" != "lockfile" ]
           then

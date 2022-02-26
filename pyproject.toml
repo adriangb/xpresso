@@ -63,7 +63,6 @@ mkdocs-material = "~8"
 mkautodoc = "~0"
 mike = "~1"
 # benchmarks
-starlette = "~0"
 fastapi = ">=0.70.0"
 httpx = "<2"
 asgi-lifespan = "~1"
