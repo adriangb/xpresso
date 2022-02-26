@@ -65,11 +65,7 @@ jobs:
           # test Starlette
           - python: "3.x"
             os: ubuntu-latest
-            starlette-version: "starlette==0.17.1"
-            pydantic-version: "lockfile"
-          - python: "3.x"
-            os: ubuntu-latest
-            starlette-version: "starlette==0.18.0"
+            starlette-version: "starlette==0.16.0"
             pydantic-version: "lockfile"
           - python: "3.x"
             os: ubuntu-latest
