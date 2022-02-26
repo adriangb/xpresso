@@ -94,7 +94,7 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - name: Install and configure Poetry
-        uses: snok/install-poetry@v1.3.0
+        uses: snok/install-poetry@v1.3.1
       - name: Test
         env:
           STARLETTE: ${{ matrix.starlette-version }}
@@ -102,7 +102,7 @@ jobs:
         run: |
           if [ "$STARLETTE_VERSION" != "lockfile" ]
           then
-              poetry remove starlette
+              poetry remove starlette fastapi
               poetry add ${STARLETTE}
           fi
           if [ "$PYDANTIC_VERSION" != "lockfile" ]
