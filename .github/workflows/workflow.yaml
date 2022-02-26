@@ -105,11 +105,13 @@ jobs:
               poetry remove starlette
               poetry remove --dev fastapi
               poetry add ${STARLETTE}
+              poetry lock --no-update
           fi
           if [ "$PYDANTIC_VERSION" != "lockfile" ]
           then
               poetry remove pydantic
               poetry add ${PYDANTIC_VERSION}
+              poetry lock --no-update
           fi
           make test
       - name: Export Coverage Report
