@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from typing import AbstractSet, ClassVar, Mapping, Optional, Protocol
+from typing import AbstractSet, ClassVar, Mapping, Optional
 
 from starlette.requests import HTTPConnection
 from starlette.status import HTTP_401_UNAUTHORIZED
 
 import xpresso.openapi.models as openapi_models
+from xpresso._utils.compat import Protocol
 from xpresso.binders._security.utils import get_authorization_scheme_param
 from xpresso.binders.api import SecurityScheme
 from xpresso.exceptions import HTTPException
