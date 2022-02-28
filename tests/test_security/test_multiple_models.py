@@ -33,6 +33,7 @@ class OAuth2(OAuth2AuthorizationCodeBearer):
     scheme_name = "oauth2"
     authorization_url = "authorize"
     token_url = "token"
+    scopes = {"read": "read things", "write": "write things"}
 
 
 class OAuth2WithScopes(OAuth2):
@@ -53,7 +54,7 @@ def get_current_user(auth: SecurityModel):
         assert auth.apikeys.key2.api_key
         return User(username=auth.apikeys.key1.api_key)
     if auth.oauth is not None:
-        assert auth.oauth.scopes  # or something with the token
+        assert auth.oauth.required_scopes  # or something with the token
         return User(username=auth.oauth.token)
 
 
