@@ -8,6 +8,7 @@ from xpresso.testclient import TestClient
 
 
 class OAuth2(OAuth2AuthorizationCodeBearer):
+    scheme_name = "oauth2"
     authorization_url = "authorize"
     token_url = "token"
 

@@ -15,10 +15,12 @@ from xpresso.typing import Annotated
 
 
 class APIKey1(APIKeyHeader):
+    scheme_name = "apikey1"
     name = "key1"
 
 
 class APIKey2(APIKeyHeader):
+    scheme_name = "apikey2"
     name = "key2"
 
 
@@ -28,6 +30,7 @@ class APIKeys(RequiredSecuritySchemes):
 
 
 class OAuth2(OAuth2AuthorizationCodeBearer):
+    scheme_name = "oauth2"
     authorization_url = "authorize"
     token_url = "token"
 

@@ -32,6 +32,7 @@ class OAuth2AuthorizationCodeBearer(_OAuth2Base, Protocol):
     unauthorized_error: ClassVar[Optional[Exception]] = UNAUTHORIZED_CHALLANGE_EXC
     authorization_url: ClassVar[str]
     token_url: ClassVar[str]
+    scheme_name: ClassVar[str]
     refresh_url: ClassVar[Optional[str]] = None
     scopes: ClassVar[Optional[Mapping[str, str]]] = None
     required_scopes: ClassVar[Optional[AbstractSet[str]]] = None

@@ -18,7 +18,7 @@ T = TypeVar("T")
 
 class _APIKeyBase(SecurityScheme, Protocol):
     name: ClassVar[str]
-    scheme_name: ClassVar[Optional[str]] = None
+    scheme_name: ClassVar[Optional[str]]
     description: ClassVar[Optional[str]] = None
     unauthorized_error: ClassVar[Optional[Exception]] = UNAUTHORIZED_EXC
     in_: ClassVar[openapi_models.APIKeyLocation]

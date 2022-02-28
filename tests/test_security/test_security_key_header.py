@@ -10,6 +10,7 @@ from xpresso.typing import Annotated
 
 
 class APIKey(APIKeyHeader):
+    scheme_name = "apikey"
     name = "key"
 
 
