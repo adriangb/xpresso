@@ -1,6 +1,5 @@
-from typing import Generator, Optional
+from typing import Optional
 
-import pytest
 from pydantic import BaseModel
 
 from xpresso import App, Depends, Path
@@ -65,36 +64,33 @@ def read_current_user(current_user: Annotated[User, Depends(get_current_user)]):
 app = App([Path("/users/me", get=read_current_user)])
 
 
-@pytest.fixture
-def client() -> Generator[TestClient, None, None]:
-    with TestClient(app) as client:
-        yield client
+client = TestClient(app)
 
 
-def test_security_api_key_both_keys(client: TestClient):
+def test_security_api_key_both_keys():
     response = client.get("/users/me", headers={"key1": "secret", "key2": "foobarbaz"})
     assert response.status_code == 200, response.text
     assert response.json() == {"username": "secret"}
 
 
-def test_security_api_key_missing_one_key(client: TestClient):
+def test_security_api_key_missing_one_key():
     response = client.get("/users/me", headers={"key1": "secret"})
     assert response.status_code == 401, response.text
 
 
-def test_security_api_key_no_key(client: TestClient):
+def test_security_api_key_no_key():
     response = client.get("/users/me")
     assert response.status_code == 401, response.text
     assert response.json() == {"detail": "Not authenticated"}
 
 
-def test_no_auth(client: TestClient):
+def test_no_auth():
     response = client.get("/users/me")
     assert response.status_code == 401, response.text
     assert response.json() == {"detail": "Not authenticated"}
 
 
-def test_incorrect_token(client: TestClient):
+def test_incorrect_token():
     response = client.get(
         "/users/me", headers={"Authorization": "Non-existent testtoken"}
     )
@@ -102,7 +98,7 @@ def test_incorrect_token(client: TestClient):
     assert response.json() == {"detail": "Not authenticated"}
 
 
-def test_incorrect_token_with_api_keys(client: TestClient):
+def test_incorrect_token_with_api_keys():
     response = client.get(
         "/users/me",
         headers={
@@ -115,7 +111,7 @@ def test_incorrect_token_with_api_keys(client: TestClient):
     assert response.json() == {"username": "secret"}
 
 
-def test_token(client: TestClient):
+def test_token():
     response = client.get("/users/me", headers={"Authorization": "Bearer testtoken"})
     assert response.status_code == 200, response.text
     assert response.json() == {"username": "testtoken"}

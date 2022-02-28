@@ -1,7 +1,3 @@
-from typing import Generator
-
-import pytest
-
 from xpresso import App, Path
 from xpresso.security import OAuth2AuthorizationCodeBearer
 from xpresso.testclient import TestClient
@@ -20,25 +16,22 @@ async def read_items(auth: OAuth2):
 app = App([Path("/items/", get=read_items)])
 
 
-@pytest.fixture
-def client() -> Generator[TestClient, None, None]:
-    with TestClient(app) as client:
-        yield client
+client = TestClient(app)
 
 
-def test_no_token(client: TestClient):
+def test_no_token():
     response = client.get("/items")
     assert response.status_code == 401, response.text
     assert response.json() == {"detail": "Not authenticated"}
 
 
-def test_incorrect_token(client: TestClient):
+def test_incorrect_token():
     response = client.get("/items", headers={"Authorization": "Non-existent testtoken"})
     assert response.status_code == 401, response.text
     assert response.json() == {"detail": "Not authenticated"}
 
 
-def test_token(client: TestClient):
+def test_token():
     response = client.get("/items", headers={"Authorization": "Bearer testtoken"})
     assert response.status_code == 200, response.text
     assert response.json() == {"token": "testtoken"}
