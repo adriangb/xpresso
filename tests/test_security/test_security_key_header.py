@@ -6,17 +6,15 @@ from xpresso.testclient import TestClient
 from xpresso.typing import Annotated
 
 
-class APIKey(APIKeyHeader):
-    scheme_name = "apikey"
-    name = "key"
+apikey = APIKeyHeader(scheme_name = "apikey", name="key")
 
 
 class User(BaseModel):
     username: str
 
 
-def get_current_user(key: APIKey):
-    user = User(username=key.api_key)
+def get_current_user(key: Annotated[str, Depends(apikey)]):
+    user = User(username=key)
     return user
 
 
@@ -44,7 +42,7 @@ def test_security_api_key_no_key():
 
 def test_dependency_override():
     with app.dependency_overrides as overrides:
-        overrides[APIKey] = lambda: APIKey("secret")
+        overrides[apikey] = lambda: "secret"
 
         client = TestClient(app)
 

@@ -1,13 +1,12 @@
-from typing import Optional
+from typing import Optional, Union
 
 from pydantic import BaseModel
 
 from xpresso import App, Depends, Path
 from xpresso.security import (
-    AlternativeSecuritySchemes,
+    SecurityModel,
     APIKeyHeader,
     OAuth2AuthorizationCodeBearer,
-    RequiredSecuritySchemes,
 )
 from xpresso.testclient import TestClient
 from xpresso.typing import Annotated
@@ -18,30 +17,26 @@ class APIKey1(APIKeyHeader):
     name = "key1"
 
 
-class APIKey2(APIKeyHeader):
-    scheme_name = "apikey2"
-    name = "key2"
+apikey1 = APIKeyHeader(name="key1", scheme_name="apikey1")
+apikey2 = APIKeyHeader(name="key2", scheme_name="apikey2")
+oauth2 = OAuth2AuthorizationCodeBearer(
+    token_url="token",
+    authorization_url="authorize",
+    scheme_name="oauth",
+    scopes={"read": "read things", "write": "write things"},
+)
 
 
-class APIKeys(RequiredSecuritySchemes):
-    key1: APIKey1
-    key2: APIKey2
-
-
-class OAuth2(OAuth2AuthorizationCodeBearer):
-    scheme_name = "oauth2"
-    authorization_url = "authorize"
-    token_url = "token"
-    scopes = {"read": "read things", "write": "write things"}
-
-
-class OAuth2WithScopes(OAuth2):
-    required_scopes = {"read"}
+class APIKeys(SecurityModel):
+    key1: Annotated[str, Depends(apikey1)]
+    key2: Annotated[str, Depends(apikey2)]
 
 
 class SecurityModel(AlternativeSecuritySchemes):
     apikeys: Optional[APIKeys]
     oauth: Optional[OAuth2WithScopes]
+
+Security = Union[]
 
 
 class User(BaseModel):

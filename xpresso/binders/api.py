@@ -1,8 +1,5 @@
-import inspect
-from abc import abstractmethod
-from typing import Any, Dict, Iterable, List, Optional, Type, TypeVar, Union
+from typing import Any, Dict, Iterable, List, Optional, Union
 
-from di import Dependant
 from starlette.datastructures import UploadFile
 from starlette.requests import HTTPConnection, Request
 
@@ -109,30 +106,17 @@ class OpenAPIBody(_SupportsGetModels, Protocol):
 
 
 class SecurityScheme(Protocol):
-    __slots__ = ()
+    include_in_schema: bool
+    scheme_name: str
 
-    @classmethod
-    def __di_dependency__(cls, param: inspect.Parameter) -> Dependant[Any]:
-        return Dependant(cls.extract, scope="connection")
-
-    @classmethod
-    @abstractmethod
-    async def extract(
-        cls: "Type[SecuritySchemeType]", conn: HTTPConnection
-    ) -> "Optional[SecuritySchemeType]":
+    async def __call__(
+        self, conn: HTTPConnection
+    ) -> Any:
         raise NotImplementedError
 
-    @classmethod
-    @abstractmethod
-    def get_openapi(cls) -> openapi_models.SecurityScheme:
+    def get_openapi(self) -> openapi_models.SecurityScheme:
         raise NotImplementedError
 
-    def __init_subclass__(cls) -> None:
-        # https://bugs.python.org/issue44807
-        init = getattr(cls, "__init__")
-        super().__init_subclass__()
-        if init is not object.__init__:
-            setattr(cls, "__init__", init)
-
-
-SecuritySchemeType = TypeVar("SecuritySchemeType", bound=SecurityScheme)
+    @property
+    def required_scopes(self) -> Optional[Iterable[str]]:
+        return None

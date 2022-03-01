@@ -1,6 +1,7 @@
-from xpresso import App, Path
-from xpresso.security import OAuth2AuthorizationCodeBearer
+from xpresso import App, Path, Depends
+from xpresso.security import OAuth2AuthorizationCodeBearer, RequireScopes, OAuth2Token
 from xpresso.testclient import TestClient
+from xpresso.typing import Annotated
 
 
 class OAuth2(OAuth2AuthorizationCodeBearer):
@@ -9,7 +10,19 @@ class OAuth2(OAuth2AuthorizationCodeBearer):
     token_url = "token"
 
 
-async def read_items(auth: OAuth2):
+oauth2 = OAuth2AuthorizationCodeBearer(
+    scheme_name="oauth2",
+    authorization_url="authorize",
+    token_url="token",
+    scopes={"read": "read things", "write": "write things"},
+)
+
+
+Auth2Read = Annotated[OAuth2Token, Depends(RequireScopes(oauth2, ["read"]))]
+
+
+async def read_items(auth: Auth2Read):
+    assert auth.required_scopes == {"read"}  # or do something to validate scopes
     return {"token": auth.token}
 
 
