@@ -1,7 +1,7 @@
 import inspect
 import typing
 
-from di.typing import get_markers_from_parameter
+from di.typing import get_markers_from_annotation
 
 from xpresso._utils.compat import Annotated, get_args, get_origin
 from xpresso._utils.typing import model_field_from_param
@@ -65,9 +65,7 @@ class OpenAPIContentTypeDiscriminatedMarker(typing.NamedTuple):
                 annotation=arg,
                 default=param.default,
             )
-            marker = next(
-                get_markers_from_parameter(sub_body_param, BodyBinderMarker), None
-            )
+            marker = next(get_markers_from_annotation(arg, BodyBinderMarker), None)
             if marker is None:
                 raise TypeError(f"Type annotation is missing body marker: {arg}")
             sub_body_openapi = marker.openapi_marker
