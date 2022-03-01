@@ -69,11 +69,7 @@ markdown_extensions:
   - pymdownx.superfences
 
 extra_css:
-  - css/termynal.css
   - css/custom.css
-extra_javascript:
-  - js/termynal.js
-  - js/custom.js
 
 extra:
   version:
