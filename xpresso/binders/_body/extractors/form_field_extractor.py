@@ -1,7 +1,7 @@
 import inspect
 import typing
 
-from di.typing import get_markers_from_parameter
+from di.typing import get_markers_from_annotation
 from starlette.datastructures import FormData
 
 from xpresso._utils.typing import Some, model_field_from_param
@@ -61,7 +61,9 @@ class FieldExtractorMarker(typing.NamedTuple):
     def register_parameter(self, param: inspect.Parameter) -> FormDataExtractor:
         field = model_field_from_param(param)
         field_name = self.alias or field.alias
-        marker = next(get_markers_from_parameter(param, BodyBinderMarker), None)
+        marker = next(
+            get_markers_from_annotation(param.annotation, BodyBinderMarker), None
+        )
         if marker is None:
             raise TypeError(
                 "No field marker found"

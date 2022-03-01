@@ -1,7 +1,7 @@
 import inspect
 import typing
 
-from di.typing import get_markers_from_parameter
+from di.typing import get_markers_from_annotation
 
 from xpresso._utils.typing import model_field_from_param
 from xpresso.binders._body.form_field import FormFieldOpenAPIProvider
@@ -53,7 +53,9 @@ class OpenAPIFieldMarker(typing.NamedTuple):
     repeated: bool
 
     def register_parameter(self, param: inspect.Parameter) -> FormFieldOpenAPIProvider:
-        marker = next(get_markers_from_parameter(param, BodyBinderMarker), None)
+        marker = next(
+            get_markers_from_annotation(param.annotation, BodyBinderMarker), None
+        )
         if marker is None:
             raise TypeError(
                 "No field marker found"

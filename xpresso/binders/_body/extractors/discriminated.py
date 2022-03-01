@@ -1,7 +1,7 @@
 import inspect
 import typing
 
-from di.typing import get_markers_from_parameter
+from di.typing import get_markers_from_annotation
 from starlette.datastructures import UploadFile
 from starlette.requests import Request
 
@@ -64,7 +64,10 @@ class ContentTypeDiscriminatedExtractorMarker(typing.NamedTuple):
                 default=param.default,
             )
             marker = next(
-                get_markers_from_parameter(sub_body_param, BodyBinderMarker), None
+                get_markers_from_annotation(
+                    sub_body_param.annotation, BodyBinderMarker
+                ),
+                None,
             )
             if marker is None:
                 raise TypeError(f"Type annotation is missing body marker: {arg}")
