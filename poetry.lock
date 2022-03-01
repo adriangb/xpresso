@@ -455,14 +455,6 @@ dev = ["coverage", "flake8 (>=3.0)", "shtab"]
 test = ["coverage", "flake8 (>=3.0)", "shtab"]
 
 [[package]]
-name = "mkautodoc"
-version = "0.1.0"
-description = "AutoDoc for MarkDown"
-category = "dev"
-optional = false
-python-versions = ">=3.6"
-
-[[package]]
 name = "mkdocs"
 version = "1.2.3"
 description = "Project documentation with Markdown."
@@ -1054,7 +1046,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7,<4"
-content-hash = "3124ade4f4e2f389758f54f33ca913584cddea2774adb9a0c9f20c9e889267f7"
+content-hash = "cccf1527e9520e34b4778107d1c2cf3c96ec0984a23a0b62b6a70344c866d5c5"
 
 [metadata.files]
 anyio = [
@@ -1380,9 +1372,6 @@ mergedeep = [
 mike = [
     {file = "mike-1.1.2-py3-none-any.whl", hash = "sha256:4c307c28769834d78df10f834f57f810f04ca27d248f80a75f49c6fa2d1527ca"},
     {file = "mike-1.1.2.tar.gz", hash = "sha256:56c3f1794c2d0b5fdccfa9b9487beb013ca813de2e3ad0744724e9d34d40b77b"},
-]
-mkautodoc = [
-    {file = "mkautodoc-0.1.0.tar.gz", hash = "sha256:7c2595f40276b356e576ce7e343338f8b4fa1e02ea904edf33fadf82b68ca67c"},
 ]
 mkdocs = [
     {file = "mkdocs-1.2.3-py3-none-any.whl", hash = "sha256:a1fa8c2d0c1305d7fc2b9d9f607c71778572a8b110fb26642aa00296c9e6d072"},
