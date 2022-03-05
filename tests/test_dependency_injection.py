@@ -5,7 +5,7 @@ from typing import AsyncIterator, List
 import anyio
 import anyio.abc
 import pytest
-from di import BaseContainer
+from di import Container
 from starlette.responses import Response
 from starlette.testclient import TestClient
 
@@ -129,8 +129,8 @@ def test_app_scope_dependency_is_initialized_in_lifespan_websocket_endpoint(
 
 def test_inject_container() -> None:
     @asynccontextmanager
-    async def lifespan(container: BaseContainer) -> AsyncIterator[None]:
-        assert tuple(container.current_scopes) == ("app",)
+    async def lifespan(container: Container) -> AsyncIterator[None]:
+        assert container is app.container
         yield
 
     app = App([], lifespan=lifespan)

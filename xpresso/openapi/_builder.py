@@ -1,6 +1,6 @@
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Set, Tuple, cast
 
-from di import BaseContainer
+from di import Container
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
 from xpresso._utils.routing import VisitedRoute
@@ -283,7 +283,7 @@ def get_flat_models(routes: Routes) -> Set[type]:
 
 def genrate_openapi(
     visitor: Iterable[VisitedRoute[Any]],
-    container: BaseContainer,
+    container: Container,
     version: str,
     info: models.Info,
     servers: Optional[Iterable[models.Server]],
