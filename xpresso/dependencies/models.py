@@ -12,6 +12,11 @@ T = typing.TypeVar("T")
 
 
 Scope = Literal["app", "connection", "endpoint"]
+Scopes: typing.Tuple[Literal["app"], Literal["connection"], Literal["endpoint"]] = (
+    "app",
+    "connection",
+    "endpoint",
+)
 
 
 class Depends(di.Marker, di.Dependant[typing.Any]):

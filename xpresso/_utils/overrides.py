@@ -3,7 +3,7 @@ import inspect
 import typing
 from types import TracebackType
 
-from di import BaseContainer, Dependant
+from di import Container, Dependant
 from di.api.dependencies import DependantBase
 from di.api.providers import DependencyProvider
 
@@ -20,7 +20,7 @@ def get_type(param: inspect.Parameter) -> type:
 class DependencyOverrideManager:
     _stacks: typing.List[contextlib.ExitStack]
 
-    def __init__(self, container: BaseContainer) -> None:
+    def __init__(self, container: Container) -> None:
         self._container = container
         self._stacks = []
 

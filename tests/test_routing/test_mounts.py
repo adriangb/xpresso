@@ -2,7 +2,7 @@
 from typing import Any, Dict
 
 import pytest
-from di import BaseContainer
+from di import Container
 
 from xpresso import App, Depends, FromPath, Path, Request
 from xpresso.routing.mount import Mount
@@ -307,7 +307,7 @@ def test_mounted_xpresso_app_dependencies_shared_containers() -> None:
     async def endpoint(thing: Thing) -> str:
         return thing.value
 
-    container = BaseContainer(scopes=("app", "connection", "endpoint"))
+    container = Container()
     container.bind_by_type(
         Depends(lambda: Thing("injected")),
         Thing,

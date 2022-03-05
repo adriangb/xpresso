@@ -3,8 +3,9 @@ import inspect
 import typing
 
 import starlette.types
-from di import AsyncExecutor, BaseContainer, JoinedDependant
+from di import AsyncExecutor, Container, JoinedDependant
 from di.api.dependencies import DependantBase
+from di.container import ContainerState
 from starlette.background import BackgroundTasks
 from starlette.middleware import Middleware
 from starlette.middleware.errors import ServerErrorMiddleware
@@ -17,7 +18,7 @@ from starlette.websockets import WebSocket
 from xpresso._utils.asgi import XpressoHTTPExtension, XpressoWebSocketExtension
 from xpresso._utils.overrides import DependencyOverrideManager
 from xpresso._utils.routing import visit_routes
-from xpresso.dependencies.models import Depends
+from xpresso.dependencies.models import Depends, Scopes
 from xpresso.exception_handlers import (
     http_exception_handler,
     validation_exception_handler,
@@ -38,15 +39,14 @@ ExceptionHandlers = typing.Mapping[
     typing.Union[typing.Type[Exception], int], ExceptionHandler
 ]
 
-_REQUIRED_CONTAINER_SCOPES = ("app", "connection", "endpoint")
-
 
 class App:
     router: Router
-    container: BaseContainer
+    container: Container
     dependency_overrides: DependencyOverrideManager
 
     __slots__ = (
+        "_container_state",
         "_debug",
         "_openapi_info",
         "_openapi_servers",
@@ -64,7 +64,7 @@ class App:
         self,
         routes: typing.Optional[typing.Sequence[BaseRoute]] = None,
         *,
-        container: typing.Optional[BaseContainer] = None,
+        container: typing.Optional[Container] = None,
         dependencies: typing.Optional[typing.List[DependantBase[typing.Any]]] = None,
         debug: bool = False,
         middleware: typing.Optional[typing.Sequence[Middleware]] = None,
@@ -83,16 +83,10 @@ class App:
         root_path: str = "",
         root_path_in_servers: bool = True,
     ) -> None:
-        if container is not None:
-            if tuple(container.scopes) != _REQUIRED_CONTAINER_SCOPES:
-                raise ValueError(
-                    f"Containers must have exactly the following scopes (in order): {_REQUIRED_CONTAINER_SCOPES}"
-                )
-            self.container = container
-        else:
-            self.container = BaseContainer(scopes=_REQUIRED_CONTAINER_SCOPES)
+        self.container = container or Container()
         _register_framework_dependencies(self.container, app=self)
         self.dependency_overrides = DependencyOverrideManager(self.container)
+        self._container_state: ContainerState = ContainerState()
         self._setup_run = False
 
         @contextlib.asynccontextmanager
@@ -100,8 +94,9 @@ class App:
             lifespans, lifespan_deps = self._setup()
             self._setup_run = True
             original_container = self.container
-            async with self.container.enter_scope("app") as container:
-                self.container = container
+            async with self._container_state.enter_scope(
+                "app"
+            ) as self._container_state:
                 if lifespan is not None:
                     dep = Depends(
                         _wrap_lifespan_as_async_generator(lifespan), scope="app"
@@ -115,15 +110,19 @@ class App:
                             *(Depends(lifespan, scope="app") for lifespan in lifespans),
                             *lifespan_deps,
                         ],
-                    )
+                    ),
+                    scopes=Scopes,
                 )
                 try:
-                    await container.execute_async(solved, executor=AsyncExecutor())
+                    await self.container.execute_async(
+                        solved, executor=AsyncExecutor(), state=self._container_state
+                    )
                     yield
                 finally:
                     # make this cm reentrant for testing purposes
                     self.container = original_container
                     self._setup_run = False
+                    self._container_state = ContainerState()
 
         self._debug = debug
 
@@ -183,11 +182,13 @@ class App:
             extensions = scope["extensions"]
         if scope_type == "http":
             if "xpresso" not in extensions:
-                extensions["xpresso"] = XpressoHTTPExtension(container=self.container)
+                extensions["xpresso"] = XpressoHTTPExtension(
+                    di_state=self._container_state
+                )
         else:  # websocket
             if "xpresso" not in extensions:
                 extensions["xpresso"] = XpressoWebSocketExtension(
-                    container=self.container
+                    di_state=self._container_state
                 )
         await self.router(scope, receive, send)
 
@@ -354,7 +355,7 @@ def _wrap_lifespan_as_async_generator(
     return gen
 
 
-def _register_framework_dependencies(container: BaseContainer, app: App):
+def _register_framework_dependencies(container: Container, app: App):
     container.bind_by_type(
         Depends(Request, scope="connection", wire=False),
         Request,
@@ -389,7 +390,7 @@ def _register_framework_dependencies(container: BaseContainer, app: App):
             scope="app",
             wire=False,
         ),
-        BaseContainer,
+        Container,
         covariant=True,
     )
     container.bind_by_type(

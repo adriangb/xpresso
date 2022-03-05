@@ -1,6 +1,6 @@
 import typing
 
-from di import AsyncExecutor, BaseContainer, ConcurrentAsyncExecutor, JoinedDependant
+from di import AsyncExecutor, ConcurrentAsyncExecutor, Container, JoinedDependant
 from di.api.dependencies import DependantBase
 from di.api.executor import AsyncExecutorProtocol
 from di.api.solved import SolvedDependant
@@ -14,21 +14,30 @@ import xpresso.binders.dependants as param_dependants
 import xpresso.openapi.models as openapi_models
 from xpresso._utils.asgi import XpressoHTTPExtension
 from xpresso._utils.endpoint_dependant import Endpoint, EndpointDependant
+from xpresso.dependencies.models import Scopes
 from xpresso.encoders.api import Encoder
 from xpresso.encoders.json import JsonableEncoder
 from xpresso.responses import Responses
 
 
 class _OperationApp:
-    __slots__ = ("dependant", "executor", "response_factory", "response_encoder")
+    __slots__ = (
+        "container",
+        "dependant",
+        "executor",
+        "response_factory",
+        "response_encoder",
+    )
 
     def __init__(
         self,
         dependant: SolvedDependant[typing.Any],
+        container: Container,
         executor: AsyncExecutorProtocol,
         response_factory: typing.Callable[[typing.Any], Response],
         response_encoder: Encoder,
     ) -> None:
+        self.container = container
         self.dependant = dependant
         self.executor = executor
         self.response_factory = response_factory
@@ -50,12 +59,15 @@ class _OperationApp:
             Request: request,
             HTTPConnection: request,
         }
-        async with xpresso_scope.container.enter_scope("connection") as container:
-            async with container.enter_scope("endpoint") as container:
-                endpoint_return = await container.execute_async(
+        async with xpresso_scope.di_container_state.enter_scope(
+            "connection"
+        ) as cpnn_state:
+            async with cpnn_state.enter_scope("endpoint") as endpoint_state:
+                endpoint_return = await self.container.execute_async(
                     self.dependant,
                     values=values,
                     executor=self.executor,
+                    state=endpoint_state,
                 )
                 if isinstance(endpoint_return, Response):
                     response = endpoint_return
@@ -123,14 +135,15 @@ class Operation(BaseRoute):
 
     def solve(
         self,
-        container: BaseContainer,
+        container: Container,
         dependencies: typing.List[DependantBase[typing.Any]],
     ) -> None:
         self.dependant = container.solve(
             JoinedDependant(
                 EndpointDependant(self.endpoint, sync_to_thread=self.sync_to_thread),
                 siblings=[*dependencies, *(self.dependencies or ())],
-            )
+            ),
+            scopes=Scopes,
         )
         flat = self.dependant.get_flat_subdependants()
         bodies = [dep for dep in flat if isinstance(dep, param_dependants.BodyBinder)]
@@ -142,6 +155,7 @@ class Operation(BaseRoute):
         else:
             executor = AsyncExecutor()
         self._app = _OperationApp(
+            container=container,
             dependant=self.dependant,
             executor=executor,
             response_encoder=self.response_encoder,
