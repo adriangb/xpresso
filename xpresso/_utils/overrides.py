@@ -23,9 +23,7 @@ class DependencyOverrideManager:
         self._container = container
         self._stacks = []
 
-    def __setitem__(
-        self, target: DependencyProvider, replacement: DependencyProvider
-    ) -> None:
+    def __setitem__(self, target: typing.Any, replacement: DependencyProvider) -> None:
         def hook(
             param: typing.Optional[inspect.Parameter],
             dependant: DependantBase[typing.Any],
@@ -40,12 +38,14 @@ class DependencyOverrideManager:
                 wire=dependant.wire,
                 sync_to_thread=dependant.sync_to_thread,
             )
+            if dependant.call is target:
+                return dep
+            if dependant.marker is not None and dependant.marker.dependency is target:
+                return dep
             if param is not None and param.annotation is not param.empty:
                 type_ = get_type(param)
                 if type_ is target:
                     return dep
-            if dependant.call is not None and dependant.call is target:
-                return dep
             return None
 
         cm = self._container.register_bind_hook(hook)

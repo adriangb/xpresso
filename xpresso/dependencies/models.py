@@ -21,22 +21,25 @@ Scopes: typing.Tuple[Literal["app"], Literal["connection"], Literal["endpoint"]]
 
 class Depends(di.Marker):
     scope: Scope
+    dependency: typing.Any
 
     def __init__(
         self,
-        call: typing.Optional[DependencyProvider] = None,
+        dependency: typing.Optional[DependencyProvider] = None,
+        *,
         scope: Scope = "connection",
         use_cache: bool = True,
         wire: bool = True,
         sync_to_thread: bool = False,
     ) -> None:
         super().__init__(
-            call=call,
+            call=dependency,
             scope=scope,
             use_cache=use_cache,
             wire=wire,
             sync_to_thread=sync_to_thread,
         )
+        self.dependency = dependency
 
     def as_dependant(self) -> di.Dependant[typing.Any]:
         return di.Dependant(

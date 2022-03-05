@@ -9,17 +9,17 @@ from xpresso._utils.compat import Protocol
 
 class ParameterExtractor(Protocol):
     def extract(self, connection: HTTPConnection) -> Any:
-        raise NotImplementedError
+        ...
 
 
 class BodyExtractor(Protocol):
     async def extract_from_request(self, request: Request) -> Any:
         """Extract from top level request"""
-        raise NotImplementedError
+        ...
 
     def matches_media_type(self, media_type: Optional[str]) -> bool:
         """Check if this extractor can extract the given media type"""
-        raise NotImplementedError
+        ...
 
     # APIs to support being a field in a FormData or Multipart request
     async def extract_from_field(
@@ -29,7 +29,7 @@ class BodyExtractor(Protocol):
         loc: Iterable[Union[str, int]],
     ) -> Any:
         """Extract from a form field"""
-        raise NotImplementedError
+        ...
 
 
 Model = type
@@ -52,7 +52,7 @@ class _SupportsGetModels(Protocol):
         This ensures that all schema models have a unique name,
         even if their Python class names conflict.
         """
-        raise NotImplementedError
+        ...
 
 
 class OpenAPIParameter(_SupportsGetModels, Protocol):
@@ -68,7 +68,7 @@ class OpenAPIParameter(_SupportsGetModels, Protocol):
         self, model_name_map: ModelNameMap, schemas: Schemas
     ) -> openapi_models.ConcreteParameter:
         """Generate the OpenAPI spec for this parameter"""
-        raise NotImplementedError
+        ...
 
 
 class OpenAPIBody(_SupportsGetModels, Protocol):
@@ -76,7 +76,7 @@ class OpenAPIBody(_SupportsGetModels, Protocol):
         self, model_name_map: ModelNameMap, schemas: Schemas
     ) -> openapi_models.RequestBody:
         """Generate the OpenAPI spec for this request body"""
-        raise NotImplementedError
+        ...
 
     # APIs to support being a field in a FormData or Multipart request
     def get_field_encoding(
@@ -91,7 +91,7 @@ class OpenAPIBody(_SupportsGetModels, Protocol):
         For all other field types, it can only include the
         `contentType` and `Headers` section.
         """
-        raise NotImplementedError
+        ...
 
     def get_field_schema(
         self, model_name_map: ModelNameMap, schemas: Schemas
@@ -102,4 +102,26 @@ class OpenAPIBody(_SupportsGetModels, Protocol):
         which is an object schema having as properties the schemas
         for each field.
         """
-        raise NotImplementedError
+        ...
+
+
+class SecurityExtractor(Protocol):
+    async def extract(self, conn: HTTPConnection) -> Any:
+        ...
+
+
+class OpenAPISecurityScheme(Protocol):
+    def get_openapi(self) -> openapi_models.SecurityScheme:
+        ...
+
+    @property
+    def required_scopes(self) -> Optional[Iterable[str]]:
+        return None
+
+    @property
+    def include_in_schema(self) -> bool:
+        ...
+
+    @property
+    def scheme_name(self) -> str:
+        ...
