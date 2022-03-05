@@ -2,9 +2,8 @@
 from typing import Any, Dict
 
 import pytest
-from di import Container
 
-from xpresso import App, Depends, FromPath, Path, Request
+from xpresso import App, FromPath, Path, Request
 from xpresso.routing.mount import Mount
 from xpresso.testclient import TestClient
 
@@ -307,12 +306,6 @@ def test_mounted_xpresso_app_dependencies_shared_containers() -> None:
     async def endpoint(thing: Thing) -> str:
         return thing.value
 
-    container = Container()
-    container.bind_by_type(
-        Depends(lambda: Thing("injected")),
-        Thing,
-    )
-
     inner_app = App(
         routes=[
             Path(
@@ -320,8 +313,8 @@ def test_mounted_xpresso_app_dependencies_shared_containers() -> None:
                 get=endpoint,
             )
         ],
-        container=container,
     )
+    inner_app.dependency_overrides[Thing] = lambda: Thing("injected")
 
     app = App(
         routes=[
@@ -331,7 +324,7 @@ def test_mounted_xpresso_app_dependencies_shared_containers() -> None:
             ),
             Path("/top-level", get=endpoint),
         ],
-        container=container,
+        container=inner_app.container,
     )
 
     client = TestClient(app)

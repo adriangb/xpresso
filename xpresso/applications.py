@@ -3,7 +3,7 @@ import inspect
 import typing
 
 import starlette.types
-from di import AsyncExecutor, Container, JoinedDependant
+from di import AsyncExecutor, Container, Dependant, JoinedDependant
 from di.api.dependencies import DependantBase
 from di.container import ContainerState
 from starlette.background import BackgroundTasks
@@ -65,7 +65,9 @@ class App:
         routes: typing.Optional[typing.Sequence[BaseRoute]] = None,
         *,
         container: typing.Optional[Container] = None,
-        dependencies: typing.Optional[typing.List[DependantBase[typing.Any]]] = None,
+        dependencies: typing.Optional[
+            typing.Iterable[typing.Union[DependantBase[typing.Any], Depends]]
+        ] = None,
         debug: bool = False,
         middleware: typing.Optional[typing.Sequence[Middleware]] = None,
         exception_handlers: typing.Optional[ExceptionHandlers] = None,
@@ -98,16 +100,23 @@ class App:
                 "app"
             ) as self._container_state:
                 if lifespan is not None:
-                    dep = Depends(
+                    dep = Dependant(
                         _wrap_lifespan_as_async_generator(lifespan), scope="app"
                     )
                 else:
-                    dep = Depends(lambda: None, scope="app")
+
+                    async def null_lifespan() -> typing.AsyncIterator[None]:
+                        yield
+
+                    dep = Dependant(null_lifespan, scope="app")
                 solved = self.container.solve(
                     JoinedDependant(
                         dep,
                         siblings=[
-                            *(Depends(lifespan, scope="app") for lifespan in lifespans),
+                            *(
+                                Dependant(lifespan, scope="app")
+                                for lifespan in lifespans
+                            ),
                             *lifespan_deps,
                         ],
                     ),
@@ -357,11 +366,11 @@ def _wrap_lifespan_as_async_generator(
 
 def _register_framework_dependencies(container: Container, app: App):
     container.bind_by_type(
-        Depends(Request, scope="connection", wire=False),
+        Dependant(Request, scope="connection", wire=False),
         Request,
     )
     container.bind_by_type(
-        Depends(
+        Dependant(
             HTTPConnection,
             scope="connection",
             wire=False,
@@ -369,7 +378,7 @@ def _register_framework_dependencies(container: Container, app: App):
         HTTPConnection,
     )
     container.bind_by_type(
-        Depends(
+        Dependant(
             WebSocket,
             scope="connection",
             wire=False,
@@ -377,7 +386,7 @@ def _register_framework_dependencies(container: Container, app: App):
         WebSocket,
     )
     container.bind_by_type(
-        Depends(
+        Dependant(
             BackgroundTasks,
             scope="connection",
             wire=False,
@@ -385,7 +394,7 @@ def _register_framework_dependencies(container: Container, app: App):
         BackgroundTasks,
     )
     container.bind_by_type(
-        Depends(
+        Dependant(
             lambda: app.container,
             scope="app",
             wire=False,
@@ -394,7 +403,7 @@ def _register_framework_dependencies(container: Container, app: App):
         covariant=True,
     )
     container.bind_by_type(
-        Depends(
+        Dependant(
             lambda: app,
             scope="app",
             wire=False,

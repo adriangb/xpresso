@@ -232,7 +232,7 @@ def get_paths_items(
                     operation,
                     model_name_map=model_name_map,
                     components=components,
-                    tags=tags + operation.tags,
+                    tags=[*tags, *operation.tags],
                     response_specs={**responses, **operation.responses},
                 )
                 for method, operation in path_item.operations.items()
