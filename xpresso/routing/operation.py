@@ -14,7 +14,7 @@ import xpresso.binders.dependants as param_dependants
 import xpresso.openapi.models as openapi_models
 from xpresso._utils.asgi import XpressoHTTPExtension
 from xpresso._utils.endpoint_dependant import Endpoint, EndpointDependant
-from xpresso.dependencies.models import Scopes
+from xpresso.dependencies.models import Depends, Scopes
 from xpresso.encoders.api import Encoder
 from xpresso.encoders.json import JsonableEncoder
 from xpresso.responses import Responses
@@ -98,7 +98,7 @@ class Operation(BaseRoute):
         # xpresso params
         name: typing.Optional[str] = None,
         dependencies: typing.Optional[
-            typing.Sequence[DependantBase[typing.Any]]
+            typing.Iterable[typing.Union[DependantBase[typing.Any], Depends]]
         ] = None,
         execute_dependencies_concurrently: bool = False,
         response_factory: typing.Callable[[typing.Any], Response] = JSONResponse,
@@ -107,15 +107,18 @@ class Operation(BaseRoute):
     ) -> None:
         self._app: typing.Optional[ASGIApp] = None
         self.endpoint = endpoint
-        self.tags = list(tags or [])
+        self.tags = tuple(tags or ())
         self.summary = summary
         self.description = description
         self.deprecated = deprecated
         self.operation_id = operation_id
-        self.servers = list(servers or [])
+        self.servers = tuple(servers or ())
         self.external_docs = external_docs
         self.responses = dict(responses or {})
-        self.dependencies = list(dependencies or [])
+        self.dependencies = tuple(
+            dep if not isinstance(dep, Depends) else dep.as_dependant()
+            for dep in dependencies or ()
+        )
         self.execute_dependencies_concurrently = execute_dependencies_concurrently
         self.response_factory = response_factory
         self.response_encoder = response_encoder
@@ -136,12 +139,16 @@ class Operation(BaseRoute):
     def solve(
         self,
         container: Container,
-        dependencies: typing.List[DependantBase[typing.Any]],
+        dependencies: typing.Iterable[typing.Union[DependantBase[typing.Any], Depends]],
     ) -> None:
+        deps = [
+            dep if not isinstance(dep, Depends) else dep.as_dependant()
+            for dep in dependencies or ()
+        ]
         self.dependant = container.solve(
             JoinedDependant(
                 EndpointDependant(self.endpoint, sync_to_thread=self.sync_to_thread),
-                siblings=[*dependencies, *(self.dependencies or ())],
+                siblings=[*deps, *self.dependencies],
             ),
             scopes=Scopes,
         )

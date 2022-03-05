@@ -8,7 +8,6 @@ from di.api.dependencies import DependantBase
 from di.api.providers import DependencyProvider
 
 from xpresso._utils.compat import Annotated, get_args, get_origin
-from xpresso.dependencies.models import Depends
 
 
 def get_type(param: inspect.Parameter) -> type:
@@ -34,7 +33,7 @@ class DependencyOverrideManager:
             if not isinstance(dependant, Dependant):
                 return None
             scope = dependant.scope
-            dep = Depends(
+            dep = Dependant(
                 replacement,
                 scope=scope,  # type: ignore[arg-type]
                 use_cache=dependant.use_cache,

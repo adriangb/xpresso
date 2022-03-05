@@ -7,6 +7,7 @@ from starlette.routing import Router as StarletteRouter
 from starlette.types import Receive, Scope, Send
 
 from xpresso._utils.compat import Protocol
+from xpresso.dependencies.models import Depends
 from xpresso.responses import Responses
 
 
@@ -58,7 +59,7 @@ class Router:
         redirect_slashes: bool = True,
         default: typing.Optional[_ASGIApp] = None,
         dependencies: typing.Optional[
-            typing.Sequence[DependantBase[typing.Any]]
+            typing.Iterable[typing.Union[DependantBase[typing.Any], Depends]]
         ] = None,
         tags: typing.Optional[typing.List[str]] = None,
         responses: typing.Optional[Responses] = None,
@@ -72,7 +73,10 @@ class Router:
             default=default,  # type: ignore[arg-type]
             lifespan=lifespan,  # type: ignore[arg-type]
         )
-        self.dependencies = list(dependencies or [])
+        self.dependencies = tuple(
+            dep if not isinstance(dep, Depends) else dep.as_dependant()
+            for dep in dependencies or ()
+        )
         self.tags = list(tags or [])
         self.responses = dict(responses or {})
         self.include_in_schema = include_in_schema

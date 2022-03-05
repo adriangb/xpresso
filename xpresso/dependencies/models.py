@@ -19,7 +19,7 @@ Scopes: typing.Tuple[Literal["app"], Literal["connection"], Literal["endpoint"]]
 )
 
 
-class Depends(di.Marker, di.Dependant[typing.Any]):
+class Depends(di.Marker):
     scope: Scope
 
     def __init__(
@@ -36,6 +36,16 @@ class Depends(di.Marker, di.Dependant[typing.Any]):
             use_cache=use_cache,
             wire=wire,
             sync_to_thread=sync_to_thread,
+        )
+
+    def as_dependant(self) -> di.Dependant[typing.Any]:
+        return di.Dependant(
+            call=self.call,
+            scope=self.scope,
+            use_cache=self.use_cache,
+            wire=self.wire,
+            sync_to_thread=self.sync_to_thread,
+            marker=self,
         )
 
 
