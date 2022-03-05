@@ -45,7 +45,7 @@ class DependencyOverrideManager:
                 type_ = get_type(param)
                 if type_ is target:
                     return dep
-            if dependant.call is not None and dependant.call is target:
+            if dependant.call is not None and dependant.call == target:
                 return dep
             return None
 

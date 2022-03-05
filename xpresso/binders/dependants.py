@@ -4,20 +4,15 @@ import typing
 from di import Dependant, Marker
 from di.api.dependencies import CacheKey, DependantBase
 
-from xpresso._utils.compat import Protocol
 from xpresso.binders.api import (
     BodyExtractor,
     OpenAPIBody,
     OpenAPIParameter,
+    OpenAPISecurityScheme,
     ParameterExtractor,
+    SecurityExtractor,
 )
-
-T = typing.TypeVar("T", covariant=True)
-
-
-class SupportsMarker(Protocol[T]):
-    def register_parameter(self, param: inspect.Parameter) -> T:
-        ...
+from xpresso.binders.utils import SupportsMarker
 
 
 class ParameterBinder(Dependant[typing.Any]):
@@ -90,3 +85,38 @@ class BodyBinderMarker(Marker):
             openapi=self.openapi_marker.register_parameter(param),
             extractor=self.extractor_marker.register_parameter(param),
         )
+
+
+class SecurityBinder(Dependant[typing.Any]):
+    def __init__(
+        self,
+        *,
+        openapi: OpenAPISecurityScheme,
+        extractor: SecurityExtractor,
+    ) -> None:
+        super().__init__(call=extractor.extract, scope="connection")  # type: ignore[arg-type]
+        self.openapi = openapi
+        self.extractor = extractor
+
+    @property
+    def cache_key(self) -> CacheKey:
+        if self.openapi.required_scopes is None:
+            required_scopes = None
+        else:
+            required_scopes = frozenset(self.openapi.required_scopes)
+        return (self.openapi.scheme_name, required_scopes)
+
+
+SecurityScheme = SupportsMarker[typing.Tuple[SecurityExtractor, OpenAPISecurityScheme]]
+
+
+class SecurityBinderMarker(Marker):
+    def __init__(
+        self,
+        scheme: SecurityScheme,
+    ) -> None:
+        self.scheme = scheme
+
+    def register_parameter(self, param: inspect.Parameter) -> SecurityBinder:
+        extractor, openapi = self.scheme.register_parameter(param)
+        return SecurityBinder(openapi=openapi, extractor=extractor)

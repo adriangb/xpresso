@@ -4,9 +4,10 @@ from pydantic import BaseModel
 
 from xpresso import App, Depends, Path
 from xpresso.security import (
-    SecurityModel,
     APIKeyHeader,
     OAuth2AuthorizationCodeBearer,
+    RequireScopes,
+    SecurityModel,
 )
 from xpresso.testclient import TestClient
 from xpresso.typing import Annotated
@@ -24,6 +25,7 @@ oauth2 = OAuth2AuthorizationCodeBearer(
     authorization_url="authorize",
     scheme_name="oauth",
     scopes={"read": "read things", "write": "write things"},
+    unauthorized_error=None,
 )
 
 
@@ -32,18 +34,16 @@ class APIKeys(SecurityModel):
     key2: Annotated[str, Depends(apikey2)]
 
 
-class SecurityModel(AlternativeSecuritySchemes):
-    apikeys: Optional[APIKeys]
-    oauth: Optional[OAuth2WithScopes]
-
-Security = Union[]
+oauth2_read = RequireScopes(oauth2, ["read"])
 
 
 class User(BaseModel):
     username: str
 
 
-def get_current_user(auth: SecurityModel):
+def get_current_user(
+    auth: SecurityModelUnion[Union[Optional[APIKeys], Optional[oauth2_read]]]
+):
     if auth.apikeys is not None:
         assert auth.apikeys.key2.api_key
         return User(username=auth.apikeys.key1.api_key)

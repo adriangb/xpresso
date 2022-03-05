@@ -1,5 +1,5 @@
-from xpresso import App, Path, Depends
-from xpresso.security import OAuth2AuthorizationCodeBearer, RequireScopes, OAuth2Token
+from xpresso import App, Depends, Path
+from xpresso.security import OAuth2AuthorizationCodeBearer, OAuth2Token, RequireScopes
 from xpresso.testclient import TestClient
 from xpresso.typing import Annotated
 
