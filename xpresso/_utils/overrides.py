@@ -40,12 +40,14 @@ class DependencyOverrideManager:
                 wire=dependant.wire,
                 sync_to_thread=dependant.sync_to_thread,
             )
+            if dependant.call is target:
+                return dep
+            if dependant.marker is not None and dependant.marker.call is target:
+                return dep
             if param is not None and param.annotation is not param.empty:
                 type_ = get_type(param)
                 if type_ is target:
                     return dep
-            if dependant.call is not None and dependant.call is target:
-                return dep
             return None
 
         cm = self._container.register_bind_hook(hook)
