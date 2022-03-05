@@ -18,10 +18,8 @@ class OAuth2AuthorizationCodeBearer:
     scopes: typing.Optional[typing.Mapping[str, str]] = None
     required_scopes: typing.Optional[typing.AbstractSet[str]] = None
 
-    def require_scopes(
-        self, scopes: typing.AbstractSet[str]
-    ) -> "OAuth2AuthorizationCodeBearer":
-        required_scopes = frozenset(*(self.required_scopes or ()), *scopes)
+    def require_scopes(self, *scopes: str) -> "OAuth2AuthorizationCodeBearer":
+        required_scopes = frozenset([*(self.required_scopes or ()), *scopes])
         return replace(self, required_scopes=required_scopes)
 
     def register_parameter(

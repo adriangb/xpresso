@@ -40,7 +40,7 @@ class DependencyOverrideManager:
             )
             if dependant.call is target:
                 return dep
-            if dependant.marker is not None and dependant.marker.call is target:
+            if dependant.marker is not None and dependant.marker.dependency is target:
                 return dep
             if param is not None and param.annotation is not param.empty:
                 type_ = get_type(param)

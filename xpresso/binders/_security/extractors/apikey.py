@@ -41,7 +41,7 @@ class APIKeyExtractor(typing.NamedTuple):
     name: str
     extractor: Extractor
 
-    def extract(self, conn: HTTPConnection) -> typing.Optional[str]:
+    async def extract(self, conn: HTTPConnection) -> typing.Optional[str]:
         api_key = self.extractor(conn, self.name)
         if api_key is None and self.required:
             raise UNAUTHORIZED_EXC

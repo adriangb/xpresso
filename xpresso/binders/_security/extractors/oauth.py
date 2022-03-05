@@ -33,7 +33,7 @@ class OAuth2Extractor(typing.NamedTuple):
     required: bool
     required_scopes: typing.FrozenSet[str]
 
-    def extract(self, conn: HTTPConnection) -> typing.Optional[OAuth2Token]:
+    async def extract(self, conn: HTTPConnection) -> typing.Optional[OAuth2Token]:
         authorization_header = conn.headers.get("Authorization", None)
         if authorization_header:
             scheme, param = get_authorization_scheme_param(authorization_header)

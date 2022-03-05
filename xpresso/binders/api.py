@@ -1,4 +1,4 @@
-from typing import Any, Callable, Coroutine, Dict, Iterable, List, Optional, Union
+from typing import Any, Dict, Iterable, List, Optional, Union
 
 from starlette.datastructures import UploadFile
 from starlette.requests import HTTPConnection, Request
@@ -106,8 +106,7 @@ class OpenAPIBody(_SupportsGetModels, Protocol):
 
 
 class SecurityExtractor(Protocol):
-    @property
-    def extract(self) -> Union[Callable[..., Any], Coroutine[Any, Any, Any]]:
+    async def extract(self, conn: HTTPConnection) -> Any:
         ...
 
 

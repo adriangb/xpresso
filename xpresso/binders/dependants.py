@@ -3,7 +3,9 @@ import typing
 
 from di import Dependant, Marker
 from di.api.dependencies import CacheKey, DependantBase
+from starlette.requests import HTTPConnection
 
+from xpresso._utils.compat import Annotated, get_args, get_origin
 from xpresso.binders.api import (
     BodyExtractor,
     OpenAPIBody,
@@ -13,6 +15,8 @@ from xpresso.binders.api import (
     SecurityExtractor,
 )
 from xpresso.binders.utils import SupportsMarker
+from xpresso.dependencies.models import Depends
+from xpresso.exceptions import HTTPException
 
 
 class ParameterBinder(Dependant[typing.Any]):
@@ -93,10 +97,11 @@ class SecurityBinder(Dependant[typing.Any]):
         *,
         openapi: OpenAPISecurityScheme,
         extractor: SecurityExtractor,
+        marker: "SecurityBinderMarker",
     ) -> None:
-        super().__init__(call=extractor.extract, scope="connection")  # type: ignore[arg-type]
-        self.openapi = openapi
+        super().__init__(call=extractor.extract, scope="connection", marker=marker)
         self.extractor = extractor
+        self.openapi = openapi
 
     @property
     def cache_key(self) -> CacheKey:
@@ -107,16 +112,46 @@ class SecurityBinder(Dependant[typing.Any]):
         return (self.openapi.scheme_name, required_scopes)
 
 
-SecurityScheme = SupportsMarker[typing.Tuple[SecurityExtractor, OpenAPISecurityScheme]]
+SecuritySchemeMarker = SupportsMarker[
+    typing.Tuple[SecurityExtractor, OpenAPISecurityScheme]
+]
 
 
-class SecurityBinderMarker(Marker):
+class SecurityBinderMarker(Depends):
+    dependency: typing.Optional[SecuritySchemeMarker]
+
     def __init__(
         self,
-        scheme: SecurityScheme,
+        scheme_marker: typing.Optional[SecuritySchemeMarker] = None,
     ) -> None:
-        self.scheme = scheme
+        super().__init__()
+        self.dependency = scheme_marker
 
-    def register_parameter(self, param: inspect.Parameter) -> SecurityBinder:
-        extractor, openapi = self.scheme.register_parameter(param)
-        return SecurityBinder(openapi=openapi, extractor=extractor)
+    def register_parameter(self, param: inspect.Parameter) -> DependantBase[typing.Any]:
+        if self.dependency is not None:
+            extractor, openapi = self.dependency.register_parameter(param)
+            return SecurityBinder(extractor=extractor, openapi=openapi, marker=self)
+        annotation = param.annotation
+        if get_origin(annotation) is Annotated:
+            annotation = next(iter(get_args(annotation)))
+        if get_origin(annotation) is typing.Union:
+            extractors: typing.List[SecurityExtractor] = []
+            optional = False
+            for tp in get_args(annotation):
+                if tp is None:
+                    optional = True
+                    continue
+                extractors.append(tp)
+
+            async def extract(conn: HTTPConnection) -> typing.Any:
+                for extractor in extractors:
+                    try:
+                        return await extractor.extract(conn)
+                    except HTTPException:
+                        pass
+                if optional:
+                    return None
+                raise HTTPException(status_code=401, detail="Not authenticated")
+
+            return Dependant(call=extract, marker=self, scope="connection")
+        return Depends().register_parameter(param)
