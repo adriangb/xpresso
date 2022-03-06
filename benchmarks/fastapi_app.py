@@ -1,7 +1,6 @@
 from typing import Mapping, List, Union
 
-from fastapi import Depends
-from fastapi import FastAPI as App, Response, Request
+from fastapi import FastAPI as App, Response, Request, Depends, Query, Path
 from fastapi.routing import Mount, APIRouter as Router, APIRoute
 from starlette.routing import BaseRoute, Route
 
@@ -61,6 +60,15 @@ def recurisively_generate_routes(paths: Paths) -> Router:
     return Router(routes=routes)
 
 
+async def parameters(
+    p1: str = Path(...),
+    p2: int = Path(...),
+    q1: str = Query(...),
+    q2: int = Query(...),
+) -> Response:
+    return Response()
+
+
 app = App(
     routes=[
         APIRoute("/simple", simple),
@@ -69,6 +77,7 @@ app = App(
             "/slow_deps",
             slow_dependencies,
         ),
-        Mount("/routing", app=recurisively_generate_routes(ROUTING_PATHS))
+        Mount("/routing", app=recurisively_generate_routes(ROUTING_PATHS)),
+        APIRoute("/parameters/{p1}/{p2}", parameters),
     ]
 )

@@ -2,7 +2,7 @@ from typing import Any, Dict, Mapping, Union, List
 
 from starlette.routing import BaseRoute, Route
 
-from xpresso import App, Depends, Operation, Path, Request, Response, Router
+from xpresso import App, Depends, Operation, Path, Request, Response, Router, FromQuery, FromPath
 from xpresso.routing.mount import Mount
 from xpresso.typing import Annotated
 
@@ -64,6 +64,15 @@ def recurisively_generate_routes(paths: Paths) -> Router:
     return Router(routes=routes)
 
 
+async def parameters(
+    p1: FromPath[str],
+    p2: FromPath[int],
+    q1: FromQuery[str],
+    q2: FromQuery[int],
+) -> Response:
+    return Response()
+
+
 app = App(
     routes=[
         Path("/simple", get=simple),
@@ -75,17 +84,7 @@ app = App(
                 execute_dependencies_concurrently=True,
             ),
         ),
-        Mount("/routing", app=recurisively_generate_routes(ROUTING_PATHS))
+        Mount("/routing", app=recurisively_generate_routes(ROUTING_PATHS)),
+        Path("/parameters/{p1}/{p2}", get=parameters)
     ]
 )
-
-
-if __name__ == "__main__":
-    # This is used for runing line_profiler
-    from starlette.testclient import TestClient
-
-    with TestClient(app) as client:
-        # for _ in range(100):
-        #     client.get("/simple")
-        for _ in range(100):
-            client.get("/fast_deps")

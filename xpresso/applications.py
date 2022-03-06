@@ -5,7 +5,7 @@ import typing
 import starlette.types
 from di import AsyncExecutor, Container, Dependant, JoinedDependant
 from di.api.dependencies import DependantBase
-from di.container import ContainerState
+from di.container import ContainerState, bind_by_type
 from starlette.background import BackgroundTasks
 from starlette.middleware import Middleware
 from starlette.middleware.errors import ServerErrorMiddleware
@@ -365,49 +365,61 @@ def _wrap_lifespan_as_async_generator(
 
 
 def _register_framework_dependencies(container: Container, app: App):
-    container.bind_by_type(
-        Dependant(Request, scope="connection", wire=False),
-        Request,
+    container.bind(
+        bind_by_type(
+            Dependant(Request, scope="connection", wire=False),
+            Request,
+        )
     )
-    container.bind_by_type(
-        Dependant(
+    container.bind(
+        bind_by_type(
+            Dependant(
+                HTTPConnection,
+                scope="connection",
+                wire=False,
+            ),
             HTTPConnection,
-            scope="connection",
-            wire=False,
-        ),
-        HTTPConnection,
+        )
     )
-    container.bind_by_type(
-        Dependant(
+    container.bind(
+        bind_by_type(
+            Dependant(
+                WebSocket,
+                scope="connection",
+                wire=False,
+            ),
             WebSocket,
-            scope="connection",
-            wire=False,
-        ),
-        WebSocket,
+        )
     )
-    container.bind_by_type(
-        Dependant(
+    container.bind(
+        bind_by_type(
+            Dependant(
+                BackgroundTasks,
+                scope="connection",
+                wire=False,
+            ),
             BackgroundTasks,
-            scope="connection",
-            wire=False,
-        ),
-        BackgroundTasks,
+        )
     )
-    container.bind_by_type(
-        Dependant(
-            lambda: app.container,
-            scope="app",
-            wire=False,
-        ),
-        Container,
-        covariant=True,
+    container.bind(
+        bind_by_type(
+            Dependant(
+                lambda: app.container,
+                scope="app",
+                wire=False,
+            ),
+            Container,
+            covariant=True,
+        )
     )
-    container.bind_by_type(
-        Dependant(
-            lambda: app,
-            scope="app",
-            wire=False,
-        ),
-        App,
-        covariant=True,
+    container.bind(
+        bind_by_type(
+            Dependant(
+                lambda: app,
+                scope="app",
+                wire=False,
+            ),
+            App,
+            covariant=True,
+        )
     )

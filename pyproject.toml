@@ -69,6 +69,7 @@ gunicorn = "^20.1.0"
 uvicorn = {extras = ["standard"], version = "^0.15.0"}
 msgpack = "^1.0.3"
 trio = "^0.19.0"
+pyinstrument = "^4.1.1"
 
 [build-system]
 requires = ["poetry-core"]

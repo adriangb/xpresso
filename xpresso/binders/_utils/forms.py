@@ -2,7 +2,7 @@
 """
 import functools
 import re
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Union, cast
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
 from pydantic.fields import ModelField
 from starlette.datastructures import UploadFile
@@ -39,7 +39,7 @@ def collect_form_sequence(
 ) -> Optional[Some[List[Optional[str]]]]:
     matches = get_matches(params, name)
     if not matches:
-        return Some(cast(List[Optional[str]], []))
+        return Some([])
     if explode:
         # No further processing needed since the delimiter is &
         # for all styles
@@ -51,8 +51,8 @@ def collect_form_sequence(
         match = matches[0]
         if not match:
             # user gave us ?param=&other=abc
-            return Some(cast(List[Optional[str]], [None]))
-        return Some(cast(List[Optional[str]], match.split(delimiter)))
+            return Some([None])
+        return Some(list(match.split(delimiter)))
 
 
 def collect_object(
@@ -71,8 +71,8 @@ def collect_object(
             raise InvalidSerialization("Invalid form serialziation")
         match = matches[0]
         if not match:
-            return Some(cast(Dict[str, str], {}))
-        return Some(dict(cast(Iterable[Tuple[str, str]], grouped(match.split(",")))))
+            return Some({})
+        return Some(dict(grouped(match.split(","))))  # type: ignore[arg-type]
 
 
 def collect_deep_object(
@@ -96,10 +96,13 @@ def collect_deep_object(
 def collect_scalar(
     params: Iterable[Tuple[str, Union[str, UploadFile]]], name: str
 ) -> Optional[Some[Optional[str]]]:
-    matches = get_matches(params, name)
-    if not matches:
+    params_mapping = dict(params)
+    if name not in params_mapping:
         return None
-    return Some(matches[0])
+    v = params_mapping[name]
+    if not isinstance(v, str):
+        raise UnexpectedFileReceived("Expected a string form field but received a file")
+    return Some(v or None)
 
 
 delimiters = {
