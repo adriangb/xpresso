@@ -168,7 +168,7 @@ toml = ["tomli"]
 
 [[package]]
 name = "di"
-version = "0.64.0"
+version = "0.66.1"
 description = "Autowiring dependency injection"
 category = "main"
 optional = false
@@ -248,7 +248,7 @@ dev = ["twine", "markdown", "flake8", "wheel"]
 
 [[package]]
 name = "graphlib2"
-version = "0.2.18"
+version = "0.3.0"
 description = "Rust port of the Python stdlib graphlib modules"
 category = "main"
 optional = false
@@ -479,7 +479,7 @@ i18n = ["babel (>=2.9.0)"]
 
 [[package]]
 name = "mkdocs-material"
-version = "8.2.4"
+version = "8.2.5"
 description = "A Material Design theme for MkDocs"
 category = "dev"
 optional = false
@@ -1057,7 +1057,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7,<4"
-content-hash = "c7d54dd086468b35925f54ff353e29a6335351534e6db45726f54b236adb6a98"
+content-hash = "cd2a0e34d14d7be5f24d92f3800cdd2899abc0df47ff7a6c973b1fed7702403e"
 
 [metadata.files]
 anyio = [
@@ -1225,8 +1225,8 @@ coverage = [
     {file = "coverage-6.3.2.tar.gz", hash = "sha256:03e2a7826086b91ef345ff18742ee9fc47a6839ccd517061ef8fa1976e652ce9"},
 ]
 di = [
-    {file = "di-0.64.0-py3-none-any.whl", hash = "sha256:3699334c04f3220f637846a253baee72ec7bb60d005f64ad563a0581e3b64cb7"},
-    {file = "di-0.64.0.tar.gz", hash = "sha256:6bff5b28ce0b4065506bf8b9b9e183fb96859d7d10cf07fbf19bbf4bd86de672"},
+    {file = "di-0.66.1-py3-none-any.whl", hash = "sha256:cba05ba0bff1bcf929d35436f14c999916c2bfe8b5a0d4c237981b2b006c3abb"},
+    {file = "di-0.66.1.tar.gz", hash = "sha256:844e178a1aad9de5e9b630353666bb29aa5faa62f759385f47115541231a6ddb"},
 ]
 distlib = [
     {file = "distlib-0.3.4-py2.py3-none-any.whl", hash = "sha256:6564fe0a8f51e734df6333d08b8b94d4ea8ee6b99b5ed50613f731fd4089f34b"},
@@ -1249,21 +1249,21 @@ ghp-import = [
     {file = "ghp_import-2.0.2-py3-none-any.whl", hash = "sha256:5f8962b30b20652cdffa9c5a9812f7de6bcb56ec475acac579807719bf242c46"},
 ]
 graphlib2 = [
-    {file = "graphlib2-0.2.18-cp37-abi3-macosx_10_9_x86_64.whl", hash = "sha256:b7b087014f8247b72b0a625c6727d939cda825d7ac0f9be59f3a00825690b673"},
-    {file = "graphlib2-0.2.18-cp37-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:1dcbecd480c0a11b77269424081a31231322205bb32bef19a2cc738b38702060"},
-    {file = "graphlib2-0.2.18-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:c3403b2476a5a70bccb01224742b83f5541fe4ff72c83765c6e0fd92b2f073c6"},
-    {file = "graphlib2-0.2.18-cp37-abi3-musllinux_1_1_aarch64.whl", hash = "sha256:68ffee203918b13d705c3505c463390f6707bc19be2a3d1d21a7ccea8b9f0d1b"},
-    {file = "graphlib2-0.2.18-cp37-abi3-musllinux_1_1_x86_64.whl", hash = "sha256:feb7598a2883e7b965948625cc949207c9083ac147cdcafa45c231a4c10880c7"},
-    {file = "graphlib2-0.2.18-cp37-abi3-win_amd64.whl", hash = "sha256:2e47f426b680fb7c512ab3d81daecc7c7f27cca3d57aaf6a28f627fafd337d10"},
-    {file = "graphlib2-0.2.18-pp37-pypy37_pp73-macosx_10_9_x86_64.whl", hash = "sha256:435be4b8084da21c4aa5a97c4400443236396c5a9ac6359b4b1c8a255c0cc53b"},
-    {file = "graphlib2-0.2.18-pp37-pypy37_pp73-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:9acc1d2193a74479f98b1fbf1175952c76aa917e79b3d7570bb1db1faa3b4613"},
-    {file = "graphlib2-0.2.18-pp37-pypy37_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:6322a05837adb9942f199871c308004b74b85b4360c12da8daa40e4269c8b7b7"},
-    {file = "graphlib2-0.2.18-pp37-pypy37_pp73-win_amd64.whl", hash = "sha256:66e48335cd6000b09638cea1ec92d63c33947a539cf5f24bdca6218c6e39856c"},
-    {file = "graphlib2-0.2.18-pp38-pypy38_pp73-macosx_10_9_x86_64.whl", hash = "sha256:b071132cf5889bcca71ee2e0ff620bd01de76d23aa2c56b2d1054c19906d5440"},
-    {file = "graphlib2-0.2.18-pp38-pypy38_pp73-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:a0a22d1298ba6896c38b8cdeade0e86dcdb60ade6e89e34befa919437de26688"},
-    {file = "graphlib2-0.2.18-pp38-pypy38_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:9511ff60749413f223a9f995f1054c0d1d24c5ce2378e6afa23176067379b543"},
-    {file = "graphlib2-0.2.18-pp38-pypy38_pp73-win_amd64.whl", hash = "sha256:4cd5afa83ea1c7d0331a9f33fa316d7763d47a913ab053e324d44983aa11ffbc"},
-    {file = "graphlib2-0.2.18.tar.gz", hash = "sha256:fdd42d9d36a55db3daf9cff9fe7708f6cb91157af7d11195140292014b9d8232"},
+    {file = "graphlib2-0.3.0-cp37-abi3-macosx_10_9_x86_64.whl", hash = "sha256:75f9b07f295cbc54a10685dfbd8da21fe5f9b155365ecd46e18026547434c2a9"},
+    {file = "graphlib2-0.3.0-cp37-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:3f4038a3bbdf71202c5c357c9f8315594727f416c8f30990501efa2d67ae2642"},
+    {file = "graphlib2-0.3.0-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:95f0c316dee9e9b1712e6c2d3440a84f16212ba92b9fe0fe15931e176d7b092d"},
+    {file = "graphlib2-0.3.0-cp37-abi3-musllinux_1_1_aarch64.whl", hash = "sha256:7e65b90cccf8342afb5fb88ae37c543fba307d116a04702c25d546e3ae7e82a5"},
+    {file = "graphlib2-0.3.0-cp37-abi3-musllinux_1_1_x86_64.whl", hash = "sha256:86f515a56786f50beded0c3ddbec527e86a6dc7e231c579bca9bd0e41f250028"},
+    {file = "graphlib2-0.3.0-cp37-abi3-win_amd64.whl", hash = "sha256:08f88d719ef5934e89bfcde187864d83b9178bf14e167b35bfda747b09c08ea6"},
+    {file = "graphlib2-0.3.0-pp37-pypy37_pp73-macosx_10_9_x86_64.whl", hash = "sha256:b99126f449247de7b3e679ef9562c9435ab0974e4e1e7b551e16adbc03bd97bf"},
+    {file = "graphlib2-0.3.0-pp37-pypy37_pp73-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:109b6a3294a41d69574dc02c4725f44f562293baf720e3cc7adf85d4ce6bcc11"},
+    {file = "graphlib2-0.3.0-pp37-pypy37_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:23043aaca14e65860d93ebe91e9b81054461798d7e3519ea77793c3a7cf100a8"},
+    {file = "graphlib2-0.3.0-pp37-pypy37_pp73-win_amd64.whl", hash = "sha256:1c1a61d839f190b693be6c58d143b7d418fa470dfd02e318bedd86de3c3abcf0"},
+    {file = "graphlib2-0.3.0-pp38-pypy38_pp73-macosx_10_9_x86_64.whl", hash = "sha256:9b831c86ed16ad4aaecb56513bad9fb33a5b1ddb326e8fd1bdfd898c5728783e"},
+    {file = "graphlib2-0.3.0-pp38-pypy38_pp73-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:5b7c830c9a32457f45a3e2e0b7c5f894013b50cab3e23e5ca3f75223d51081b0"},
+    {file = "graphlib2-0.3.0-pp38-pypy38_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:580e289ab28433ea7ecef5c49b23aa49d56722a58e1b3e6c20e6ee0ac9055035"},
+    {file = "graphlib2-0.3.0-pp38-pypy38_pp73-win_amd64.whl", hash = "sha256:1e1cc8d4762270502f8603a3ad1c6ff13ff766b268351fca94ef83c9bcc7f770"},
+    {file = "graphlib2-0.3.0.tar.gz", hash = "sha256:c05f0de03a9a5352d08f7bd638c3ac1852179c056f9ff9b915d86bb065784b77"},
 ]
 gunicorn = [
     {file = "gunicorn-20.1.0-py3-none-any.whl", hash = "sha256:9dcc4547dbb1cb284accfb15ab5667a0e5d1881cc443e0677b4882a4067a807e"},
@@ -1385,8 +1385,8 @@ mkdocs = [
     {file = "mkdocs-1.2.3.tar.gz", hash = "sha256:89f5a094764381cda656af4298727c9f53dc3e602983087e1fe96ea1df24f4c1"},
 ]
 mkdocs-material = [
-    {file = "mkdocs-material-8.2.4.tar.gz", hash = "sha256:3c350a03e2f7288874f0a9cf5aacfbbb8721cc7d4e389b53169180ee2187223e"},
-    {file = "mkdocs_material-8.2.4-py2.py3-none-any.whl", hash = "sha256:7aa9ed562f68c8592dad3f568378c98a2350398445dbf46de373585b3cd9080e"},
+    {file = "mkdocs-material-8.2.5.tar.gz", hash = "sha256:cdfb39edc77f5c2bbfca02b4fc3764de38b2093eff121aed37674204439901ce"},
+    {file = "mkdocs_material-8.2.5-py2.py3-none-any.whl", hash = "sha256:95283c6af633809f32ba688fcf9bce4604af320e188d3e26fcb40d0e5ab9b823"},
 ]
 mkdocs-material-extensions = [
     {file = "mkdocs-material-extensions-1.0.3.tar.gz", hash = "sha256:bfd24dfdef7b41c312ede42648f9eb83476ea168ec163b613f9abd12bbfddba2"},

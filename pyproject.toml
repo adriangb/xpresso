@@ -36,8 +36,8 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = ">=3.7,<4"
-di = ">=0.64,<0.65"
-anyio = "~3"
+di = "^0.66.1"
+anyio = ">=3.0.0,<5"
 starlette = ">=0.16.0,<1"
 importlib-metadata = {version = ">=3", python = "<3.8"}
 typing-extensions = {version = ">=3", python = "<3.9"}
