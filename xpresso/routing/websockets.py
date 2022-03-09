@@ -5,10 +5,12 @@ import starlette.responses
 import starlette.routing
 import starlette.types
 import starlette.websockets
-from di import AsyncExecutor, ConcurrentAsyncExecutor, Container, JoinedDependant
 from di.api.dependencies import DependantBase
 from di.api.executor import AsyncExecutorProtocol
 from di.api.solved import SolvedDependant
+from di.container import Container
+from di.dependant import JoinedDependant
+from di.executors import AsyncExecutor, ConcurrentAsyncExecutor
 
 from xpresso._utils.asgi import XpressoWebSocketExtension
 from xpresso._utils.endpoint_dependant import Endpoint, EndpointDependant

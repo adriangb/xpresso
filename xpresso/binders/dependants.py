@@ -1,8 +1,8 @@
 import inspect
 import typing
 
-from di import Dependant, Marker
 from di.api.dependencies import CacheKey, DependantBase
+from di.dependant import Dependant, Marker
 
 from xpresso._utils.compat import Protocol
 from xpresso.binders.api import (

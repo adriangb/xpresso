@@ -6,7 +6,7 @@ if sys.version_info < (3, 9):
 else:
     from typing import Annotated
 
-from di import Marker
+from di.dependant import Marker
 from pydantic import BaseModel
 from starlette.responses import Response
 from starlette.testclient import TestClient

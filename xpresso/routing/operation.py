@@ -1,9 +1,11 @@
 import typing
 
-from di import AsyncExecutor, ConcurrentAsyncExecutor, Container, JoinedDependant
 from di.api.dependencies import DependantBase
 from di.api.executor import AsyncExecutorProtocol
 from di.api.solved import SolvedDependant
+from di.container import Container
+from di.dependant import JoinedDependant
+from di.executors import AsyncExecutor, ConcurrentAsyncExecutor
 from starlette.datastructures import URLPath
 from starlette.requests import HTTPConnection, Request
 from starlette.responses import JSONResponse, Response
