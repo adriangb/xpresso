@@ -1,4 +1,5 @@
 from starlette import status as status
+from starlette.exceptions import HTTPException
 from starlette.responses import Response
 
 from xpresso.applications import App
@@ -22,7 +23,6 @@ from xpresso.bodies import (
 from xpresso.datastructures import UploadFile
 from xpresso.dependencies.models import Depends
 from xpresso.exception_handlers import ExcHandler
-from xpresso.exceptions import HTTPException
 from xpresso.parameters import (
     CookieParam,
     FromCookie,

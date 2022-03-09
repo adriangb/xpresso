@@ -3,12 +3,12 @@ import typing
 
 from di.typing import get_markers_from_annotation
 from starlette.datastructures import UploadFile
+from starlette.exceptions import HTTPException
 from starlette.requests import Request
 
 from xpresso._utils.compat import Annotated, get_args, get_origin
 from xpresso.binders.api import BodyExtractor
 from xpresso.binders.dependants import BodyBinderMarker
-from xpresso.exceptions import HTTPException
 
 
 class ContentTypeDiscriminatedExtractor:

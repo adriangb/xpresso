@@ -21,24 +21,18 @@ class ExcHandler:
         self.handler = handler
 
 
-async def http_exception_handler(request: Request, exc: Exception) -> JSONResponse:
-    assert isinstance(exc, HTTPException)
-    headers = getattr(exc, "headers", None)
-    if headers:
-        return JSONResponse(
-            {"detail": exc.detail}, status_code=exc.status_code, headers=headers
-        )
-    else:
-        return JSONResponse({"detail": exc.detail}, status_code=exc.status_code)
+async def http_exception_handler(request: Request, exc: HTTPException) -> JSONResponse:
+    return JSONResponse(
+        {"detail": exc.detail}, status_code=exc.status_code, headers=exc.headers
+    )
 
 
 _ENCODER = JsonableEncoder()
 
 
 async def validation_exception_handler(
-    request: Request, exc: Exception
+    request: Request, exc: RequestValidationError
 ) -> JSONResponse:
-    assert isinstance(exc, RequestValidationError)
     return JSONResponse(
         _ENCODER({"detail": exc.errors()}),
         status_code=exc.status_code,

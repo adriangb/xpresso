@@ -2,11 +2,11 @@ import asyncio
 
 from starlette.concurrency import run_in_threadpool
 from starlette.exceptions import ExceptionMiddleware as StarletteExceptionMiddleware
+from starlette.exceptions import HTTPException
 from starlette.requests import Request
 from starlette.types import Message, Receive, Scope, Send
 
 from xpresso._utils.asgi import XpressoHTTPExtension
-from xpresso.exceptions import HTTPException
 
 
 class ExceptionMiddleware(StarletteExceptionMiddleware):

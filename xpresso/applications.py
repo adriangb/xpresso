@@ -8,6 +8,7 @@ from di.container import Container, ContainerState, bind_by_type
 from di.dependant import Dependant, JoinedDependant
 from di.executors import AsyncExecutor
 from starlette.background import BackgroundTasks
+from starlette.exceptions import HTTPException
 from starlette.middleware import Middleware
 from starlette.middleware.errors import ServerErrorMiddleware
 from starlette.requests import HTTPConnection, Request
@@ -25,7 +26,7 @@ from xpresso.exception_handlers import (
     http_exception_handler,
     validation_exception_handler,
 )
-from xpresso.exceptions import HTTPException, RequestValidationError
+from xpresso.exceptions import RequestValidationError
 from xpresso.middleware.exceptions import ExceptionMiddleware
 from xpresso.openapi import models as openapi_models
 from xpresso.openapi._builder import genrate_openapi
