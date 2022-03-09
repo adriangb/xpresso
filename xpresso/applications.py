@@ -11,7 +11,7 @@ from starlette.background import BackgroundTasks
 from starlette.middleware import Middleware
 from starlette.middleware.errors import ServerErrorMiddleware
 from starlette.requests import HTTPConnection, Request
-from starlette.responses import HTMLResponse, JSONResponse, Response
+from starlette.responses import HTMLResponse, JSONResponse
 from starlette.routing import BaseRoute
 from starlette.routing import Route as StarletteRoute
 from starlette.websockets import WebSocket
@@ -21,6 +21,7 @@ from xpresso._utils.overrides import DependencyOverrideManager
 from xpresso._utils.routing import visit_routes
 from xpresso.dependencies.models import Depends, Scopes
 from xpresso.exception_handlers import (
+    ExcHandler,
     http_exception_handler,
     validation_exception_handler,
 )
@@ -32,13 +33,6 @@ from xpresso.openapi._html import get_swagger_ui_html
 from xpresso.routing.pathitem import Path
 from xpresso.routing.router import Router
 from xpresso.routing.websockets import WebSocketRoute
-
-ExceptionHandler = typing.Callable[
-    [Request, Exception], typing.Union[Response, typing.Awaitable[Response]]
-]
-ExceptionHandlers = typing.Mapping[
-    typing.Union[typing.Type[Exception], int], ExceptionHandler
-]
 
 
 class App:
@@ -71,7 +65,7 @@ class App:
         ] = None,
         debug: bool = False,
         middleware: typing.Optional[typing.Sequence[Middleware]] = None,
-        exception_handlers: typing.Optional[ExceptionHandlers] = None,
+        exception_handlers: typing.Optional[typing.Iterable[ExcHandler]] = None,
         lifespan: typing.Optional[
             typing.Callable[..., typing.AsyncContextManager[None]]
         ] = None,
@@ -143,10 +137,10 @@ class App:
                 docs_url=docs_url,
             )
         )
-        middleware = _include_error_middleware(
+        middleware = _build_middleware_stack(
             debug=debug,
             user_middleware=middleware or (),
-            exception_handlers=exception_handlers or {},
+            exception_handlers=exception_handlers or (),
         )
         self.router = Router(
             routes,
@@ -322,30 +316,32 @@ class App:
         return routes
 
 
-def _include_error_middleware(
+def _build_middleware_stack(
     debug: bool,
     user_middleware: typing.Iterable[Middleware],
-    exception_handlers: ExceptionHandlers,
+    exception_handlers: typing.Iterable[ExcHandler],
 ) -> typing.Sequence[Middleware]:
     # user's exception handlers come last so that they can override
     # the default exception handlers
-    exception_handlers = {
-        RequestValidationError: validation_exception_handler,
-        HTTPException: http_exception_handler,
-        **exception_handlers,
-    }
+    exception_handlers = [
+        ExcHandler(RequestValidationError, validation_exception_handler),
+        ExcHandler(HTTPException, http_exception_handler),
+        *exception_handlers,
+    ]
+
+    exc_handler_mapping: typing.Dict[typing.Any, typing.Any] = {}
 
     error_handler = None
-    for key, value in exception_handlers.items():
-        if key in (500, Exception):
-            error_handler = value
+    for hdlr in exception_handlers:
+        if hdlr.exc in (500, Exception):
+            error_handler = hdlr.handler
         else:
-            exception_handlers[key] = value
+            exc_handler_mapping[hdlr.exc] = hdlr.handler
 
     return (
         Middleware(ServerErrorMiddleware, handler=error_handler, debug=debug),
         *user_middleware,
-        Middleware(ExceptionMiddleware, handlers=exception_handlers, debug=debug),
+        Middleware(ExceptionMiddleware, handlers=exc_handler_mapping, debug=debug),
     )
 
 

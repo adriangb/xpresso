@@ -21,6 +21,7 @@ from xpresso.bodies import (
 )
 from xpresso.datastructures import UploadFile
 from xpresso.dependencies.models import Depends
+from xpresso.exception_handlers import ExcHandler
 from xpresso.exceptions import HTTPException
 from xpresso.parameters import (
     CookieParam,
@@ -40,6 +41,7 @@ from xpresso.routing.websockets import WebSocketRoute
 from xpresso.websockets import WebSocket
 
 __all__ = (
+    "ExcHandler",
     "Operation",
     "Path",
     "QueryParam",

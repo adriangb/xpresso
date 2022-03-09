@@ -1,42 +1,75 @@
-from xpresso import App, HTTPException, Path, Request
-from xpresso.responses import JSONResponse
+import pytest
+from starlette.responses import JSONResponse
+
+from xpresso import App, FromPath, HTTPException, Path, Request
+from xpresso.exception_handlers import ExcHandler
+from xpresso.exceptions import RequestValidationError
 from xpresso.testclient import TestClient
 
 
-def test_override_base_error_handler() -> None:
-    async def custom_server_error_from_exception(request: Request, exc: Exception):
-        return JSONResponse(
-            {"detail": "Custom Server Error from Exception"}, status_code=500
-        )
+def http_exception_handler(request: Request, exception: HTTPException):
+    return JSONResponse({"exception": "http-exception"})
 
-    async def raise_exception() -> None:
-        raise Exception
 
-    async def custom_server_error_from_500(request: Request, exc: Exception):
-        return JSONResponse(
-            {"detail": "Custom Server Error from HTTPException(500)"}, status_code=500
-        )
+def request_validation_exception_handler(
+    request: Request, exception: RequestValidationError
+):
+    return JSONResponse({"exception": "request-validation"})
 
-    async def raise_500() -> None:
-        raise HTTPException(500)
 
-    app = App(
-        routes=[
-            Path("/raise-exception", get=raise_exception),
-            Path("/raise-500", get=raise_500),
-        ],
-        exception_handlers={
-            Exception: custom_server_error_from_exception,
-            500: custom_server_error_from_500,
-        },
-    )
+def server_error_exception_handler(request: Request, exception: Exception):
+    return JSONResponse(status_code=500, content={"exception": "server-error"})
 
-    client = TestClient(app)
 
-    resp = client.get("/raise-exception")
-    assert resp.status_code == 500, resp.content
-    assert resp.json() == {"detail": "Custom Server Error from Exception"}
+def route_with_http_exception():
+    raise HTTPException(status_code=400)
 
-    resp = client.get("/raise-500")
-    assert resp.status_code == 500, resp.content
-    assert resp.json() == {"detail": "Custom Server Error from HTTPException(500)"}
+
+def route_with_request_validation_exception(param: FromPath[int]):
+    pass  # pragma: no cover
+
+
+def route_with_server_error():
+    raise RuntimeError("Oops!")
+
+
+app = App(
+    routes=[
+        Path("/http-exception", get=route_with_http_exception),
+        Path(
+            "/request-validation/{param}/", get=route_with_request_validation_exception
+        ),
+        Path("/server-error", get=route_with_server_error),
+    ],
+    exception_handlers=[
+        ExcHandler(HTTPException, http_exception_handler),
+        ExcHandler(RequestValidationError, request_validation_exception_handler),
+        ExcHandler(Exception, server_error_exception_handler),
+    ],
+)
+
+client = TestClient(app)
+
+
+def test_override_http_exception():
+    response = client.get("/http-exception")
+    assert response.status_code == 200
+    assert response.json() == {"exception": "http-exception"}
+
+
+def test_override_request_validation_exception():
+    response = client.get("/request-validation/invalid")
+    assert response.status_code == 200
+    assert response.json() == {"exception": "request-validation"}
+
+
+def test_override_server_error_exception_raises():
+    with pytest.raises(RuntimeError):
+        client.get("/server-error")
+
+
+def test_override_server_error_exception_response():
+    client = TestClient(app, raise_server_exceptions=False)
+    response = client.get("/server-error")
+    assert response.status_code == 500
+    assert response.json() == {"exception": "server-error"}
