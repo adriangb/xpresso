@@ -1,9 +1,8 @@
 from typing import Awaitable, Callable, Type, TypeVar, Union
 
-from fastapi import Response
 from starlette.exceptions import HTTPException
 from starlette.requests import Request
-from starlette.responses import JSONResponse
+from starlette.responses import JSONResponse, Response
 
 from xpresso.encoders.json import JsonableEncoder
 from xpresso.exceptions import RequestValidationError
