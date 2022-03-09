@@ -6,7 +6,7 @@ import starlette.routing
 import starlette.types
 import starlette.websockets
 from di.api.dependencies import DependantBase
-from di.api.executor import AsyncExecutorProtocol
+from di.api.executor import SupportsAsyncExecutor
 from di.api.solved import SolvedDependant
 from di.container import Container
 from di.dependant import JoinedDependant
@@ -23,7 +23,7 @@ class _WebSocketRoute:
     def __init__(
         self,
         dependant: SolvedDependant[typing.Any],
-        executor: AsyncExecutorProtocol,
+        executor: SupportsAsyncExecutor,
         container: Container,
     ) -> None:
         self.dependant = dependant
@@ -102,7 +102,7 @@ class WebSocketRoute(starlette.routing.WebSocketRoute):
             ),
             scopes=Scopes,
         )
-        executor: AsyncExecutorProtocol
+        executor: SupportsAsyncExecutor
         if self.execute_dependencies_concurrently:
             executor = ConcurrentAsyncExecutor()
         else:

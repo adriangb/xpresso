@@ -3,9 +3,10 @@ import inspect
 import typing
 
 import starlette.types
-from di import AsyncExecutor, Container, Dependant, JoinedDependant
 from di.api.dependencies import DependantBase
-from di.container import ContainerState, bind_by_type
+from di.container import Container, ContainerState, bind_by_type
+from di.dependant import Dependant, JoinedDependant
+from di.executors import AsyncExecutor
 from starlette.background import BackgroundTasks
 from starlette.middleware import Middleware
 from starlette.middleware.errors import ServerErrorMiddleware

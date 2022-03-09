@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import typing
 
-import di
 from di.api.providers import DependencyProvider
+from di.dependant import Dependant
 from di.dependant import Injectable as InjectableBase
+from di.dependant import Marker
 
 from xpresso._utils.compat import Literal
 
@@ -19,7 +20,7 @@ Scopes: typing.Tuple[Literal["app"], Literal["connection"], Literal["endpoint"]]
 )
 
 
-class Depends(di.Marker):
+class Depends(Marker):
     scope: Scope
 
     def __init__(
@@ -38,8 +39,8 @@ class Depends(di.Marker):
             sync_to_thread=sync_to_thread,
         )
 
-    def as_dependant(self) -> di.Dependant[typing.Any]:
-        return di.Dependant(
+    def as_dependant(self) -> Dependant[typing.Any]:
+        return Dependant(
             call=self.call,
             scope=self.scope,
             use_cache=self.use_cache,

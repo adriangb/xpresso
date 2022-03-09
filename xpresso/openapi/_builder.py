@@ -1,6 +1,6 @@
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Set, Tuple, cast
 
-from di import Container
+from di.container import Container
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
 from xpresso._utils.routing import VisitedRoute

@@ -1,7 +1,7 @@
 import typing
 
 from di.api.dependencies import DependantBase
-from di.api.executor import AsyncExecutorProtocol
+from di.api.executor import SupportsAsyncExecutor
 from di.api.solved import SolvedDependant
 from di.container import Container
 from di.dependant import JoinedDependant
@@ -35,7 +35,7 @@ class _OperationApp:
         self,
         dependant: SolvedDependant[typing.Any],
         container: Container,
-        executor: AsyncExecutorProtocol,
+        executor: SupportsAsyncExecutor,
         response_factory: typing.Callable[[typing.Any], Response],
         response_encoder: Encoder,
     ) -> None:
@@ -158,7 +158,7 @@ class Operation(BaseRoute):
         bodies = [dep for dep in flat if isinstance(dep, param_dependants.BodyBinder)]
         if len(bodies) > 1:
             raise ValueError("There can only be 1 top level body per operation")
-        executor: AsyncExecutorProtocol
+        executor: SupportsAsyncExecutor
         if self.execute_dependencies_concurrently:
             executor = ConcurrentAsyncExecutor()
         else:

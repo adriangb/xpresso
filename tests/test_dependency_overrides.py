@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from di import Marker
+from di.dependant import Marker
 
 from xpresso import App, Depends, Path
 from xpresso.dependencies.models import Injectable

@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import typing
 
-import di
 from di.api.providers import CallableProvider, CoroutineProvider
+from di.dependant import Dependant
 
 from xpresso.dependencies.models import Depends
 
@@ -12,7 +12,7 @@ T = typing.TypeVar("T")
 Endpoint = typing.Union[CallableProvider[typing.Any], CoroutineProvider[typing.Any]]
 
 
-class EndpointDependant(di.Dependant[typing.Any]):
+class EndpointDependant(Dependant[typing.Any]):
     def __init__(
         self,
         endpoint: Endpoint,
