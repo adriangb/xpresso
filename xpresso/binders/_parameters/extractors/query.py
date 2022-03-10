@@ -9,8 +9,9 @@ from xpresso.binders._parameters.extractors.base import (
     ParameterExtractorBase,
     get_basic_param_info,
 )
-from xpresso.binders._utils.forms import Extractor, get_extractor
-from xpresso.binders.api import ParameterExtractor
+from xpresso.binders._utils.forms import Extractor as FormExtractor
+from xpresso.binders._utils.forms import get_extractor
+from xpresso.binders.api import Extractor
 from xpresso.binders.exceptions import InvalidSerialization
 from xpresso.exceptions import RequestValidationError, WebSocketValidationError
 
@@ -22,7 +23,7 @@ ERRORS = {
 
 @dataclass(frozen=True)
 class QueryParameterExtractor(ParameterExtractorBase):
-    extractor: Extractor
+    extractor: FormExtractor
     in_: ClassVar[str] = "query"
 
     async def extract(
@@ -52,7 +53,7 @@ class QueryParameterExtractorMarker:
     style: str
     in_: ClassVar[str] = "query"
 
-    def register_parameter(self, param: inspect.Parameter) -> ParameterExtractor:
+    def register_parameter(self, param: inspect.Parameter) -> Extractor:
         if self.style == "deepObject" and not self.explode:
             # no such thing in the spec
             raise ValueError("deepObject can only be used with explode=True")

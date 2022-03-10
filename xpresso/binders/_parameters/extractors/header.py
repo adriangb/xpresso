@@ -8,18 +8,19 @@ from pydantic.fields import ModelField
 from starlette.requests import HTTPConnection
 
 from xpresso._utils.compat import Protocol
-from xpresso._utils.typing import Some, is_mapping_like, is_sequence_like
+from xpresso._utils.typing import is_mapping_like, is_sequence_like
 from xpresso.binders._parameters.extractors.base import (
     ParameterExtractorBase,
     get_basic_param_info,
 )
 from xpresso.binders._utils.grouped import grouped
-from xpresso.binders.api import ParameterExtractor
+from xpresso.binders.api import Extractor
 from xpresso.binders.exceptions import InvalidSerialization
 from xpresso.exceptions import RequestValidationError, WebSocketValidationError
+from xpresso.typing import Some
 
 
-def collect_scalar(value: Optional[str]) -> Optional[Some[str]]:
+def collect_scalar(value: Optional[str]) -> Optional[Some]:
     if value is None:
         return None
     split = value.split(",")
@@ -28,7 +29,7 @@ def collect_scalar(value: Optional[str]) -> Optional[Some[str]]:
     return Some(next(iter(split)))
 
 
-def collect_sequence(value: Optional[str]) -> Optional[Some[List[str]]]:
+def collect_sequence(value: Optional[str]) -> Optional[Some]:
     if not value:
         return Some(cast(List[str], []))
     return Some([v.lstrip() for v in value.split(",")])
@@ -37,7 +38,7 @@ def collect_sequence(value: Optional[str]) -> Optional[Some[List[str]]]:
 def collect_object(
     explode: bool,
     value: Optional[str],
-) -> Optional[Some[Dict[str, str]]]:
+) -> Optional[Some]:
     if not value:
         return None
     if explode:
@@ -58,12 +59,12 @@ def collect_object(
     return Some(dict(groups))
 
 
-class Extractor(Protocol):
-    def __call__(self, value: Optional[str]) -> Optional[Some[Any]]:
+class HeaderExtractor(Protocol):
+    def __call__(self, value: Optional[str]) -> Optional[Some]:
         ...
 
 
-def get_extractor(explode: bool, field: ModelField) -> Extractor:
+def get_extractor(explode: bool, field: ModelField) -> HeaderExtractor:
     # form style
     if is_sequence_like(field):
         return collect_sequence
@@ -81,7 +82,7 @@ ERRORS = {
 
 @dataclass(frozen=True, eq=False)
 class HeaderParameterExtractor(ParameterExtractorBase):
-    extractor: Extractor
+    extractor: HeaderExtractor
     in_: ClassVar[str] = "header"
     header_name: bytes
 
@@ -118,7 +119,7 @@ class HeaderParameterExtractorMarker:
     convert_underscores: bool
     in_: ClassVar[str] = "header"
 
-    def register_parameter(self, param: inspect.Parameter) -> ParameterExtractor:
+    def register_parameter(self, param: inspect.Parameter) -> Extractor:
         field, name, loc = get_basic_param_info(param, self.alias, self.in_)
         if self.convert_underscores and not self.alias and field.name == field.alias:
             name = name.replace("_", "-")

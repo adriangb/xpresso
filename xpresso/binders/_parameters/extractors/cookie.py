@@ -6,12 +6,14 @@ from pydantic.fields import ModelField
 from starlette.requests import HTTPConnection
 
 from xpresso._utils.compat import Protocol
-from xpresso._utils.typing import Some, is_mapping_like, is_sequence_like
+from xpresso._utils.typing import is_mapping_like, is_sequence_like
 from xpresso.binders._parameters.extractors.base import (
     ParameterExtractorBase,
     get_basic_param_info,
 )
 from xpresso.binders._utils.grouped import grouped
+from xpresso.binders.api import Extractor
+from xpresso.typing import Some
 
 
 def collect_sequence(value: str) -> List[str]:
@@ -30,12 +32,12 @@ def collect_scalar(value: str) -> str:
     return value
 
 
-class Extractor(Protocol):
+class CookieExtractor(Protocol):
     def __call__(self, value: str) -> Any:
         ...
 
 
-def get_extractor(explode: bool, field: ModelField) -> Extractor:
+def get_extractor(explode: bool, field: ModelField) -> CookieExtractor:
     if is_sequence_like(field):
         if explode is True:
             raise ValueError(  # pragma: no cover
@@ -54,7 +56,7 @@ def get_extractor(explode: bool, field: ModelField) -> Extractor:
 
 @dataclass(frozen=True)
 class CookieParameterExtractor(ParameterExtractorBase):
-    extractor: Extractor
+    extractor: CookieExtractor
     in_: ClassVar[str] = "cookie"
 
     async def extract(
@@ -73,7 +75,7 @@ class CookieParameterExtractorMarker:
     explode: bool
     in_: ClassVar[str] = "cookie"
 
-    def register_parameter(self, param: inspect.Parameter) -> CookieParameterExtractor:
+    def register_parameter(self, param: inspect.Parameter) -> Extractor:
         field, name, loc = get_basic_param_info(param, self.alias, self.in_)
         extractor = get_extractor(field=field, explode=self.explode)
         return CookieParameterExtractor(

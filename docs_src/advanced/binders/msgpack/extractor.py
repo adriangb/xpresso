@@ -1,7 +1,6 @@
 import inspect
 import sys
-from dataclasses import dataclass
-from typing import Any, Type
+from typing import Any, NamedTuple, Type
 
 if sys.version_info < (3, 8):
     from typing_extensions import get_args
@@ -13,14 +12,15 @@ from pydantic import BaseModel
 
 from xpresso import Request
 from xpresso.binders.api import BodyExtractor
+from xpresso.requests import HTTPConnection
 
 
-@dataclass(frozen=True)
-class MsgPackBodyExtractor(BodyExtractor):
+class MsgPackBodyExtractor(NamedTuple):
     model: Type[BaseModel]
 
-    async def extract_from_request(self, request: Request) -> Any:
-        data = await request.body()
+    async def extract(self, connection: HTTPConnection) -> Any:
+        assert isinstance(connection, Request)
+        data = await connection.body()
         deserialized_obj: Any = msgpack.unpackb(data)  # type: ignore[assignment]
         # You probably want more checks and validation here
         # For example, handling empty bodies

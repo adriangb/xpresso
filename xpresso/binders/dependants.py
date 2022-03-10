@@ -5,12 +5,7 @@ from di.api.dependencies import CacheKey, DependantBase
 from di.dependant import Dependant, Marker
 
 from xpresso._utils.compat import Protocol
-from xpresso.binders.api import (
-    BodyExtractor,
-    OpenAPIBody,
-    OpenAPIParameter,
-    ParameterExtractor,
-)
+from xpresso.binders.api import BodyExtractor, Extractor, OpenAPIBody, OpenAPIParameter
 
 T = typing.TypeVar("T", covariant=True)
 
@@ -25,7 +20,7 @@ class ParameterBinder(Dependant[typing.Any]):
         self,
         in_: str,
         openapi: OpenAPIParameter,
-        extractor: ParameterExtractor,
+        extractor: Extractor,
     ):
         self.in_ = in_
         self.openapi = openapi
@@ -43,7 +38,7 @@ class ParameterBinderMarker(Marker):
         self,
         *,
         in_: str,
-        extractor_marker: SupportsMarker[ParameterExtractor],
+        extractor_marker: SupportsMarker[Extractor],
         openapi_marker: SupportsMarker[OpenAPIParameter],
     ) -> None:
         self.in_ = in_
@@ -65,7 +60,7 @@ class BodyBinder(Dependant[typing.Any]):
         openapi: OpenAPIBody,
         extractor: BodyExtractor,
     ) -> None:
-        super().__init__(call=extractor.extract_from_request, scope="connection")
+        super().__init__(call=extractor.extract, scope="connection")
         self.openapi = openapi
         self.extractor = extractor
 

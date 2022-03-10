@@ -20,8 +20,8 @@ from typing import (
 from pydantic import BaseModel
 from pydantic.json import ENCODERS_BY_TYPE
 
-from xpresso._utils.typing import Some
 from xpresso.encoders.api import Encoder
+from xpresso.typing import Some
 
 _SetIntStr = Set[Union[int, str]]
 _DictIntStrAny = Dict[Union[int, str], Any]
@@ -66,7 +66,7 @@ class JsonableEncoder(Encoder):
 
     def _apply_custom_encoder(
         self, obj: Any, custom_encoder: Optional[Dict[Any, Callable[[Any], Any]]]
-    ) -> Optional[Some[Any]]:
+    ) -> Optional[Some]:
         if custom_encoder:
             key = custom_encoder.get(type(obj), None)
             if key is not None:

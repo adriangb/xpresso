@@ -4,7 +4,7 @@ import typing
 from di.typing import get_markers_from_annotation
 from starlette.datastructures import UploadFile
 from starlette.exceptions import HTTPException
-from starlette.requests import Request
+from starlette.requests import HTTPConnection, Request
 
 from xpresso._utils.compat import Annotated, get_args, get_origin
 from xpresso.binders.api import BodyExtractor
@@ -20,11 +20,12 @@ class ContentTypeDiscriminatedExtractor:
     ) -> None:
         self.sub_body_extractors = sub_body_extractors
 
-    async def extract_from_request(self, request: Request) -> typing.Any:
-        media_type = request.headers.get("content-type", None)
+    async def extract(self, connection: HTTPConnection) -> typing.Any:
+        assert isinstance(connection, Request)
+        media_type = connection.headers.get("content-type", None)
         for sub_body_extractor in self.sub_body_extractors:
             if sub_body_extractor.matches_media_type(media_type):
-                return await sub_body_extractor.extract_from_request(request)
+                return await sub_body_extractor.extract(connection)
         if media_type:
             raise HTTPException(
                 status_code=415, detail=f"Media type {media_type} is not acceptable"

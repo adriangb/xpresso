@@ -8,9 +8,10 @@ from pydantic.fields import ModelField
 from starlette.datastructures import UploadFile
 
 from xpresso._utils.compat import Protocol
-from xpresso._utils.typing import Some, is_mapping_like, is_sequence_like
+from xpresso._utils.typing import is_mapping_like, is_sequence_like
 from xpresso.binders._utils.grouped import grouped
 from xpresso.binders.exceptions import InvalidSerialization
+from xpresso.typing import Some
 
 
 class UnexpectedFileReceived(TypeError):
@@ -36,7 +37,7 @@ def collect_form_sequence(
     name: str,
     explode: bool,
     delimiter: str,
-) -> Optional[Some[List[Optional[str]]]]:
+) -> Optional[Some]:
     matches = get_matches(params, name)
     if not matches:
         return Some([])
@@ -59,7 +60,7 @@ def collect_object(
     params: Iterable[Tuple[str, Union[str, UploadFile]]],
     name: str,
     explode: bool,
-) -> Optional[Some[Dict[str, str]]]:
+) -> Optional[Some]:
     if explode:
         # free form params, let validation filter them out
         return Some({k: v for k, v in params if isinstance(v, str)})
@@ -77,7 +78,7 @@ def collect_object(
 
 def collect_deep_object(
     params: Iterable[Tuple[str, Union[str, UploadFile]]], name: str
-) -> Optional[Some[Optional[Dict[str, Any]]]]:
+) -> Optional[Some]:
     # deepObject does not support repeated fields so we can put our fields in dict
     param_dict: Dict[str, str] = {k: v for k, v in params if isinstance(v, str)}
     if not param_dict:
@@ -95,7 +96,7 @@ def collect_deep_object(
 
 def collect_scalar(
     params: Iterable[Tuple[str, Union[str, UploadFile]]], name: str
-) -> Optional[Some[Optional[str]]]:
+) -> Optional[Some]:
     params_mapping = dict(params)
     if name not in params_mapping:
         return None
@@ -115,7 +116,7 @@ delimiters = {
 class Extractor(Protocol):
     def __call__(
         self, *, name: str, params: Iterable[Tuple[str, Union[str, UploadFile]]]
-    ) -> Optional[Some[Any]]:
+    ) -> Optional[Some]:
         ...
 
 

@@ -1,26 +1,25 @@
-from typing import Any, Dict, Iterable, List, Optional, Union
+from typing import Any, Dict, Iterable, List, Optional, Union, runtime_checkable
 
 from starlette.datastructures import UploadFile
-from starlette.requests import HTTPConnection, Request
+from starlette.requests import HTTPConnection
 
 import xpresso.openapi.models as openapi_models
 from xpresso._utils.compat import Protocol
 
 
-class ParameterExtractor(Protocol):
+class Extractor(Protocol):
     def extract(self, connection: HTTPConnection) -> Any:
         raise NotImplementedError
 
 
-class BodyExtractor(Protocol):
-    async def extract_from_request(self, request: Request) -> Any:
-        """Extract from top level request"""
-        raise NotImplementedError
-
+class BodyExtractor(Extractor, Protocol):
     def matches_media_type(self, media_type: Optional[str]) -> bool:
         """Check if this extractor can extract the given media type"""
         raise NotImplementedError
 
+
+@runtime_checkable
+class FieldExtractor(Protocol):
     # APIs to support being a field in a FormData or Multipart request
     async def extract_from_field(
         self,

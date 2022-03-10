@@ -4,9 +4,9 @@ import typing
 from pydantic.error_wrappers import ErrorWrapper
 from pydantic.fields import ModelField
 from starlette.datastructures import UploadFile
-from starlette.requests import Request
+from starlette.requests import HTTPConnection, Request
 
-from xpresso._utils.typing import Some, model_field_from_param
+from xpresso._utils.typing import model_field_from_param
 from xpresso.binders._body.extractors.body_field_validation import validate_body_field
 from xpresso.binders._body.media_type_validator import MediaTypeValidator
 from xpresso.binders._body.media_type_validator import (
@@ -15,6 +15,7 @@ from xpresso.binders._body.media_type_validator import (
 from xpresso.binders._utils.stream_to_bytes import convert_stream_to_bytes
 from xpresso.binders.api import BodyExtractor
 from xpresso.exceptions import RequestValidationError
+from xpresso.typing import Some
 
 
 class FileBodyExtractor:
@@ -33,18 +34,19 @@ class FileBodyExtractor:
     def matches_media_type(self, media_type: typing.Optional[str]) -> bool:
         return self.media_type_validator.matches(media_type)
 
-    async def extract_from_request(self, request: Request) -> typing.Any:
-        media_type = request.headers.get("content-type", None)
+    async def extract(self, connection: HTTPConnection) -> typing.Any:
+        assert isinstance(connection, Request)
+        media_type = connection.headers.get("content-type", None)
         self.media_type_validator.validate(media_type, loc=("body",))
         if self.field.type_ is bytes:
             if self.consume:
-                data = await convert_stream_to_bytes(request.stream())
+                data = await convert_stream_to_bytes(connection.stream())
                 if data is None:
                     return validate_body_field(
                         Some(b""), field=self.field, loc=("body",)
                     )
             else:
-                data = await request.body()
+                data = await connection.body()
             return validate_body_field(Some(data), field=self.field, loc=("body",))
         # create an UploadFile from the body's stream
         file: UploadFile = self.field.type_(  # use the field type to allow users to subclass UploadFile
@@ -52,7 +54,7 @@ class FileBodyExtractor:
         )
         non_empty_chunks = 0
         chunks = 0
-        async for chunk in request.stream():
+        async for chunk in connection.stream():
             non_empty_chunks += len(chunk) != 0
             chunks += 1
             await file.write(chunk)

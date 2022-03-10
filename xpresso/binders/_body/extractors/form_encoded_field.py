@@ -4,7 +4,7 @@ import typing
 from pydantic.error_wrappers import ErrorWrapper
 from starlette.datastructures import FormData
 
-from xpresso._utils.typing import Some, model_field_from_param
+from xpresso._utils.typing import model_field_from_param
 from xpresso.binders._body.form_field import FormDataExtractor
 from xpresso.binders._utils.forms import (
     Extractor,
@@ -13,6 +13,7 @@ from xpresso.binders._utils.forms import (
 )
 from xpresso.binders.exceptions import InvalidSerialization
 from xpresso.exceptions import RequestValidationError
+from xpresso.typing import Some
 
 
 class FormEncodedFieldExtractor:
@@ -34,7 +35,7 @@ class FormEncodedFieldExtractor:
 
     async def extract_from_form(
         self, form: FormData, *, loc: typing.Iterable[typing.Union[int, str]]
-    ) -> typing.Optional[Some[typing.Any]]:
+    ) -> typing.Optional[Some]:
         try:
             return self.extractor(name=self.field_name, params=form.multi_items())
         except InvalidSerialization as e:

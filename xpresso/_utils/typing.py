@@ -69,13 +69,3 @@ def is_mapping_like(field: ModelField) -> bool:
         or inspect.isclass(field.type_)
         and issubclass(field.type_, BaseModel)
     )
-
-
-class Some(typing.Generic[T]):
-    __slots__ = ("value",)
-
-    def __init__(self, value: T) -> None:
-        self.value = value
-
-    def __repr__(self) -> str:
-        return f"Some({repr(self.value)})"

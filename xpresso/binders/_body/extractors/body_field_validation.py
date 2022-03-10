@@ -3,12 +3,12 @@ import typing
 from pydantic.error_wrappers import ErrorWrapper
 from pydantic.fields import ModelField
 
-from xpresso._utils.typing import Some
 from xpresso.exceptions import RequestValidationError
+from xpresso.typing import Some
 
 
 def validate_body_field(
-    values: typing.Optional[Some[typing.Any]],
+    values: typing.Optional[Some],
     *,
     field: ModelField,
     loc: typing.Tuple[typing.Union[str, int], ...]

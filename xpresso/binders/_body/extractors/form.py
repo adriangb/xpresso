@@ -3,10 +3,10 @@ import typing
 
 from pydantic.fields import ModelField
 from starlette.datastructures import FormData, UploadFile
-from starlette.requests import Request
+from starlette.requests import HTTPConnection, Request
 
 from xpresso._utils.compat import get_args
-from xpresso._utils.typing import Some, model_field_from_param
+from xpresso._utils.typing import model_field_from_param
 from xpresso.binders._body.extractors.body_field_validation import validate_body_field
 from xpresso.binders._body.extractors.form_encoded_field import (
     FormEncodedFieldExtractorMarker,
@@ -17,6 +17,7 @@ from xpresso.binders._body.media_type_validator import (
     get_validator as get_media_type_validator,
 )
 from xpresso.binders.api import BodyExtractor
+from xpresso.typing import Some
 
 
 class FormDataBodyExtractor:
@@ -35,11 +36,12 @@ class FormDataBodyExtractor:
     def matches_media_type(self, media_type: typing.Optional[str]) -> bool:
         return self.media_type_validator.matches(media_type)
 
-    async def extract_from_request(self, request: Request) -> typing.Any:
-        media_type = request.headers.get("content-type", None)
+    async def extract(self, connection: HTTPConnection) -> typing.Any:
+        assert isinstance(connection, Request)
+        media_type = connection.headers.get("content-type", None)
         self.media_type_validator.validate(media_type, loc=("body",))
         if (
-            request.headers.get("Content-Length", None) == "0"
+            connection.headers.get("Content-Length", None) == "0"
             and self.field.required is not True
         ):
             # this is the only way to know the body is empty
@@ -49,7 +51,7 @@ class FormDataBodyExtractor:
                 loc=("body",),
             )
         return validate_body_field(
-            Some(await self._extract(await request.form(), loc=("body",))),
+            Some(await self._extract(await connection.form(), loc=("body",))),
             field=self.field,
             loc=("body",),
         )

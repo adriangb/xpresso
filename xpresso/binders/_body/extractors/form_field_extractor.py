@@ -4,10 +4,11 @@ import typing
 from di.typing import get_markers_from_annotation
 from starlette.datastructures import FormData
 
-from xpresso._utils.typing import Some, model_field_from_param
+from xpresso._utils.typing import model_field_from_param
 from xpresso.binders._body.form_field import FormDataExtractor
-from xpresso.binders.api import BodyExtractor
+from xpresso.binders.api import FieldExtractor as SupportsFieldExtractor
 from xpresso.binders.dependants import BodyBinderMarker
+from xpresso.typing import Some
 
 
 class FieldExtractorBase:
@@ -16,7 +17,7 @@ class FieldExtractorBase:
     def __init__(
         self,
         field_name: str,
-        field_extractor: BodyExtractor,
+        field_extractor: SupportsFieldExtractor,
     ) -> None:
         self.field_name = field_name
         self.field_extractor = field_extractor
@@ -27,7 +28,7 @@ class FieldExtractor(FieldExtractorBase):
 
     async def extract_from_form(
         self, form: FormData, *, loc: typing.Iterable[typing.Union[int, str]]
-    ) -> typing.Optional[Some[typing.Any]]:
+    ) -> typing.Optional[Some]:
         if self.field_name not in form:
             return None
         return Some(
@@ -42,7 +43,7 @@ class RepeatedFieldExtractor(FieldExtractorBase):
 
     async def extract_from_form(
         self, form: FormData, *, loc: typing.Iterable[typing.Union[int, str]]
-    ) -> typing.Optional[Some[typing.Any]]:
+    ) -> typing.Optional[Some]:
         return Some(
             [
                 await self.field_extractor.extract_from_field(
@@ -71,6 +72,8 @@ class FieldExtractorMarker(typing.NamedTuple):
                 " or Annotated[..., Json(), Field()]"
             )
         field_extractor = marker.extractor_marker.register_parameter(param)
+        if not isinstance(field_extractor, SupportsFieldExtractor):
+            raise TypeError("Form fields must implement the FieldExtractor protocol")
         if self.repeated:
             return RepeatedFieldExtractor(
                 field_name=field_name, field_extractor=field_extractor

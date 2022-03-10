@@ -5,8 +5,8 @@ from starlette.datastructures import FormData
 
 import xpresso.openapi.models as openapi_models
 from xpresso._utils.compat import Protocol
-from xpresso._utils.typing import Some
 from xpresso.binders.api import ModelNameMap, Schemas
+from xpresso.typing import Some
 
 
 class FormFieldOpenAPIProvider(Protocol):
@@ -44,7 +44,7 @@ class FormDataExtractor(Protocol):
 
     async def extract_from_form(
         self, form: FormData, *, loc: typing.Iterable[typing.Union[int, str]]
-    ) -> typing.Optional[Some[typing.Any]]:
+    ) -> typing.Optional[Some]:
         raise NotImplementedError
 
 

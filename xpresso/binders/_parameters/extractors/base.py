@@ -6,8 +6,9 @@ from pydantic.error_wrappers import ErrorWrapper
 from pydantic.fields import ModelField
 from starlette.requests import HTTPConnection
 
-from xpresso._utils.typing import Some, model_field_from_param
+from xpresso._utils.typing import model_field_from_param
 from xpresso.exceptions import RequestValidationError, WebSocketValidationError
+from xpresso.typing import Some
 
 
 @dataclass(frozen=True, eq=False)
@@ -19,7 +20,7 @@ class ParameterExtractorBase:
 
     async def validate(
         self,
-        values: typing.Optional[Some[typing.Any]],
+        values: typing.Optional[Some],
         connection: HTTPConnection,
     ) -> typing.Any:
         """Validate after parsing. Only used by the top-level body"""
