@@ -1,17 +1,27 @@
 import functools
 import inspect
-from dataclasses import dataclass
-from typing import Any, Callable, ClassVar, Dict, Iterable, List, Optional, Tuple, cast
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    List,
+    NamedTuple,
+    Optional,
+    Tuple,
+    cast,
+)
 
 from pydantic.error_wrappers import ErrorWrapper
 from pydantic.fields import ModelField
 from starlette.requests import HTTPConnection
 
-from xpresso._utils.typing import is_mapping_like, is_sequence_like
-from xpresso.binders._parameters.extractors.base import (
-    ParameterExtractorBase,
-    get_basic_param_info,
+from xpresso._utils.typing import (
+    is_mapping_like,
+    is_sequence_like,
+    model_field_from_param,
 )
+from xpresso.binders._parameters.extractors.validator import validate
 from xpresso.binders._utils.grouped import grouped
 from xpresso.binders.api import SupportsExtractor
 from xpresso.binders.exceptions import InvalidSerialization
@@ -121,10 +131,10 @@ ERRORS = {
 }
 
 
-@dataclass(frozen=True)
-class PathParameterExtractor(ParameterExtractorBase):
+class PathParameterExtractor(NamedTuple):
+    name: str
+    field: ModelField
     extractor: Callable[..., Any]
-    in_: ClassVar[str] = "path"
 
     async def extract(
         self,
@@ -137,19 +147,22 @@ class PathParameterExtractor(ParameterExtractorBase):
             raise ERRORS[connection.scope["type"]](
                 [ErrorWrapper(exc=exc, loc=("path", self.name))]
             )
-        return await self.validate(Some(extracted), connection)
+        return await validate(
+            field=self.field,
+            in_="path",
+            name=self.name,
+            connection=connection,
+            values=Some(extracted),
+        )
 
 
-@dataclass(frozen=True)
-class PathParameterExtractorMarker:
+class PathParameterExtractorMarker(NamedTuple):
     alias: Optional[str]
     explode: bool
     style: str
-    in_: ClassVar[str] = "path"
 
     def register_parameter(self, param: inspect.Parameter) -> SupportsExtractor:
-        field, name, loc = get_basic_param_info(param, self.alias, self.in_)
+        field = model_field_from_param(param)
+        name = self.alias or param.name
         extractor = get_extractor(style=self.style, explode=self.explode, field=field)
-        return PathParameterExtractor(
-            field=field, loc=loc, name=name, extractor=extractor
-        )
+        return PathParameterExtractor(field=field, name=name, extractor=extractor)

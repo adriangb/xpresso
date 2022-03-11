@@ -1,18 +1,18 @@
 import functools
 import inspect
-from dataclasses import dataclass
-from typing import Any, ClassVar, Dict, Iterable, List, Optional, Tuple, cast
+from typing import Any, Dict, Iterable, List, NamedTuple, Optional, Tuple, cast
 
 from pydantic.error_wrappers import ErrorWrapper
 from pydantic.fields import ModelField
 from starlette.requests import HTTPConnection
 
 from xpresso._utils.compat import Protocol
-from xpresso._utils.typing import is_mapping_like, is_sequence_like
-from xpresso.binders._parameters.extractors.base import (
-    ParameterExtractorBase,
-    get_basic_param_info,
+from xpresso._utils.typing import (
+    is_mapping_like,
+    is_sequence_like,
+    model_field_from_param,
 )
+from xpresso.binders._parameters.extractors.validator import validate
 from xpresso.binders._utils.grouped import grouped
 from xpresso.binders.api import SupportsExtractor
 from xpresso.binders.exceptions import InvalidSerialization
@@ -80,10 +80,10 @@ ERRORS = {
 }
 
 
-@dataclass(frozen=True, eq=False)
-class HeaderParameterExtractor(ParameterExtractorBase):
+class HeaderParameterExtractor(NamedTuple):
+    name: str
+    field: ModelField
     extractor: HeaderExtractor
-    in_: ClassVar[str] = "header"
     header_name: bytes
 
     async def extract(
@@ -92,8 +92,7 @@ class HeaderParameterExtractor(ParameterExtractorBase):
     ) -> Any:
         # parse headers according to RFC 7230
         # this means treating repeated headers and "," seperated ones the same
-        # so here we merge them all into one "," seperated string
-        # also note that whitespaces after a "," don't matter, so we .lstrip() as needed
+        # so here we merge them all into one "," seperated string for consistency
         header_values: "List[str]" = []
         for name, value in connection.scope["headers"]:
             if name == self.header_name:
@@ -109,24 +108,28 @@ class HeaderParameterExtractor(ParameterExtractorBase):
             raise ERRORS[connection.scope["type"]](
                 [ErrorWrapper(exc=exc, loc=("header", self.name))]
             )
-        return await self.validate(extracted, connection)
+        return await validate(
+            field=self.field,
+            in_="header",
+            name=self.name,
+            connection=connection,
+            values=extracted,
+        )
 
 
-@dataclass(frozen=True)
-class HeaderParameterExtractorMarker:
+class HeaderParameterExtractorMarker(NamedTuple):
     alias: Optional[str]
     explode: bool
     convert_underscores: bool
-    in_: ClassVar[str] = "header"
 
     def register_parameter(self, param: inspect.Parameter) -> SupportsExtractor:
-        field, name, loc = get_basic_param_info(param, self.alias, self.in_)
+        field = model_field_from_param(param)
+        name = self.alias or param.name
         if self.convert_underscores and not self.alias and field.name == field.alias:
             name = name.replace("_", "-")
         extractor = get_extractor(explode=self.explode, field=field)
         return HeaderParameterExtractor(
             field=field,
-            loc=loc,
             name=name,
             extractor=extractor,
             header_name=name.lower().encode("latin-1"),

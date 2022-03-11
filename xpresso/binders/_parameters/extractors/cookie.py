@@ -1,16 +1,16 @@
 import inspect
-from dataclasses import dataclass
-from typing import Any, ClassVar, Dict, Iterable, List, Optional, Tuple, cast
+from typing import Any, Dict, Iterable, List, NamedTuple, Optional, Tuple, cast
 
 from pydantic.fields import ModelField
 from starlette.requests import HTTPConnection
 
 from xpresso._utils.compat import Protocol
-from xpresso._utils.typing import is_mapping_like, is_sequence_like
-from xpresso.binders._parameters.extractors.base import (
-    ParameterExtractorBase,
-    get_basic_param_info,
+from xpresso._utils.typing import (
+    is_mapping_like,
+    is_sequence_like,
+    model_field_from_param,
 )
+from xpresso.binders._parameters.extractors.validator import validate
 from xpresso.binders._utils.grouped import grouped
 from xpresso.binders.api import SupportsExtractor
 from xpresso.typing import Some
@@ -54,10 +54,10 @@ def get_extractor(explode: bool, field: ModelField) -> CookieExtractor:
     return collect_scalar
 
 
-@dataclass(frozen=True)
-class CookieParameterExtractor(ParameterExtractorBase):
+class CookieParameterExtractor(NamedTuple):
+    name: str
+    field: ModelField
     extractor: CookieExtractor
-    in_: ClassVar[str] = "cookie"
 
     async def extract(
         self,
@@ -65,19 +65,28 @@ class CookieParameterExtractor(ParameterExtractorBase):
     ) -> Any:
         param = connection.cookies.get(self.name, None)
         if param is not None:
-            return await self.validate(Some(self.extractor(param)), connection)
-        return await self.validate(None, connection)
+            return await validate(
+                field=self.field,
+                in_="cookie",
+                name=self.name,
+                connection=connection,
+                values=Some(self.extractor(param)),
+            )
+        return await validate(
+            field=self.field,
+            in_="cookie",
+            name=self.name,
+            connection=connection,
+            values=None,
+        )
 
 
-@dataclass(frozen=True)
-class CookieParameterExtractorMarker:
+class CookieParameterExtractorMarker(NamedTuple):
     alias: Optional[str]
     explode: bool
-    in_: ClassVar[str] = "cookie"
 
     def register_parameter(self, param: inspect.Parameter) -> SupportsExtractor:
-        field, name, loc = get_basic_param_info(param, self.alias, self.in_)
+        field = model_field_from_param(param)
+        name = self.alias or param.name
         extractor = get_extractor(field=field, explode=self.explode)
-        return CookieParameterExtractor(
-            field=field, loc=loc, name=name, extractor=extractor
-        )
+        return CookieParameterExtractor(field=field, name=name, extractor=extractor)

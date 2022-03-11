@@ -14,7 +14,7 @@ def test_websockets_missing_header() -> None:
             pass
 
     assert isinstance(err.value, WebSocketValidationError)
-    assert err.value.errors() == [{'loc': ('header', 'x_header'), 'msg': 'Missing required header parameter', 'type': 'value_error'}]
+    assert err.value.errors() == [{'loc': ('header', 'x-header'), 'msg': 'Missing required header parameter', 'type': 'value_error'}]
 
 
 def test_websockets_unprocessable_header() -> None:
@@ -25,7 +25,7 @@ def test_websockets_unprocessable_header() -> None:
             pass
 
     assert isinstance(err.value, WebSocketValidationError)
-    assert err.value.errors() == [{'loc': ('header', 'x_header'), 'msg': 'value is not a valid integer', 'type': 'type_error.integer'}]
+    assert err.value.errors() == [{'loc': ('header', 'x-header'), 'msg': 'value is not a valid integer', 'type': 'type_error.integer'}]
 
 
 def test_websockets_exception_in_user_dependency() -> None:

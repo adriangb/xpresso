@@ -1,14 +1,12 @@
 import inspect
-from dataclasses import dataclass
-from typing import Any, ClassVar, Optional
+from typing import Any, NamedTuple, Optional
 
 from pydantic.error_wrappers import ErrorWrapper
+from pydantic.fields import ModelField
 from starlette.requests import HTTPConnection
 
-from xpresso.binders._parameters.extractors.base import (
-    ParameterExtractorBase,
-    get_basic_param_info,
-)
+from xpresso._utils.typing import model_field_from_param
+from xpresso.binders._parameters.extractors.validator import validate
 from xpresso.binders._utils.forms import Extractor as FormExtractor
 from xpresso.binders._utils.forms import get_extractor
 from xpresso.binders.api import SupportsExtractor
@@ -21,10 +19,10 @@ ERRORS = {
 }
 
 
-@dataclass(frozen=True)
-class QueryParameterExtractor(ParameterExtractorBase):
+class QueryParameterExtractor(NamedTuple):
+    name: str
+    field: ModelField
     extractor: FormExtractor
-    in_: ClassVar[str] = "query"
 
     async def extract(
         self,
@@ -43,23 +41,26 @@ class QueryParameterExtractor(ParameterExtractorBase):
                     )
                 ]
             )
-        return await self.validate(extracted, connection)
+        return await validate(
+            field=self.field,
+            in_="query",
+            name=self.name,
+            connection=connection,
+            values=extracted,
+        )
 
 
-@dataclass(frozen=True)
-class QueryParameterExtractorMarker:
+class QueryParameterExtractorMarker(NamedTuple):
     alias: Optional[str]
     explode: bool
     style: str
-    in_: ClassVar[str] = "query"
 
     def register_parameter(self, param: inspect.Parameter) -> SupportsExtractor:
         if self.style == "deepObject" and not self.explode:
             # no such thing in the spec
             raise ValueError("deepObject can only be used with explode=True")
-        field, name, loc = get_basic_param_info(param, self.alias, self.in_)
+        field = model_field_from_param(param)
+        name = self.alias or param.name
         extractor = get_extractor(style=self.style, explode=self.explode, field=field)
         name = self.alias or field.alias
-        return QueryParameterExtractor(
-            field=field, loc=loc, name=name, extractor=extractor
-        )
+        return QueryParameterExtractor(field=field, name=name, extractor=extractor)
