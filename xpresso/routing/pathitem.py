@@ -93,7 +93,7 @@ class Path(starlette.routing.Route):
             # this needs to be an object so that Starlette
             # detects it as an ASGI app and passes us the raw Scope, Receive and Send
             # as well as not wrapping it in a threadpool
-            endpoint=_PathApp(operations).__call__,
+            endpoint=_PathApp(operations),  # type: ignore[arg-type]
             name=name,  # type: ignore[arg-type]
             include_in_schema=include_in_schema,
             methods=list(operations.keys()),

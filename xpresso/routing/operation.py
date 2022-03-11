@@ -151,7 +151,7 @@ class Operation(BaseRoute):
             executor=executor,
             response_encoder=self.response_encoder,
             response_factory=self.response_factory,
-        ).__call__
+        )  # type: ignore[assignment]
 
     def url_path_for(self, name: str, **path_params: str) -> URLPath:
         if path_params:
