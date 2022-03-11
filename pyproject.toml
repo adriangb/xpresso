@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "xpresso"
-version = "0.28.0"
+version = "0.28.1"
 description = "A developer centric, performant Python web framework"
 authors = ["Adrian Garcia Badaracco <adrian@adriangb.com>"]
 readme = "README.md"
@@ -39,7 +39,6 @@ python = ">=3.7,<4"
 di = "^0.68.5"
 anyio = ">=3.4.0,<5"
 starlette = ">=0.19.0,<1"
-importlib-metadata = { version = ">=3", python = "<3.8" }
 typing-extensions = { version = ">=3", python = "<3.9" }
 pydantic = "^1.9.0"
 
