@@ -12,13 +12,8 @@ from xpresso.responses import Responses
 from xpresso.routing.operation import Operation
 
 
-class _PathApp:
-    """Thin class wrapper so that Starlette treats us as an ASGI App"""
-
-    __slots__ = ("operations",)
-
-    def __init__(self, operations: typing.Mapping[str, Operation]) -> None:
-        self.operations = operations
+class _PathApp(typing.NamedTuple):
+    operations: typing.Mapping[str, Operation]
 
     def __call__(
         self,
@@ -77,41 +72,27 @@ class Path(starlette.routing.Route):
         self.responses = dict(responses or {})
 
         operations: typing.Dict[str, Operation] = {}
-        if get:
-            operations["GET"] = get if isinstance(get, Operation) else Operation(get)
-        if head:
-            operations["HEAD"] = (
-                head if isinstance(head, Operation) else Operation(head)
-            )
-        if post:
-            operations["POST"] = (
-                post if isinstance(post, Operation) else Operation(post)
-            )
-        if put:
-            operations["PUT"] = put if isinstance(put, Operation) else Operation(put)
-        if patch:
-            operations["PATCH"] = (
-                patch if isinstance(patch, Operation) else Operation(patch)
-            )
-        if delete:
-            operations["DELETE"] = (
-                delete if isinstance(delete, Operation) else Operation(delete)
-            )
-        if connect:
-            operations["CONNECT"] = (
-                connect if isinstance(connect, Operation) else Operation(connect)
-            )
-        if options:
-            operations["OPTIONS"] = (
-                options if isinstance(options, Operation) else Operation(options)
-            )
-        if trace:
-            operations["TRACE"] = (
-                trace if isinstance(trace, Operation) else Operation(trace)
-            )
+        for param, operation in (
+            (get, "GET"),
+            (head, "HEAD"),
+            (post, "POST"),
+            (put, "PUT"),
+            (patch, "PATCH"),
+            (delete, "DELETE"),
+            (connect, "CONNECT"),
+            (options, "OPTIONS"),
+            (trace, "TRACE"),
+        ):
+            if param:
+                operations[operation] = (
+                    param if isinstance(param, Operation) else Operation(param)
+                )
         self.operations = operations
         super().__init__(  # type: ignore  # for Pylance
             path=path,
+            # this needs to be an object so that Starlette
+            # detects it as an ASGI app and passes us the raw Scope, Receive and Send
+            # as well as not wrapping it in a threadpool
             endpoint=_PathApp(operations),
             name=name,  # type: ignore[arg-type]
             include_in_schema=include_in_schema,

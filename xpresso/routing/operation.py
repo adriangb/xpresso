@@ -22,28 +22,12 @@ from xpresso.encoders.json import JsonableEncoder
 from xpresso.responses import Responses
 
 
-class _OperationApp:
-    __slots__ = (
-        "container",
-        "dependant",
-        "executor",
-        "response_factory",
-        "response_encoder",
-    )
-
-    def __init__(
-        self,
-        dependant: SolvedDependant[typing.Any],
-        container: Container,
-        executor: SupportsAsyncExecutor,
-        response_factory: typing.Callable[[typing.Any], Response],
-        response_encoder: Encoder,
-    ) -> None:
-        self.container = container
-        self.dependant = dependant
-        self.executor = executor
-        self.response_factory = response_factory
-        self.response_encoder = response_encoder
+class _OperationApp(typing.NamedTuple):
+    dependant: SolvedDependant[typing.Any]
+    container: Container
+    executor: SupportsAsyncExecutor
+    response_factory: typing.Callable[[typing.Any], Response]
+    response_encoder: Encoder
 
     async def __call__(
         self,
@@ -51,20 +35,16 @@ class _OperationApp:
         receive: Receive,
         send: Send,
     ) -> None:
-        xpresso_scope: XpressoHTTPExtension = scope["extensions"]["xpresso"]
-        if xpresso_scope.request is None:
-            request = Request(scope=scope, receive=receive, send=send)
-            xpresso_scope.request = request
-        else:
-            request = xpresso_scope.request
-        values: typing.Dict[typing.Any, typing.Any] = {
+        xpresso_scope: "XpressoHTTPExtension" = scope["extensions"]["xpresso"]
+        request = xpresso_scope.request = Request(scope=scope, receive=receive, send=send)
+        values: "typing.Dict[typing.Any, typing.Any]" = {
             Request: request,
             HTTPConnection: request,
         }
         async with xpresso_scope.di_container_state.enter_scope(
             "connection"
-        ) as cpnn_state:
-            async with cpnn_state.enter_scope("endpoint") as endpoint_state:
+        ) as connection_state:
+            async with connection_state.enter_scope("endpoint") as endpoint_state:
                 endpoint_return = await self.container.execute_async(
                     self.dependant,
                     values=values,
