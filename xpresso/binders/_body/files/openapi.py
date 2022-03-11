@@ -65,7 +65,7 @@ class OpenAPIFileField(typing.NamedTuple):
         return openapi_models.Encoding(contentType=self.media_type)
 
 
-class OpenAPIFileMarker(typing.NamedTuple):
+class BodyOpenAPIMarker(typing.NamedTuple):
     media_type: typing.Optional[str]
     description: typing.Optional[str]
     examples: typing.Optional[
@@ -89,7 +89,7 @@ class OpenAPIFileMarker(typing.NamedTuple):
         )
 
 
-class OpenAPIFileFieldMarker(typing.NamedTuple):
+class FieldOpenAPIMarker(typing.NamedTuple):
     media_type: typing.Optional[str]
     format: Literal["binary", "base64"]
 

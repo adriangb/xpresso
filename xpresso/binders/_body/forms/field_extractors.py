@@ -11,12 +11,10 @@ from xpresso.binders.dependants import BodyBinderMarker
 from xpresso.typing import Some
 
 
-class FieldExtractorBase(typing.NamedTuple):
+class _FieldExtractor(typing.NamedTuple):
     field_name: str
     field_extractor: SupportsFieldExtractor
 
-
-class FieldExtractor(FieldExtractorBase):
     async def extract_from_form(
         self, form: FormData, *, loc: typing.Iterable[typing.Union[int, str]]
     ) -> typing.Optional[Some]:
@@ -29,7 +27,10 @@ class FieldExtractor(FieldExtractorBase):
         )
 
 
-class RepeatedFieldExtractor(FieldExtractorBase):
+class _RepeatedFieldExtractor(typing.NamedTuple):
+    field_name: str
+    field_extractor: SupportsFieldExtractor
+
     async def extract_from_form(
         self, form: FormData, *, loc: typing.Iterable[typing.Union[int, str]]
     ) -> typing.Optional[Some]:
@@ -66,10 +67,10 @@ class FieldExtractorMarker(typing.NamedTuple):
             raise TypeError(f"The field {param.name} is not valid as a form field")
         field_extractor = marker.field_extractor_marker.register_parameter(param)
         if self.repeated:
-            return RepeatedFieldExtractor(
+            return _RepeatedFieldExtractor(
                 field_name=field_name, field_extractor=field_extractor
             )
         else:
-            return FieldExtractor(
+            return _FieldExtractor(
                 field_name=field_name, field_extractor=field_extractor
             )

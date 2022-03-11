@@ -10,7 +10,7 @@ from xpresso.binders.dependants import BodyBinderMarker
 from xpresso.openapi import models as openapi_models
 
 
-class OpenAPIContentTypeDiscriminated(typing.NamedTuple):
+class _BodyOpenAPI(typing.NamedTuple):
     sub_body_providers: typing.Iterable[SupportsOpenAPIBody]
     description: typing.Optional[str]
     required: typing.Optional[bool]
@@ -42,7 +42,7 @@ class OpenAPIContentTypeDiscriminated(typing.NamedTuple):
         raise NotImplementedError
 
 
-class OpenAPIContentTypeDiscriminatedMarker(typing.NamedTuple):
+class BodyOpenAPIMarker(typing.NamedTuple):
     description: typing.Optional[str]
 
     def register_parameter(self, param: inspect.Parameter) -> SupportsOpenAPIBody:
@@ -71,7 +71,7 @@ class OpenAPIContentTypeDiscriminatedMarker(typing.NamedTuple):
             provider = marker.register_parameter(sub_body_param).openapi
             if provider and provider.include_in_schema:
                 sub_body_providers.append(provider)
-        return OpenAPIContentTypeDiscriminated(
+        return _BodyOpenAPI(
             sub_body_providers=sub_body_providers,
             description=self.description,
             required=None if required else False,

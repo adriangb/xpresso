@@ -7,18 +7,18 @@ from starlette.datastructures import UploadFile
 from starlette.requests import HTTPConnection, Request
 
 from xpresso._utils.typing import model_field_from_param
-from xpresso.binders._body.extractors.body_field_validation import validate_body_field
 from xpresso.binders._body.media_type_validator import MediaTypeValidator
 from xpresso.binders._body.media_type_validator import (
     get_validator as get_media_type_validator,
 )
+from xpresso.binders._body.pydantic_field_validator import validate_body_field
 from xpresso.binders._utils.stream_to_bytes import convert_stream_to_bytes
 from xpresso.binders.api import SupportsBodyExtractor, SupportsFieldExtractor
 from xpresso.exceptions import RequestValidationError
 from xpresso.typing import Some
 
 
-class FileBodyExtractor(typing.NamedTuple):
+class _FileBodyExtractor(typing.NamedTuple):
     field: ModelField
     media_type_validator: MediaTypeValidator
     consume: bool
@@ -54,7 +54,7 @@ class FileBodyExtractor(typing.NamedTuple):
         return file
 
 
-class FileFieldExtractor(typing.NamedTuple):
+class _FileFieldExtractor(typing.NamedTuple):
     field: ModelField
 
     async def extract_from_field(
@@ -78,7 +78,7 @@ class FileFieldExtractor(typing.NamedTuple):
         return field
 
 
-class FileBodyExtractorMarker(typing.NamedTuple):
+class BodyExtractorMarker(typing.NamedTuple):
     media_type: typing.Optional[str]
     enforce_media_type: bool
     consume: bool
@@ -89,13 +89,13 @@ class FileBodyExtractorMarker(typing.NamedTuple):
             media_type_validator = get_media_type_validator(self.media_type)
         else:
             media_type_validator = get_media_type_validator(None)
-        return FileBodyExtractor(
+        return _FileBodyExtractor(
             field=field,
             media_type_validator=media_type_validator,
             consume=self.consume,
         )
 
 
-class FileFieldExtractorMarker(typing.NamedTuple):
+class FieldExtractorMarker(typing.NamedTuple):
     def register_parameter(self, param: inspect.Parameter) -> SupportsFieldExtractor:
-        return FileFieldExtractor(field=model_field_from_param(param))
+        return _FileFieldExtractor(field=model_field_from_param(param))

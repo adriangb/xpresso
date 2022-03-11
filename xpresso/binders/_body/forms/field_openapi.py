@@ -9,8 +9,6 @@ from xpresso.binders.api import ModelNameMap, Schemas, SupportsOpenAPIField
 from xpresso.binders.dependants import BodyBinderMarker
 from xpresso.openapi import models
 
-T = typing.TypeVar("T")
-
 
 class _Base(typing.NamedTuple):
     field_name: str
@@ -26,7 +24,7 @@ class _Base(typing.NamedTuple):
         return self.field_openapi.get_field_encoding(model_name_map, schemas)
 
 
-class OpenAPIField(_Base):
+class _FieldOpenAPI(_Base):
     def get_field_schema(
         self, model_name_map: ModelNameMap, schemas: Schemas
     ) -> models.Schema:
@@ -35,7 +33,7 @@ class OpenAPIField(_Base):
         )
 
 
-class OpenAPIRepeatedField(_Base):
+class _RepeatedFieldOpenAPI(_Base):
     def get_field_schema(
         self, model_name_map: ModelNameMap, schemas: Schemas
     ) -> models.Schema:
@@ -47,7 +45,7 @@ class OpenAPIRepeatedField(_Base):
         )
 
 
-class OpenAPIFieldMarker(typing.NamedTuple):
+class FieldOpenAPIMarker(typing.NamedTuple):
     alias: typing.Optional[str]
     include_in_schema: bool
     repeated: bool
@@ -69,12 +67,12 @@ class OpenAPIFieldMarker(typing.NamedTuple):
         openapi_provider = marker.openapi_field_marker.register_parameter(param)
         field_name = self.alias or model_field_from_param(param).alias
         if self.repeated:
-            return OpenAPIRepeatedField(
+            return _RepeatedFieldOpenAPI(
                 field_name=field_name,
                 field_openapi=openapi_provider,
                 include_in_schema=self.include_in_schema,
             )
-        return OpenAPIField(
+        return _FieldOpenAPI(
             field_name=field_name,
             field_openapi=openapi_provider,
             include_in_schema=self.include_in_schema,

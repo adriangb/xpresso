@@ -11,7 +11,7 @@ from xpresso.binders.api import ModelNameMap, Schemas
 from xpresso.openapi import models as openapi_models
 
 
-class OpenAPIFormEncodedField(typing.NamedTuple):
+class _FormEncodedOpenAPI(typing.NamedTuple):
     field_name: str
     include_in_schema: bool
     alias: typing.Optional[str]
@@ -37,7 +37,7 @@ class OpenAPIFormEncodedField(typing.NamedTuple):
         )
 
 
-class OpenAPIFormFieldMarker(typing.NamedTuple):
+class FormEncodedOpenAPIMarker(typing.NamedTuple):
     alias: typing.Optional[str]
     style: str
     explode: bool
@@ -48,7 +48,7 @@ class OpenAPIFormFieldMarker(typing.NamedTuple):
     ) -> SupportsXpressoFormDataFieldOpenAPI:
         field = model_field_from_param(param)
         field_name = self.alias or field.alias
-        return OpenAPIFormEncodedField(
+        return _FormEncodedOpenAPI(
             alias=self.alias,
             style=self.style,
             explode=self.explode,

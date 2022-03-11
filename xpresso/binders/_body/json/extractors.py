@@ -8,24 +8,24 @@ from starlette.requests import HTTPConnection, Request
 
 from xpresso._utils.compat import Protocol
 from xpresso._utils.typing import model_field_from_param
-from xpresso.binders._body.extractors.body_field_validation import validate_body_field
 from xpresso.binders._body.media_type_validator import MediaTypeValidator
 from xpresso.binders._body.media_type_validator import (
     get_validator as get_media_type_validator,
 )
+from xpresso.binders._body.pydantic_field_validator import validate_body_field
 from xpresso.binders._utils.stream_to_bytes import convert_stream_to_bytes
 from xpresso.binders.api import SupportsBodyExtractor, SupportsFieldExtractor
 from xpresso.exceptions import RequestValidationError
 from xpresso.typing import Some
 
 
-class Decoder(Protocol):
+class SupportsJsonDecoder(Protocol):
     def __call__(self, s: typing.Union[str, bytes]) -> typing.Any:
         ...
 
 
-def decode(
-    decoder: Decoder,
+def _decode(
+    decoder: SupportsJsonDecoder,
     value: typing.Union[str, bytes],
     loc: typing.Iterable[typing.Union[int, str]],
 ) -> typing.Union[bytes, UploadFile]:
@@ -43,9 +43,9 @@ def decode(
     return decoded
 
 
-class BodyExtractor(typing.NamedTuple):
+class _BodyExtractor(typing.NamedTuple):
     field: ModelField
-    decoder: Decoder
+    decoder: SupportsJsonDecoder
     media_type_validator: MediaTypeValidator
     consume: bool
 
@@ -65,14 +65,14 @@ class BodyExtractor(typing.NamedTuple):
         else:
             data_from_stream = await connection.body()
         return validate_body_field(
-            Some(decode(self.decoder, data_from_stream, loc=loc)),
+            Some(_decode(self.decoder, data_from_stream, loc=loc)),
             field=self.field,
             loc=loc,
         )
 
 
-class FieldExtractor(typing.NamedTuple):
-    decoder: Decoder
+class _FieldExtractor(typing.NamedTuple):
+    decoder: SupportsJsonDecoder
 
     async def extract_from_field(
         self,
@@ -81,12 +81,12 @@ class FieldExtractor(typing.NamedTuple):
         loc: typing.Iterable[typing.Union[str, int]],
     ) -> typing.Any:
         if isinstance(field, UploadFile):
-            return decode(self.decoder, await field.read(), loc=loc)
-        return decode(self.decoder, field, loc=loc)
+            return _decode(self.decoder, await field.read(), loc=loc)
+        return _decode(self.decoder, field, loc=loc)
 
 
 class BodyExtractorMarker(typing.NamedTuple):
-    decoder: Decoder
+    decoder: SupportsJsonDecoder
     enforce_media_type: bool
     consume: bool
 
@@ -95,7 +95,7 @@ class BodyExtractorMarker(typing.NamedTuple):
             media_type_validator = get_media_type_validator("application/json")
         else:
             media_type_validator = get_media_type_validator(None)
-        return BodyExtractor(
+        return _BodyExtractor(
             field=model_field_from_param(param),
             decoder=self.decoder,
             media_type_validator=media_type_validator,
@@ -104,7 +104,7 @@ class BodyExtractorMarker(typing.NamedTuple):
 
 
 class FieldExtractorMarker(typing.NamedTuple):
-    decoder: Decoder
+    decoder: SupportsJsonDecoder
 
     def register_parameter(self, param: inspect.Parameter) -> SupportsFieldExtractor:
-        return FieldExtractor(self.decoder)
+        return _FieldExtractor(self.decoder)

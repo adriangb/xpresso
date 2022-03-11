@@ -7,13 +7,13 @@ from xpresso.binders._body.form_field import (
     FormFieldMarker,
     SupportsXpressoFormDataFieldOpenAPI,
 )
-from xpresso.binders._body.openapi.form_encoded_field import OpenAPIFormFieldMarker
+from xpresso.binders._body.forms.form_encoded_openapi import FormEncodedOpenAPIMarker
 from xpresso.binders._utils.examples import parse_examples
 from xpresso.binders.api import ModelNameMap, Schemas, SupportsOpenAPIBody
 from xpresso.openapi import models as openapi_models
 
 
-class OpenAPIFormDataBody(typing.NamedTuple):
+class _BodyOpenAPI(typing.NamedTuple):
     field_openapi_providers: typing.Mapping[str, SupportsXpressoFormDataFieldOpenAPI]
     required_fields: typing.List[str]
     description: typing.Optional[str]
@@ -73,19 +73,8 @@ class OpenAPIFormDataBody(typing.NamedTuple):
             },
         )
 
-    # Nested forms are not supported
-    def get_field_encoding(
-        self, model_name_map: ModelNameMap, schemas: Schemas
-    ) -> openapi_models.Encoding:
-        raise NotImplementedError
 
-    def get_field_schema(
-        self, model_name_map: ModelNameMap, schemas: Schemas
-    ) -> openapi_models.Schema:
-        raise NotImplementedError
-
-
-class OpenAPIFormDataMarker(typing.NamedTuple):
+class BodyOpenAPIMarker(typing.NamedTuple):
     description: typing.Optional[str]
     examples: typing.Optional[
         typing.Dict[str, typing.Union[openapi_models.Example, typing.Any]]
@@ -111,7 +100,7 @@ class OpenAPIFormDataMarker(typing.NamedTuple):
                     field_openapi = m.openapi_marker.register_parameter(field_param)
                     break
             else:
-                field_openapi = OpenAPIFormFieldMarker(
+                field_openapi = FormEncodedOpenAPIMarker(
                     alias=None,
                     style="form",
                     explode=True,
@@ -124,7 +113,7 @@ class OpenAPIFormDataMarker(typing.NamedTuple):
                 if field.required is not False:
                     required_fields.append(field_name)
         examples = parse_examples(self.examples) if self.examples else None
-        return OpenAPIFormDataBody(
+        return _BodyOpenAPI(
             field_openapi_providers=field_openapi_providers,
             required_fields=required_fields,
             description=self.description,

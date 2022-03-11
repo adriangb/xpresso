@@ -11,14 +11,8 @@ from xpresso.binders.api import SupportsBodyExtractor
 from xpresso.binders.dependants import BodyBinderMarker
 
 
-class ContentTypeDiscriminatedExtractor:
-    __slots__ = ("sub_body_extractors",)
-
-    def __init__(
-        self,
-        sub_body_extractors: typing.Iterable[SupportsBodyExtractor],
-    ) -> None:
-        self.sub_body_extractors = sub_body_extractors
+class _BodyExtractor(typing.NamedTuple):
+    sub_body_extractors: typing.Iterable[SupportsBodyExtractor]
 
     async def extract(self, connection: HTTPConnection) -> typing.Any:
         assert isinstance(connection, Request)
@@ -45,7 +39,7 @@ class ContentTypeDiscriminatedExtractor:
         raise NotImplementedError
 
 
-class ContentTypeDiscriminatedExtractorMarker(typing.NamedTuple):
+class BodyExtractorMarker(typing.NamedTuple):
     def register_parameter(self, param: inspect.Parameter) -> SupportsBodyExtractor:
         sub_body_extractors: typing.List[SupportsBodyExtractor] = []
 
@@ -75,6 +69,4 @@ class ContentTypeDiscriminatedExtractorMarker(typing.NamedTuple):
             sub_body_extractors.append(
                 marker.register_parameter(sub_body_param).extractor
             )
-        return ContentTypeDiscriminatedExtractor(
-            sub_body_extractors=sub_body_extractors
-        )
+        return _BodyExtractor(sub_body_extractors=sub_body_extractors)

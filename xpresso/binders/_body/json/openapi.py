@@ -16,7 +16,7 @@ from xpresso.binders.api import (
 from xpresso.openapi import models as openapi_models
 
 
-class BodyOpenAPI(typing.NamedTuple):
+class _BodyOpenAPI(typing.NamedTuple):
     description: typing.Optional[str]
     examples: typing.Optional[openapi_models.Examples]
     field: ModelField
@@ -43,7 +43,7 @@ class BodyOpenAPI(typing.NamedTuple):
         )
 
 
-class FieldOpenAPI(typing.NamedTuple):
+class _FieldOpenAPI(typing.NamedTuple):
     field: ModelField
 
     def get_models(self) -> typing.List[type]:
@@ -71,7 +71,7 @@ class BodyOpenAPIMarker(typing.NamedTuple):
         examples = parse_examples(self.examples) if self.examples else None
         field = model_field_from_param(param)
         required = field.required is not False
-        return BodyOpenAPI(
+        return _BodyOpenAPI(
             description=self.description,
             examples=examples,
             field=field,
@@ -82,4 +82,4 @@ class BodyOpenAPIMarker(typing.NamedTuple):
 
 class FieldOpenAPIMarker(typing.NamedTuple):
     def register_parameter(self, param: inspect.Parameter) -> SupportsOpenAPIField:
-        return FieldOpenAPI(model_field_from_param(param))
+        return _FieldOpenAPI(model_field_from_param(param))

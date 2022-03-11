@@ -7,23 +7,23 @@ from starlette.requests import HTTPConnection, Request
 
 from xpresso._utils.compat import get_args
 from xpresso._utils.typing import model_field_from_param
-from xpresso.binders._body.extractors.body_field_validation import validate_body_field
-from xpresso.binders._body.extractors.form_encoded_field import (
-    FormEncodedFieldExtractorMarker,
-)
 from xpresso.binders._body.form_field import (
     FormFieldMarker,
     SupportsXpressoFormDataFieldExtractor,
+)
+from xpresso.binders._body.forms.form_encoded_extractor import (
+    FormEncodedFieldExtractorMarker,
 )
 from xpresso.binders._body.media_type_validator import MediaTypeValidator
 from xpresso.binders._body.media_type_validator import (
     get_validator as get_media_type_validator,
 )
+from xpresso.binders._body.pydantic_field_validator import validate_body_field
 from xpresso.binders.api import SupportsBodyExtractor
 from xpresso.typing import Some
 
 
-class FormDataBodyExtractor:
+class _BodyExtractor:
     __slots__ = ("media_type_validator", "field", "field_extractors")
 
     def __init__(
@@ -70,7 +70,7 @@ class FormDataBodyExtractor:
         return res
 
 
-class FormDataBodyExtractorMarker(typing.NamedTuple):
+class BodyExtractorMarker(typing.NamedTuple):
     enforce_media_type: bool
     media_type: str
 
@@ -97,7 +97,7 @@ class FormDataBodyExtractorMarker(typing.NamedTuple):
             media_type_validator = get_media_type_validator(self.media_type)
         else:
             media_type_validator = get_media_type_validator(None)
-        return FormDataBodyExtractor(
+        return _BodyExtractor(
             media_type_validator=media_type_validator,
             field_extractors=field_extractors,
             field=form_data_field,
