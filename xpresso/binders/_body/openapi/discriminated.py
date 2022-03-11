@@ -5,13 +5,13 @@ from di.typing import get_markers_from_annotation
 
 from xpresso._utils.compat import Annotated, get_args, get_origin
 from xpresso._utils.typing import model_field_from_param
-from xpresso.binders.api import ModelNameMap, OpenAPIBody, Schemas
+from xpresso.binders.api import ModelNameMap, Schemas, SupportsOpenAPIBody
 from xpresso.binders.dependants import BodyBinderMarker
 from xpresso.openapi import models as openapi_models
 
 
 class OpenAPIContentTypeDiscriminated(typing.NamedTuple):
-    sub_body_providers: typing.Iterable[OpenAPIBody]
+    sub_body_providers: typing.Iterable[SupportsOpenAPIBody]
     description: typing.Optional[str]
     required: typing.Optional[bool]
     include_in_schema: bool
@@ -45,10 +45,10 @@ class OpenAPIContentTypeDiscriminated(typing.NamedTuple):
 class OpenAPIContentTypeDiscriminatedMarker(typing.NamedTuple):
     description: typing.Optional[str]
 
-    def register_parameter(self, param: inspect.Parameter) -> OpenAPIBody:
+    def register_parameter(self, param: inspect.Parameter) -> SupportsOpenAPIBody:
         field = model_field_from_param(param)
         required = field.required is not False
-        sub_body_providers: typing.List[OpenAPIBody] = []
+        sub_body_providers: typing.List[SupportsOpenAPIBody] = []
 
         annotation = param.annotation
         origin = get_origin(annotation)
@@ -68,9 +68,8 @@ class OpenAPIContentTypeDiscriminatedMarker(typing.NamedTuple):
             marker = next(get_markers_from_annotation(arg, BodyBinderMarker), None)
             if marker is None:
                 raise TypeError(f"Type annotation is missing body marker: {arg}")
-            sub_body_openapi = marker.openapi_marker
-            provider = sub_body_openapi.register_parameter(sub_body_param)
-            if provider.include_in_schema:
+            provider = marker.register_parameter(sub_body_param).openapi
+            if provider and provider.include_in_schema:
                 sub_body_providers.append(provider)
         return OpenAPIContentTypeDiscriminated(
             sub_body_providers=sub_body_providers,

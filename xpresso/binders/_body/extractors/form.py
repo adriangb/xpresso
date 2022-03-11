@@ -2,7 +2,7 @@ import inspect
 import typing
 
 from pydantic.fields import ModelField
-from starlette.datastructures import FormData, UploadFile
+from starlette.datastructures import FormData
 from starlette.requests import HTTPConnection, Request
 
 from xpresso._utils.compat import get_args
@@ -11,12 +11,15 @@ from xpresso.binders._body.extractors.body_field_validation import validate_body
 from xpresso.binders._body.extractors.form_encoded_field import (
     FormEncodedFieldExtractorMarker,
 )
-from xpresso.binders._body.form_field import FormDataExtractor, FormFieldMarker
+from xpresso.binders._body.form_field import (
+    FormFieldMarker,
+    SupportsXpressoFormDataFieldExtractor,
+)
 from xpresso.binders._body.media_type_validator import MediaTypeValidator
 from xpresso.binders._body.media_type_validator import (
     get_validator as get_media_type_validator,
 )
-from xpresso.binders.api import BodyExtractor
+from xpresso.binders.api import SupportsBodyExtractor
 from xpresso.typing import Some
 
 
@@ -27,7 +30,7 @@ class FormDataBodyExtractor:
         self,
         media_type_validator: MediaTypeValidator,
         field: ModelField,
-        field_extractors: typing.Mapping[str, FormDataExtractor],
+        field_extractors: typing.Mapping[str, SupportsXpressoFormDataFieldExtractor],
     ) -> None:
         self.media_type_validator = media_type_validator
         self.field = field
@@ -66,23 +69,15 @@ class FormDataBodyExtractor:
                 res[param_name] = extracted.value
         return res
 
-    async def extract_from_field(
-        self,
-        field: typing.Union[str, UploadFile],
-        *,
-        loc: typing.Iterable[typing.Union[str, int]],
-    ) -> typing.Any:
-        raise NotImplementedError
-
 
 class FormDataBodyExtractorMarker(typing.NamedTuple):
     enforce_media_type: bool
     media_type: str
 
-    def register_parameter(self, param: inspect.Parameter) -> BodyExtractor:
+    def register_parameter(self, param: inspect.Parameter) -> SupportsBodyExtractor:
         form_data_field = model_field_from_param(param)
 
-        field_extractors: typing.Dict[str, FormDataExtractor] = {}
+        field_extractors: typing.Dict[str, SupportsXpressoFormDataFieldExtractor] = {}
         # use pydantic to get rid of outer annotated, optional, etc.
         # use pydantic to get rid of outer annotated, optional, etc.
         model = form_data_field.type_

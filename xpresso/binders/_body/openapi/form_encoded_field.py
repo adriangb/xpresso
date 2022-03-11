@@ -6,7 +6,7 @@ from pydantic.schema import get_flat_models_from_field
 
 from xpresso._utils.schemas import openapi_schema_from_pydantic_field
 from xpresso._utils.typing import model_field_from_param
-from xpresso.binders._body.form_field import FormFieldOpenAPIProvider
+from xpresso.binders._body.form_field import SupportsXpressoFormDataFieldOpenAPI
 from xpresso.binders.api import ModelNameMap, Schemas
 from xpresso.openapi import models as openapi_models
 
@@ -43,7 +43,9 @@ class OpenAPIFormFieldMarker(typing.NamedTuple):
     explode: bool
     include_in_schema: bool
 
-    def register_parameter(self, param: inspect.Parameter) -> FormFieldOpenAPIProvider:
+    def register_parameter(
+        self, param: inspect.Parameter
+    ) -> SupportsXpressoFormDataFieldOpenAPI:
         field = model_field_from_param(param)
         field_name = self.alias or field.alias
         return OpenAPIFormEncodedField(

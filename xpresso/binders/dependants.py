@@ -5,7 +5,14 @@ from di.api.dependencies import CacheKey, DependantBase
 from di.dependant import Dependant, Marker
 
 from xpresso._utils.compat import Protocol
-from xpresso.binders.api import BodyExtractor, Extractor, OpenAPIBody, OpenAPIParameter
+from xpresso.binders.api import (
+    SupportsBodyExtractor,
+    SupportsExtractor,
+    SupportsFieldExtractor,
+    SupportsOpenAPIBody,
+    SupportsOpenAPIField,
+    SupportsOpenAPIParameter,
+)
 
 T = typing.TypeVar("T", covariant=True)
 
@@ -19,8 +26,8 @@ class ParameterBinder(Dependant[typing.Any]):
     def __init__(
         self,
         in_: str,
-        openapi: OpenAPIParameter,
-        extractor: Extractor,
+        openapi: SupportsOpenAPIParameter,
+        extractor: SupportsExtractor,
     ):
         self.in_ = in_
         self.openapi = openapi
@@ -38,8 +45,8 @@ class ParameterBinderMarker(Marker):
         self,
         *,
         in_: str,
-        extractor_marker: SupportsMarker[Extractor],
-        openapi_marker: SupportsMarker[OpenAPIParameter],
+        extractor_marker: SupportsMarker[SupportsExtractor],
+        openapi_marker: SupportsMarker[SupportsOpenAPIParameter],
     ) -> None:
         self.in_ = in_
         self.extractor_marker = extractor_marker
@@ -57,8 +64,8 @@ class BodyBinder(Dependant[typing.Any]):
     def __init__(
         self,
         *,
-        openapi: OpenAPIBody,
-        extractor: BodyExtractor,
+        openapi: typing.Optional[SupportsOpenAPIBody],
+        extractor: SupportsBodyExtractor,
     ) -> None:
         super().__init__(call=extractor.extract, scope="connection")
         self.openapi = openapi
@@ -74,14 +81,25 @@ class BodyBinderMarker(Marker):
     def __init__(
         self,
         *,
-        extractor_marker: SupportsMarker[BodyExtractor],
-        openapi_marker: SupportsMarker[OpenAPIBody],
+        extractor_marker: typing.Optional[SupportsMarker[SupportsBodyExtractor]],
+        field_extractor_marker: typing.Optional[SupportsMarker[SupportsFieldExtractor]],
+        openapi_marker: typing.Optional[SupportsMarker[SupportsOpenAPIBody]],
+        openapi_field_marker: typing.Optional[SupportsMarker[SupportsOpenAPIField]],
     ) -> None:
+        self.field_extractor_marker = field_extractor_marker
         self.extractor_marker = extractor_marker
         self.openapi_marker = openapi_marker
+        self.openapi_field_marker = openapi_field_marker
 
     def register_parameter(self, param: inspect.Parameter) -> BodyBinder:
+        openapi = (
+            None
+            if self.openapi_marker is None
+            else self.openapi_marker.register_parameter(param)
+        )
+        if self.extractor_marker is None:
+            raise TypeError("Top-level bodies MUST provide an extractor implementation")
         return BodyBinder(
-            openapi=self.openapi_marker.register_parameter(param),
+            openapi=openapi,
             extractor=self.extractor_marker.register_parameter(param),
         )

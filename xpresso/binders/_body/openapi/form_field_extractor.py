@@ -4,8 +4,8 @@ import typing
 from di.typing import get_markers_from_annotation
 
 from xpresso._utils.typing import model_field_from_param
-from xpresso.binders._body.form_field import FormFieldOpenAPIProvider
-from xpresso.binders.api import ModelNameMap, OpenAPIBody, Schemas
+from xpresso.binders._body.form_field import SupportsXpressoFormDataFieldOpenAPI
+from xpresso.binders.api import ModelNameMap, Schemas, SupportsOpenAPIField
 from xpresso.binders.dependants import BodyBinderMarker
 from xpresso.openapi import models
 
@@ -15,7 +15,7 @@ T = typing.TypeVar("T")
 class _Base(typing.NamedTuple):
     field_name: str
     include_in_schema: bool
-    field_openapi: OpenAPIBody
+    field_openapi: SupportsOpenAPIField
 
     def get_models(self) -> typing.List[type]:
         return self.field_openapi.get_models()
@@ -52,7 +52,9 @@ class OpenAPIFieldMarker(typing.NamedTuple):
     include_in_schema: bool
     repeated: bool
 
-    def register_parameter(self, param: inspect.Parameter) -> FormFieldOpenAPIProvider:
+    def register_parameter(
+        self, param: inspect.Parameter
+    ) -> SupportsXpressoFormDataFieldOpenAPI:
         marker = next(
             get_markers_from_annotation(param.annotation, BodyBinderMarker), None
         )
@@ -62,7 +64,9 @@ class OpenAPIFieldMarker(typing.NamedTuple):
                 "\n You must include a valid field marker using ExtractField[AsJson[...]]"
                 " or Annotated[..., Json(), Field()]"
             )
-        openapi_provider = marker.openapi_marker.register_parameter(param)
+        if marker.openapi_field_marker is None:
+            raise TypeError(f"The field {param.name} is not valid as a form field")
+        openapi_provider = marker.openapi_field_marker.register_parameter(param)
         field_name = self.alias or model_field_from_param(param).alias
         if self.repeated:
             return OpenAPIRepeatedField(

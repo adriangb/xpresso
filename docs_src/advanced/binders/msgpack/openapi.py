@@ -1,7 +1,11 @@
 import inspect
 import typing
 
-from xpresso.binders.api import ModelNameMap, OpenAPIBody, Schemas
+from xpresso.binders.api import (
+    ModelNameMap,
+    Schemas,
+    SupportsOpenAPIBody,
+)
 from xpresso.openapi import models
 
 
@@ -47,5 +51,5 @@ class OpenAPIBodyMsgPack:
 class OpenAPIBodyMarkerMsgPack:
     def register_parameter(
         self, param: inspect.Parameter
-    ) -> OpenAPIBody:
+    ) -> SupportsOpenAPIBody:
         return OpenAPIBodyMsgPack()

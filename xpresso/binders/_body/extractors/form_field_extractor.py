@@ -5,27 +5,18 @@ from di.typing import get_markers_from_annotation
 from starlette.datastructures import FormData
 
 from xpresso._utils.typing import model_field_from_param
-from xpresso.binders._body.form_field import FormDataExtractor
-from xpresso.binders.api import FieldExtractor as SupportsFieldExtractor
+from xpresso.binders._body.form_field import SupportsXpressoFormDataFieldExtractor
+from xpresso.binders.api import SupportsFieldExtractor as SupportsFieldExtractor
 from xpresso.binders.dependants import BodyBinderMarker
 from xpresso.typing import Some
 
 
-class FieldExtractorBase:
-    __slots__ = ("field_name", "field_extractor")
-
-    def __init__(
-        self,
-        field_name: str,
-        field_extractor: SupportsFieldExtractor,
-    ) -> None:
-        self.field_name = field_name
-        self.field_extractor = field_extractor
+class FieldExtractorBase(typing.NamedTuple):
+    field_name: str
+    field_extractor: SupportsFieldExtractor
 
 
 class FieldExtractor(FieldExtractorBase):
-    __slots__ = ()
-
     async def extract_from_form(
         self, form: FormData, *, loc: typing.Iterable[typing.Union[int, str]]
     ) -> typing.Optional[Some]:
@@ -39,8 +30,6 @@ class FieldExtractor(FieldExtractorBase):
 
 
 class RepeatedFieldExtractor(FieldExtractorBase):
-    __slots__ = ()
-
     async def extract_from_form(
         self, form: FormData, *, loc: typing.Iterable[typing.Union[int, str]]
     ) -> typing.Optional[Some]:
@@ -59,7 +48,9 @@ class FieldExtractorMarker(typing.NamedTuple):
     alias: typing.Optional[str]
     repeated: bool
 
-    def register_parameter(self, param: inspect.Parameter) -> FormDataExtractor:
+    def register_parameter(
+        self, param: inspect.Parameter
+    ) -> SupportsXpressoFormDataFieldExtractor:
         field = model_field_from_param(param)
         field_name = self.alias or field.alias
         marker = next(
@@ -71,9 +62,9 @@ class FieldExtractorMarker(typing.NamedTuple):
                 "\n You must include a valid field marker using ExtractField[AsJson[...]]"
                 " or Annotated[..., Json(), Field()]"
             )
-        field_extractor = marker.extractor_marker.register_parameter(param)
-        if not isinstance(field_extractor, SupportsFieldExtractor):
-            raise TypeError("Form fields must implement the FieldExtractor protocol")
+        if marker.field_extractor_marker is None:
+            raise TypeError(f"The field {param.name} is not valid as a form field")
+        field_extractor = marker.field_extractor_marker.register_parameter(param)
         if self.repeated:
             return RepeatedFieldExtractor(
                 field_name=field_name, field_extractor=field_extractor

@@ -12,7 +12,7 @@ from xpresso.binders._parameters.extractors.base import (
     get_basic_param_info,
 )
 from xpresso.binders._utils.grouped import grouped
-from xpresso.binders.api import Extractor
+from xpresso.binders.api import SupportsExtractor
 from xpresso.typing import Some
 
 
@@ -75,7 +75,7 @@ class CookieParameterExtractorMarker:
     explode: bool
     in_: ClassVar[str] = "cookie"
 
-    def register_parameter(self, param: inspect.Parameter) -> Extractor:
+    def register_parameter(self, param: inspect.Parameter) -> SupportsExtractor:
         field, name, loc = get_basic_param_info(param, self.alias, self.in_)
         extractor = get_extractor(field=field, explode=self.explode)
         return CookieParameterExtractor(

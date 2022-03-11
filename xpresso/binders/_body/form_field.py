@@ -9,7 +9,7 @@ from xpresso.binders.api import ModelNameMap, Schemas
 from xpresso.typing import Some
 
 
-class FormFieldOpenAPIProvider(Protocol):
+class SupportsXpressoFormDataFieldOpenAPI(Protocol):
     @property
     def field_name(self) -> str:
         ...
@@ -18,26 +18,28 @@ class FormFieldOpenAPIProvider(Protocol):
     def include_in_schema(self) -> bool:
         ...
 
-    def get_models(self) -> typing.List[type]:
-        raise NotImplementedError
+    def get_models(self) -> typing.Iterable[type]:
+        ...
 
     def get_field_encoding(
         self, model_name_map: ModelNameMap, schemas: Schemas
     ) -> openapi_models.Encoding:
-        raise NotImplementedError
+        ...
 
     def get_field_schema(
         self, model_name_map: ModelNameMap, schemas: Schemas
     ) -> openapi_models.Schema:
-        raise NotImplementedError
+        ...
 
 
-class FormDataFieldOpenapiMarker(Protocol):
-    def register_parameter(self, param: inspect.Parameter) -> FormFieldOpenAPIProvider:
-        raise NotImplementedError
+class SupportsXpressoFormDataFieldOpenAPIMarker(Protocol):
+    def register_parameter(
+        self, param: inspect.Parameter
+    ) -> SupportsXpressoFormDataFieldOpenAPI:
+        ...
 
 
-class FormDataExtractor(Protocol):
+class SupportsXpressoFormDataFieldExtractor(Protocol):
     @property
     def field_name(self) -> str:
         ...
@@ -45,14 +47,16 @@ class FormDataExtractor(Protocol):
     async def extract_from_form(
         self, form: FormData, *, loc: typing.Iterable[typing.Union[int, str]]
     ) -> typing.Optional[Some]:
-        raise NotImplementedError
+        ...
 
 
-class FormDataExtractorMarker(Protocol):
-    def register_parameter(self, param: inspect.Parameter) -> FormDataExtractor:
-        raise NotImplementedError
+class SupportsXpressoFormDataFieldExtractorMarker(Protocol):
+    def register_parameter(
+        self, param: inspect.Parameter
+    ) -> SupportsXpressoFormDataFieldExtractor:
+        ...
 
 
 class FormFieldMarker(typing.NamedTuple):
-    openapi_marker: FormDataFieldOpenapiMarker
-    extractor_marker: FormDataExtractorMarker
+    openapi_marker: SupportsXpressoFormDataFieldOpenAPIMarker
+    extractor_marker: SupportsXpressoFormDataFieldExtractorMarker

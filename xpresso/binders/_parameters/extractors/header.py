@@ -14,7 +14,7 @@ from xpresso.binders._parameters.extractors.base import (
     get_basic_param_info,
 )
 from xpresso.binders._utils.grouped import grouped
-from xpresso.binders.api import Extractor
+from xpresso.binders.api import SupportsExtractor
 from xpresso.binders.exceptions import InvalidSerialization
 from xpresso.exceptions import RequestValidationError, WebSocketValidationError
 from xpresso.typing import Some
@@ -119,7 +119,7 @@ class HeaderParameterExtractorMarker:
     convert_underscores: bool
     in_: ClassVar[str] = "header"
 
-    def register_parameter(self, param: inspect.Parameter) -> Extractor:
+    def register_parameter(self, param: inspect.Parameter) -> SupportsExtractor:
         field, name, loc = get_basic_param_info(param, self.alias, self.in_)
         if self.convert_underscores and not self.alias and field.name == field.alias:
             name = name.replace("_", "-")

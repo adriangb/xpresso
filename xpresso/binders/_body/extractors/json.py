@@ -14,7 +14,7 @@ from xpresso.binders._body.media_type_validator import (
     get_validator as get_media_type_validator,
 )
 from xpresso.binders._utils.stream_to_bytes import convert_stream_to_bytes
-from xpresso.binders.api import BodyExtractor
+from xpresso.binders.api import SupportsBodyExtractor, SupportsFieldExtractor
 from xpresso.exceptions import RequestValidationError
 from xpresso.typing import Some
 
@@ -24,20 +24,30 @@ class Decoder(Protocol):
         ...
 
 
-class JsonBodyExtractor:
-    __slots__ = ("field", "decoder", "media_type_validator", "consume")
+def decode(
+    decoder: Decoder,
+    value: typing.Union[str, bytes],
+    loc: typing.Iterable[typing.Union[int, str]],
+) -> typing.Union[bytes, UploadFile]:
+    try:
+        decoded = decoder(value)
+    except Exception as e:
+        raise RequestValidationError(
+            [
+                ErrorWrapper(
+                    exc=TypeError("Data is not valid JSON"),
+                    loc=tuple(loc),
+                )
+            ]
+        ) from e
+    return decoded
 
-    def __init__(
-        self,
-        field: ModelField,
-        decoder: Decoder,
-        media_type_validator: MediaTypeValidator,
-        consume: bool,
-    ) -> None:
-        self.field = field
-        self.decoder = decoder
-        self.media_type_validator = media_type_validator
-        self.consume = consume
+
+class BodyExtractor(typing.NamedTuple):
+    field: ModelField
+    decoder: Decoder
+    media_type_validator: MediaTypeValidator
+    consume: bool
 
     def matches_media_type(self, media_type: typing.Optional[str]) -> bool:
         return self.media_type_validator.matches(media_type)
@@ -55,10 +65,14 @@ class JsonBodyExtractor:
         else:
             data_from_stream = await connection.body()
         return validate_body_field(
-            Some(self._decode(data_from_stream, loc=loc)),
+            Some(decode(self.decoder, data_from_stream, loc=loc)),
             field=self.field,
             loc=loc,
         )
+
+
+class FieldExtractor(typing.NamedTuple):
+    decoder: Decoder
 
     async def extract_from_field(
         self,
@@ -67,41 +81,30 @@ class JsonBodyExtractor:
         loc: typing.Iterable[typing.Union[str, int]],
     ) -> typing.Any:
         if isinstance(field, UploadFile):
-            return self._decode(await field.read(), loc=loc)
-        return self._decode(field, loc=loc)
-
-    def _decode(
-        self,
-        value: typing.Union[str, bytes],
-        loc: typing.Iterable[typing.Union[int, str]],
-    ) -> typing.Union[bytes, UploadFile]:
-        try:
-            decoded = self.decoder(value)
-        except Exception as e:
-            raise RequestValidationError(
-                [
-                    ErrorWrapper(
-                        exc=TypeError("Data is not valid JSON"),
-                        loc=tuple(loc),
-                    )
-                ]
-            ) from e
-        return decoded
+            return decode(self.decoder, await field.read(), loc=loc)
+        return decode(self.decoder, field, loc=loc)
 
 
-class JsonBodyExtractorMarker(typing.NamedTuple):
+class BodyExtractorMarker(typing.NamedTuple):
     decoder: Decoder
     enforce_media_type: bool
     consume: bool
 
-    def register_parameter(self, param: inspect.Parameter) -> BodyExtractor:
+    def register_parameter(self, param: inspect.Parameter) -> SupportsBodyExtractor:
         if self.enforce_media_type:
             media_type_validator = get_media_type_validator("application/json")
         else:
             media_type_validator = get_media_type_validator(None)
-        return JsonBodyExtractor(
+        return BodyExtractor(
             field=model_field_from_param(param),
             decoder=self.decoder,
             media_type_validator=media_type_validator,
             consume=self.consume,
         )
+
+
+class FieldExtractorMarker(typing.NamedTuple):
+    decoder: Decoder
+
+    def register_parameter(self, param: inspect.Parameter) -> SupportsFieldExtractor:
+        return FieldExtractor(self.decoder)

@@ -11,7 +11,7 @@ import msgpack  # type: ignore[import]
 from pydantic import BaseModel
 
 from xpresso import Request
-from xpresso.binders.api import BodyExtractor
+from xpresso.binders.api import SupportsBodyExtractor
 from xpresso.requests import HTTPConnection
 
 
@@ -31,7 +31,7 @@ class MsgPackBodyExtractor(NamedTuple):
 class MsgPackBodyExtractorMarker:
     def register_parameter(
         self, param: inspect.Parameter
-    ) -> BodyExtractor:
+    ) -> SupportsBodyExtractor:
         # get the first paramater to Annotated, which should be our actual type
         model = next(iter(get_args(param.annotation)))
         if not issubclass(model, BaseModel):

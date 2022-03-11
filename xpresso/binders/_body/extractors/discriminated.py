@@ -7,7 +7,7 @@ from starlette.exceptions import HTTPException
 from starlette.requests import HTTPConnection, Request
 
 from xpresso._utils.compat import Annotated, get_args, get_origin
-from xpresso.binders.api import BodyExtractor
+from xpresso.binders.api import SupportsBodyExtractor
 from xpresso.binders.dependants import BodyBinderMarker
 
 
@@ -16,7 +16,7 @@ class ContentTypeDiscriminatedExtractor:
 
     def __init__(
         self,
-        sub_body_extractors: typing.Iterable[BodyExtractor],
+        sub_body_extractors: typing.Iterable[SupportsBodyExtractor],
     ) -> None:
         self.sub_body_extractors = sub_body_extractors
 
@@ -46,8 +46,8 @@ class ContentTypeDiscriminatedExtractor:
 
 
 class ContentTypeDiscriminatedExtractorMarker(typing.NamedTuple):
-    def register_parameter(self, param: inspect.Parameter) -> BodyExtractor:
-        sub_body_extractors: typing.List[BodyExtractor] = []
+    def register_parameter(self, param: inspect.Parameter) -> SupportsBodyExtractor:
+        sub_body_extractors: typing.List[SupportsBodyExtractor] = []
 
         annotation = param.annotation
         origin = get_origin(annotation)
@@ -72,9 +72,9 @@ class ContentTypeDiscriminatedExtractorMarker(typing.NamedTuple):
             )
             if marker is None:
                 raise TypeError(f"Type annotation is missing body marker: {arg}")
-            sub_body_extractor = marker.extractor_marker
-            provider = sub_body_extractor.register_parameter(sub_body_param)
-            sub_body_extractors.append(provider)
+            sub_body_extractors.append(
+                marker.register_parameter(sub_body_param).extractor
+            )
         return ContentTypeDiscriminatedExtractor(
             sub_body_extractors=sub_body_extractors
         )

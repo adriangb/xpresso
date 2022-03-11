@@ -3,15 +3,18 @@ import typing
 
 from xpresso._utils.compat import Literal, get_args
 from xpresso._utils.typing import model_field_from_param
-from xpresso.binders._body.form_field import FormFieldMarker, FormFieldOpenAPIProvider
+from xpresso.binders._body.form_field import (
+    FormFieldMarker,
+    SupportsXpressoFormDataFieldOpenAPI,
+)
 from xpresso.binders._body.openapi.form_encoded_field import OpenAPIFormFieldMarker
 from xpresso.binders._utils.examples import parse_examples
-from xpresso.binders.api import ModelNameMap, OpenAPIBody, Schemas
+from xpresso.binders.api import ModelNameMap, Schemas, SupportsOpenAPIBody
 from xpresso.openapi import models as openapi_models
 
 
 class OpenAPIFormDataBody(typing.NamedTuple):
-    field_openapi_providers: typing.Mapping[str, FormFieldOpenAPIProvider]
+    field_openapi_providers: typing.Mapping[str, SupportsXpressoFormDataFieldOpenAPI]
     required_fields: typing.List[str]
     description: typing.Optional[str]
     examples: typing.Optional[openapi_models.Examples]
@@ -93,10 +96,12 @@ class OpenAPIFormDataMarker(typing.NamedTuple):
     ]
     include_in_schema: bool
 
-    def register_parameter(self, param: inspect.Parameter) -> OpenAPIBody:
+    def register_parameter(self, param: inspect.Parameter) -> SupportsOpenAPIBody:
         form_data_field = model_field_from_param(param)
         required = form_data_field.required is not False
-        field_openapi_providers: typing.Dict[str, FormFieldOpenAPIProvider] = {}
+        field_openapi_providers: typing.Dict[
+            str, SupportsXpressoFormDataFieldOpenAPI
+        ] = {}
         required_fields: typing.List[str] = []
         # use pydantic to get rid of outer annotated, optional, etc.
         model = form_data_field.type_

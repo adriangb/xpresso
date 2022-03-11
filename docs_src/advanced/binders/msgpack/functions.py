@@ -12,7 +12,9 @@ T = TypeVar("T")
 def MsgPack() -> Any:
     return BodyBinderMarker(
         extractor_marker=MsgPackBodyExtractorMarker(),
+        field_extractor_marker=None,
         openapi_marker=OpenAPIBodyMarkerMsgPack(),
+        openapi_field_marker=None,
     )
 
 

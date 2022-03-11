@@ -242,7 +242,7 @@ def get_paths_items(
             paths[visited_route.path] = models.PathItem(
                 description=visited_route.route.description,
                 summary=visited_route.route.summary,
-                servers=visited_route.route.servers or None,
+                servers=list(visited_route.route.servers) or None,
                 **operations,  # type: ignore[arg-type]
             )  # type: ignore  # for Pylance
     return {k: paths[k] for k in sorted(paths.keys())}
@@ -276,8 +276,8 @@ def get_flat_models(routes: Routes) -> Set[type]:
                     dep,
                     (binder_dependants.ParameterBinder, binder_dependants.BodyBinder),
                 ):
-                    openapi = dep.openapi
-                    res.update(openapi.get_models())
+                    if dep.openapi is not None:
+                        res.update(dep.openapi.get_models())
     return res
 
 

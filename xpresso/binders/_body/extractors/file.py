@@ -13,23 +13,15 @@ from xpresso.binders._body.media_type_validator import (
     get_validator as get_media_type_validator,
 )
 from xpresso.binders._utils.stream_to_bytes import convert_stream_to_bytes
-from xpresso.binders.api import BodyExtractor
+from xpresso.binders.api import SupportsBodyExtractor, SupportsFieldExtractor
 from xpresso.exceptions import RequestValidationError
 from xpresso.typing import Some
 
 
-class FileBodyExtractor:
-    __slots__ = ("field", "media_type_validator", "consume")
-
-    def __init__(
-        self,
-        field: ModelField,
-        media_type_validator: MediaTypeValidator,
-        consume: bool,
-    ) -> None:
-        self.field = field
-        self.media_type_validator = media_type_validator
-        self.consume = consume
+class FileBodyExtractor(typing.NamedTuple):
+    field: ModelField
+    media_type_validator: MediaTypeValidator
+    consume: bool
 
     def matches_media_type(self, media_type: typing.Optional[str]) -> bool:
         return self.media_type_validator.matches(media_type)
@@ -61,20 +53,17 @@ class FileBodyExtractor:
         await file.seek(0)
         return file
 
+
+class FileFieldExtractor(typing.NamedTuple):
+    field: ModelField
+
     async def extract_from_field(
         self,
         field: typing.Union[str, UploadFile],
         *,
         loc: typing.Iterable[typing.Union[str, int]],
     ) -> typing.Any:
-        return await self._extract(field, loc=loc)
-
-    async def _extract(
-        self,
-        value: typing.Union[str, UploadFile],
-        loc: typing.Iterable[typing.Union[int, str]],
-    ) -> typing.Union[bytes, UploadFile]:
-        if isinstance(value, str):
+        if isinstance(field, str):
             raise RequestValidationError(
                 [
                     ErrorWrapper(
@@ -85,8 +74,8 @@ class FileBodyExtractor:
             )
         if self.field.type_ is bytes:
             # user requested bytes
-            return await value.read()  # type: ignore  # UploadFile always returns bytes
-        return value
+            return await field.read()  # type: ignore  # UploadFile always returns bytes
+        return field
 
 
 class FileBodyExtractorMarker(typing.NamedTuple):
@@ -94,7 +83,7 @@ class FileBodyExtractorMarker(typing.NamedTuple):
     enforce_media_type: bool
     consume: bool
 
-    def register_parameter(self, param: inspect.Parameter) -> BodyExtractor:
+    def register_parameter(self, param: inspect.Parameter) -> SupportsBodyExtractor:
         field = model_field_from_param(param)
         if self.media_type and self.enforce_media_type:
             media_type_validator = get_media_type_validator(self.media_type)
@@ -105,3 +94,8 @@ class FileBodyExtractorMarker(typing.NamedTuple):
             media_type_validator=media_type_validator,
             consume=self.consume,
         )
+
+
+class FileFieldExtractorMarker(typing.NamedTuple):
+    def register_parameter(self, param: inspect.Parameter) -> SupportsFieldExtractor:
+        return FileFieldExtractor(field=model_field_from_param(param))

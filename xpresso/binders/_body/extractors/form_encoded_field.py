@@ -5,7 +5,7 @@ from pydantic.error_wrappers import ErrorWrapper
 from starlette.datastructures import FormData
 
 from xpresso._utils.typing import model_field_from_param
-from xpresso.binders._body.form_field import FormDataExtractor
+from xpresso.binders._body.form_field import SupportsXpressoFormDataFieldExtractor
 from xpresso.binders._utils.forms import (
     Extractor,
     UnexpectedFileReceived,
@@ -63,7 +63,9 @@ class FormEncodedFieldExtractorMarker(typing.NamedTuple):
     style: str
     explode: bool
 
-    def register_parameter(self, param: inspect.Parameter) -> FormDataExtractor:
+    def register_parameter(
+        self, param: inspect.Parameter
+    ) -> SupportsXpressoFormDataFieldExtractor:
         field_name = self.alias or param.name
         extractor = get_extractor(
             style=self.style, explode=self.explode, field=model_field_from_param(param)

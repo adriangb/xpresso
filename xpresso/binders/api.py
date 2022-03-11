@@ -1,4 +1,4 @@
-from typing import Any, Dict, Iterable, List, Optional, Union, runtime_checkable
+from typing import Any, Dict, Iterable, List, Optional, Union
 
 from starlette.datastructures import UploadFile
 from starlette.requests import HTTPConnection
@@ -7,19 +7,18 @@ import xpresso.openapi.models as openapi_models
 from xpresso._utils.compat import Protocol
 
 
-class Extractor(Protocol):
+class SupportsExtractor(Protocol):
     def extract(self, connection: HTTPConnection) -> Any:
         raise NotImplementedError
 
 
-class BodyExtractor(Extractor, Protocol):
+class SupportsBodyExtractor(SupportsExtractor, Protocol):
     def matches_media_type(self, media_type: Optional[str]) -> bool:
         """Check if this extractor can extract the given media type"""
         raise NotImplementedError
 
 
-@runtime_checkable
-class FieldExtractor(Protocol):
+class SupportsFieldExtractor(Protocol):
     # APIs to support being a field in a FormData or Multipart request
     async def extract_from_field(
         self,
@@ -37,10 +36,6 @@ Schemas = Dict[str, Union[openapi_models.Schema, openapi_models.Reference]]
 
 
 class _SupportsGetModels(Protocol):
-    @property
-    def include_in_schema(self) -> bool:
-        ...
-
     def get_models(self) -> List[type]:
         """Collect all of the types that OpenAPI schemas will be
         produced from.
@@ -54,7 +49,11 @@ class _SupportsGetModels(Protocol):
         raise NotImplementedError
 
 
-class OpenAPIParameter(_SupportsGetModels, Protocol):
+class SupportsOpenAPIParameter(_SupportsGetModels, Protocol):
+    @property
+    def include_in_schema(self) -> bool:
+        ...
+
     @property
     def name(self) -> str:
         ...
@@ -70,14 +69,19 @@ class OpenAPIParameter(_SupportsGetModels, Protocol):
         raise NotImplementedError
 
 
-class OpenAPIBody(_SupportsGetModels, Protocol):
+class SupportsOpenAPIBody(_SupportsGetModels, Protocol):
+    @property
+    def include_in_schema(self) -> bool:
+        ...
+
     def get_openapi_body(
         self, model_name_map: ModelNameMap, schemas: Schemas
     ) -> openapi_models.RequestBody:
         """Generate the OpenAPI spec for this request body"""
         raise NotImplementedError
 
-    # APIs to support being a field in a FormData or Multipart request
+
+class SupportsOpenAPIField(_SupportsGetModels, Protocol):
     def get_field_encoding(
         self, model_name_map: ModelNameMap, schemas: Schemas
     ) -> openapi_models.Encoding:
