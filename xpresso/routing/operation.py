@@ -36,7 +36,9 @@ class _OperationApp(typing.NamedTuple):
         send: Send,
     ) -> None:
         xpresso_scope: "XpressoHTTPExtension" = scope["extensions"]["xpresso"]
-        request = xpresso_scope.request = Request(scope=scope, receive=receive, send=send)
+        request = xpresso_scope.request = Request(
+            scope=scope, receive=receive, send=send
+        )
         values: "typing.Dict[typing.Any, typing.Any]" = {
             Request: request,
             HTTPConnection: request,
@@ -149,7 +151,7 @@ class Operation(BaseRoute):
             executor=executor,
             response_encoder=self.response_encoder,
             response_factory=self.response_factory,
-        )
+        ).__call__
 
     def url_path_for(self, name: str, **path_params: str) -> URLPath:
         if path_params:
