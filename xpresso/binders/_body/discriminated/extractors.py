@@ -12,7 +12,7 @@ from xpresso.binders.dependants import BodyBinderMarker
 
 
 class _BodyExtractor(typing.NamedTuple):
-    sub_body_extractors: typing.Iterable[SupportsBodyExtractor]
+    sub_body_extractors: typing.Tuple[SupportsBodyExtractor, ...]
 
     async def extract(self, connection: HTTPConnection) -> typing.Any:
         assert isinstance(connection, Request)
@@ -69,4 +69,4 @@ class BodyExtractorMarker(typing.NamedTuple):
             sub_body_extractors.append(
                 marker.register_parameter(sub_body_param).extractor
             )
-        return _BodyExtractor(sub_body_extractors=sub_body_extractors)
+        return _BodyExtractor(sub_body_extractors=tuple(sub_body_extractors))
