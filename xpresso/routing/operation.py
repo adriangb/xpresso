@@ -145,13 +145,13 @@ class Operation(BaseRoute):
             executor = ConcurrentAsyncExecutor()
         else:
             executor = AsyncExecutor()
-        self._app = _OperationApp(
+        self._app = _OperationApp(  # type: ignore[assignment]
             container=container,
             dependant=self.dependant,
             executor=executor,
             response_encoder=self.response_encoder,
             response_factory=self.response_factory,
-        )  # type: ignore[assignment]
+        )
 
     def url_path_for(self, name: str, **path_params: str) -> URLPath:
         if path_params:
