@@ -58,9 +58,13 @@ class _BodyExtractor(typing.NamedTuple):
         self.media_type_validator.validate(
             connection.headers.get("content-type", None), loc=loc
         )
+        data_from_stream: bytes
         if self.consume:
             data_from_stream = await convert_stream_to_bytes(connection.stream())
-            if data_from_stream is None:
+            if (
+                connection.headers.get("Content-Length", -1) == "0"
+                and len(data_from_stream) == 0
+            ):
                 return validate_body_field(None, field=self.field, loc=loc)
         else:
             data_from_stream = await connection.body()

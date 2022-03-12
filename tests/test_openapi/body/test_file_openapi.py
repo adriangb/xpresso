@@ -314,7 +314,7 @@ def test_custom_media_type():
 
 
 def test_include_in_schema() -> None:
-    async def test(body: Annotated[str, File(include_in_schema=False)]) -> None:
+    async def test(body: Annotated[bytes, File(include_in_schema=False)]) -> None:
         ...
 
     app = App([Path("/", post=test)])

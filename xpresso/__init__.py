@@ -20,7 +20,7 @@ from xpresso.bodies import (
     Multipart,
     RepeatedFormField,
 )
-from xpresso.datastructures import UploadFile
+from xpresso.datastructures import BinaryStream, UploadFile
 from xpresso.dependencies.models import Depends
 from xpresso.exception_handlers import ExcHandler
 from xpresso.parameters import (
@@ -41,6 +41,7 @@ from xpresso.routing.websockets import WebSocketRoute
 from xpresso.websockets import WebSocket
 
 __all__ = (
+    "BinaryStream",
     "ExcHandler",
     "Operation",
     "Path",
