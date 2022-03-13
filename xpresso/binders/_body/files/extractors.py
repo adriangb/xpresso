@@ -54,19 +54,15 @@ def create_read_request_into_uploadfile(
     return read_request_into_uploadfile
 
 
-async def consume_request_into_async_iterator(
-    request: Request,
-) -> typing.AsyncIterator[bytes]:
-    return request.stream()
+async def consume_request_into_stream(request: Request) -> BinaryStream:
+    return BinaryStream(request.stream())
 
 
-async def read_request_into_async_iterator(
-    request: Request,
-) -> typing.AsyncIterator[bytes]:
+async def read_request_into_stream(request: Request) -> BinaryStream:
     async def body_iterator() -> typing.AsyncIterator[bytes]:
         yield await request.body()
 
-    return body_iterator()
+    return BinaryStream(body_iterator())
 
 
 async def read_uploadfile_to_bytes(file: StarletteUploadFile) -> bytes:
@@ -138,9 +134,9 @@ class BodyExtractorMarker(typing.NamedTuple):
         elif field.type_ is BinaryStream:
             # a stream
             if self.consume:
-                consumer = consume_request_into_async_iterator
+                consumer = consume_request_into_stream
             else:
-                consumer = read_request_into_async_iterator
+                consumer = read_request_into_stream
         else:
             raise TypeError
         return _FileBodyExtractor(
