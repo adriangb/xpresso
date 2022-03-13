@@ -1,13 +1,8 @@
 import typing
 
 
-async def convert_stream_to_bytes(
-    stream: typing.AsyncGenerator[bytes, None]
-) -> typing.Optional[bytes]:
-    data: typing.List[bytes] = []
+async def convert_stream_to_bytes(stream: typing.AsyncIterator[bytes]) -> bytearray:
+    data = bytearray()
     async for chunk in stream:  # pragma: no cover # stream always has at least 1 chunk
-        data.append(chunk)
-    if len(data) == 1 and data[0] == b"":
-        # no content received
-        return None
-    return b"".join(data)
+        data.extend(chunk)
+    return data

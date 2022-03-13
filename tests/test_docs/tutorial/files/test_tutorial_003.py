@@ -1,9 +1,6 @@
 from typing import Any, Dict
 
-import pytest
-
-from docs_src.tutorial.file_media_type import app
-from xpresso import status
+from docs_src.tutorial.files.tutorial_003 import app
 from xpresso.testclient import TestClient
 
 client = TestClient(app)
@@ -36,7 +33,7 @@ openapi_schema: Dict[str, Any] = {
                 },
                 "requestBody": {
                     "content": {
-                        "image/*": {"schema": {"type": "string", "format": "binary"}}
+                        "*/*": {"schema": {"type": "string", "format": "binary"}}
                     },
                     "required": True,
                 },
@@ -81,30 +78,7 @@ def test_openapi_schema():
     assert response.json() == openapi_schema
 
 
-@pytest.mark.parametrize(
-    "headers,status_code,expected_response_json",
-    [
-        ({"Content-Type": "image/png"}, 200, 3),
-        (
-            {"Content-Type": "text/plain"},
-            status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-            {
-                "detail": [
-                    {
-                        "loc": ["body", "headers", "content-type"],
-                        "msg": "Media type text/plain is not supported",
-                        "type": "value_error",
-                    }
-                ]
-            },
-        ),
-    ],
-)
-def test_put_file(
-    headers: Dict[str, str],
-    status_code: int,
-    expected_response_json: Any,
-):
-    response = client.put("/count-bytes", data=b"123", headers=headers)
-    assert response.status_code == status_code
-    assert response.json() == expected_response_json
+def test_put_file():
+    response = client.put("/count-bytes", data=b"123")
+    assert response.status_code == 200
+    assert response.json() == 3
