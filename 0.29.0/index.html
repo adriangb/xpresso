@@ -1090,6 +1090,7 @@ It is however ready for experimentation and learning!</p>
 <ol>
 <li>Low-level API for binders (stuff in <code>xpresso.binders</code>): this is public, but should be considered experimental and is likely to change. The high level APIs (<code>FromPath[str]</code> and <code>Annotated[str, PathParam(...)]</code>) are likely to be stable.</li>
 <li>Security dependencies and OpenAPI integration. This part used to exist, but needed some work. It is planned for the future, but we need to think about the scope of these features and the API.</li>
+<li>Specification of reponse models / metadata. This currently works, but there is no deep merging with the automatic inference of models, and the API is overal quite klunky. Expect this to be completely re-writing.</li>
 </ol>
 
               
