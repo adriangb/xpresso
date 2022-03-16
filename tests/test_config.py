@@ -2,12 +2,12 @@ import os
 from unittest.mock import patch
 
 from xpresso import App, Path
-from xpresso.config import Config
+from xpresso.config import BaseConfig
 from xpresso.testclient import TestClient
 
 
 def test_coonfig() -> None:
-    class AppConfig(Config):
+    class AppConfig(BaseConfig):
         foobarbaz: int
 
     async def endpoint(cfg: AppConfig) -> int:

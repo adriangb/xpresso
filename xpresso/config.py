@@ -6,7 +6,7 @@ from pydantic import BaseSettings
 from xpresso.dependencies.models import Scope
 
 
-class Config(Injectable, BaseSettings):
+class BaseConfig(Injectable, BaseSettings):
     def __init_subclass__(
         cls, scope: Scope = "app", use_cache: bool = True, **kwargs: Any
     ) -> None:
