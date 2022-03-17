@@ -87,7 +87,7 @@ def test_openapi_schema():
     assert response.json() == openapi_schema
 
 
-def tet_get_image():
+def test_get_image():
     response = client.get("/items/123")
     assert response.status_code == 200, response.text
     assert response.content == b"<bytes from 123.png>"

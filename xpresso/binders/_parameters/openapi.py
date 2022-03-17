@@ -6,10 +6,10 @@ from pydantic.schema import get_flat_models_from_field
 
 from xpresso._utils.schemas import openapi_schema_from_pydantic_field
 from xpresso._utils.typing import is_sequence_like, model_field_from_param
-from xpresso.binders._utils.examples import parse_examples
 from xpresso.binders.api import ModelNameMap, Schemas
 from xpresso.binders.api import SupportsOpenAPIParameter as SupportsOpenAPIParameter
 from xpresso.openapi import models as openapi_models
+from xpresso.openapi._utils import parse_examples
 
 Examples = typing.Optional[typing.Mapping[str, openapi_models.Example]]
 

@@ -3,7 +3,6 @@ import typing
 
 from xpresso._utils.compat import Literal
 from xpresso._utils.typing import model_field_from_param
-from xpresso.binders._utils.examples import parse_examples
 from xpresso.binders.api import (
     ModelNameMap,
     Schemas,
@@ -11,6 +10,7 @@ from xpresso.binders.api import (
     SupportsOpenAPIField,
 )
 from xpresso.openapi import models as openapi_models
+from xpresso.openapi._utils import parse_examples
 
 
 class OpenAPIFileBody(typing.NamedTuple):

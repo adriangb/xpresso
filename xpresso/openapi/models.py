@@ -299,9 +299,6 @@ class OAuthFlow(FrozenBaseModel):
     refreshUrl: Optional[AnyUrl] = None
     scopes: Annotated[Optional[Mapping[str, str]], Field(default_factory=dict)]
 
-    def __hash__(self) -> int:  # type: ignore  # for Pylance
-        return hash((self.__class__, self.refreshUrl))
-
 
 class OAuthFlowImplicit(OAuthFlow):
     authorizationUrl: str
