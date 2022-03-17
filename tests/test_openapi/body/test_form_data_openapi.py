@@ -50,7 +50,10 @@ def test_json() -> None:
             "/": {
                 "post": {
                     "responses": {
-                        "200": {"description": "Successful Response"},
+                        "200": {
+                            "description": "OK",
+                            "content": {"application/json": {}},
+                        },
                         "422": {
                             "description": "Validation Error",
                             "content": {
@@ -156,7 +159,10 @@ def test_array_of_json() -> None:
             "/": {
                 "post": {
                     "responses": {
-                        "200": {"description": "Successful Response"},
+                        "200": {
+                            "description": "OK",
+                            "content": {"application/json": {}},
+                        },
                         "422": {
                             "description": "Validation Error",
                             "content": {
@@ -265,7 +271,10 @@ def test_form_field_object() -> None:
             "/": {
                 "post": {
                     "responses": {
-                        "200": {"description": "Successful Response"},
+                        "200": {
+                            "description": "OK",
+                            "content": {"application/json": {}},
+                        },
                         "422": {
                             "description": "Validation Error",
                             "content": {
@@ -363,7 +372,10 @@ def test_form_field_custom_encoding() -> None:
             "/": {
                 "post": {
                     "responses": {
-                        "200": {"description": "Successful Response"},
+                        "200": {
+                            "description": "OK",
+                            "content": {"application/json": {}},
+                        },
                         "422": {
                             "description": "Validation Error",
                             "content": {
@@ -474,7 +486,10 @@ def test_optional_form_data() -> None:
             "/": {
                 "post": {
                     "responses": {
-                        "200": {"description": "Successful Response"},
+                        "200": {
+                            "description": "OK",
+                            "content": {"application/json": {}},
+                        },
                         "422": {
                             "description": "Validation Error",
                             "content": {
@@ -564,7 +579,10 @@ def test_include_in_schema() -> None:
             "/": {
                 "post": {
                     "responses": {
-                        "200": {"description": "Successful Response"},
+                        "200": {
+                            "description": "OK",
+                            "content": {"application/json": {}},
+                        },
                         "422": {
                             "description": "Validation Error",
                             "content": {
@@ -635,7 +653,10 @@ def test_include_in_schema_field() -> None:
             "/": {
                 "post": {
                     "responses": {
-                        "200": {"description": "Successful Response"},
+                        "200": {
+                            "description": "OK",
+                            "content": {"application/json": {}},
+                        },
                         "422": {
                             "description": "Validation Error",
                             "content": {
@@ -715,7 +736,10 @@ def test_include_in_schema_repeated_field() -> None:
             "/": {
                 "post": {
                     "responses": {
-                        "200": {"description": "Successful Response"},
+                        "200": {
+                            "description": "OK",
+                            "content": {"application/json": {}},
+                        },
                         "422": {
                             "description": "Validation Error",
                             "content": {

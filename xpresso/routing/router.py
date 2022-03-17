@@ -8,7 +8,7 @@ from starlette.types import Receive, Scope, Send
 
 from xpresso._utils.compat import Protocol
 from xpresso.dependencies.models import Depends
-from xpresso.responses import Responses
+from xpresso.responses import ResponseSpec, ResponseStatusCode
 
 
 class _ASGIApp(Protocol):
@@ -31,7 +31,6 @@ class Router:
     lifespan: typing.Optional[typing.Callable[..., typing.AsyncContextManager[None]]]
     dependencies: typing.Sequence[DependantBase[typing.Any]]
     tags: typing.Sequence[str]
-    responses: Responses
     include_in_schema: bool
     _app: _ASGIApp
 
@@ -62,7 +61,9 @@ class Router:
             typing.Iterable[typing.Union[DependantBase[typing.Any], Depends]]
         ] = None,
         tags: typing.Optional[typing.List[str]] = None,
-        responses: typing.Optional[Responses] = None,
+        responses: typing.Optional[
+            typing.Mapping[ResponseStatusCode, ResponseSpec]
+        ] = None,
         include_in_schema: bool = True,
     ) -> None:
         self.routes = list(routes)

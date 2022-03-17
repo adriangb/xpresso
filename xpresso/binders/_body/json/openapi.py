@@ -6,7 +6,6 @@ from pydantic.schema import get_flat_models_from_field
 
 from xpresso._utils.schemas import openapi_schema_from_pydantic_field
 from xpresso._utils.typing import model_field_from_param
-from xpresso.binders._utils.examples import parse_examples
 from xpresso.binders.api import (
     ModelNameMap,
     Schemas,
@@ -14,6 +13,7 @@ from xpresso.binders.api import (
     SupportsOpenAPIField,
 )
 from xpresso.openapi import models as openapi_models
+from xpresso.openapi._utils import parse_examples
 
 
 class _BodyOpenAPI(typing.NamedTuple):

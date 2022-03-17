@@ -7,8 +7,6 @@ from di.dependant import Dependant
 
 from xpresso.dependencies.models import Depends
 
-T = typing.TypeVar("T")
-
 Endpoint = typing.Union[CallableProvider[typing.Any], CoroutineProvider[typing.Any]]
 
 

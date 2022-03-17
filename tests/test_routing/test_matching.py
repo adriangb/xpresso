@@ -59,7 +59,7 @@ def test_openapi() -> None:
                 "get": {
                     "responses": {
                         "200": {
-                            "description": "Successful Response",
+                            "description": "OK",
                             "content": {
                                 "application/json": {
                                     "schema": {"title": "Response", "type": "integer"}
@@ -93,7 +93,7 @@ def test_openapi() -> None:
                 "get": {
                     "responses": {
                         "200": {
-                            "description": "Successful Response",
+                            "description": "OK",
                             "content": {
                                 "application/json": {
                                     "schema": {"title": "Response", "type": "integer"}
@@ -125,7 +125,7 @@ def test_openapi() -> None:
                 "post": {
                     "responses": {
                         "200": {
-                            "description": "Successful Response",
+                            "description": "OK",
                             "content": {
                                 "application/json": {
                                     "schema": {"title": "Response", "type": "integer"}

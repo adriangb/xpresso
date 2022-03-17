@@ -8,9 +8,9 @@ from xpresso.binders._body.form_field import (
     SupportsXpressoFormDataFieldOpenAPI,
 )
 from xpresso.binders._body.forms.form_encoded_openapi import FormEncodedOpenAPIMarker
-from xpresso.binders._utils.examples import parse_examples
 from xpresso.binders.api import ModelNameMap, Schemas, SupportsOpenAPIBody
 from xpresso.openapi import models as openapi_models
+from xpresso.openapi._utils import parse_examples
 
 
 class _BodyOpenAPI(typing.NamedTuple):

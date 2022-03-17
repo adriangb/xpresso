@@ -1,4 +1,5 @@
 import typing
+from functools import partial
 
 from di.api.dependencies import DependantBase
 from di.api.executor import SupportsAsyncExecutor
@@ -12,14 +13,13 @@ from starlette.responses import JSONResponse, Response
 from starlette.routing import BaseRoute, NoMatchFound, get_name
 from starlette.types import ASGIApp, Receive, Scope, Send
 
-import xpresso.binders.dependants as param_dependants
 import xpresso.openapi.models as openapi_models
 from xpresso._utils.asgi import XpressoHTTPExtension
 from xpresso._utils.endpoint_dependant import Endpoint, EndpointDependant
 from xpresso.dependencies.models import Depends, Scopes
 from xpresso.encoders.api import Encoder
 from xpresso.encoders.json import JsonableEncoder
-from xpresso.responses import Responses
+from xpresso.responses import ResponseSpec, ResponseStatusCode, TypeUnset
 
 
 class _OperationApp(typing.NamedTuple):
@@ -27,7 +27,7 @@ class _OperationApp(typing.NamedTuple):
     container: Container
     executor: SupportsAsyncExecutor
     response_factory: typing.Callable[[typing.Any], Response]
-    response_encoder: Encoder
+    response_encoder: typing.Optional[Encoder]
 
     async def __call__(
         self,
@@ -56,9 +56,9 @@ class _OperationApp(typing.NamedTuple):
                 if isinstance(endpoint_return, Response):
                     response = endpoint_return
                 else:
-                    response = self.response_factory(
-                        self.response_encoder(endpoint_return)
-                    )
+                    if self.response_encoder:
+                        endpoint_return = self.response_encoder(endpoint_return)
+                    response = self.response_factory(endpoint_return)
                 xpresso_scope.response = response
             await response(scope, receive, send)
             xpresso_scope.response_sent = True
@@ -78,19 +78,36 @@ class Operation(BaseRoute):
         operation_id: typing.Optional[bool] = None,
         servers: typing.Optional[typing.Sequence[openapi_models.Server]] = None,
         external_docs: typing.Optional[openapi_models.ExternalDocumentation] = None,
-        responses: typing.Optional[Responses] = None,
+        responses: typing.Optional[
+            typing.Mapping[ResponseStatusCode, ResponseSpec]
+        ] = None,
         # xpresso params
         name: typing.Optional[str] = None,
         dependencies: typing.Optional[
             typing.Iterable[typing.Union[DependantBase[typing.Any], Depends]]
         ] = None,
         execute_dependencies_concurrently: bool = False,
-        response_factory: typing.Callable[[typing.Any], Response] = JSONResponse,
-        response_encoder: Encoder = JsonableEncoder(),
+        response_factory: typing.Optional[
+            typing.Callable[[typing.Any], Response]
+        ] = None,
+        response_encoder: typing.Optional[Encoder] = JsonableEncoder(),
         sync_to_thread: bool = True,
+        # responses
+        response_status_code: int = 200,
+        response_media_type: str = "application/json",
+        response_model: typing.Any = TypeUnset,
+        response_description: typing.Optional[str] = None,
+        response_examples: typing.Optional[
+            typing.Mapping[str, typing.Union[openapi_models.Example, typing.Any]]
+        ] = None,
+        response_headers: typing.Optional[
+            typing.Mapping[str, typing.Union[openapi_models.ResponseHeader, str]]
+        ] = None,
     ) -> None:
-        self._app: typing.Optional[ASGIApp] = None
+        # These fields mirror Starlette's Route
         self.endpoint = endpoint
+        self.include_in_schema = include_in_schema
+        self.name: str = get_name(endpoint) if name is None else name  # type: ignore
         self.tags = tuple(tags or ())
         self.summary = summary
         self.description = description
@@ -99,16 +116,25 @@ class Operation(BaseRoute):
         self.servers = tuple(servers or ())
         self.external_docs = external_docs
         self.responses = dict(responses or {})
+        self.response_status_code = response_status_code
+        self.response_media_type = response_media_type
+        self.response_model = response_model
+        self.response_description = response_description
+        self.response_examples = response_examples
+        self.response_headers = response_headers
         self.dependencies = tuple(
             dep if not isinstance(dep, Depends) else dep.as_dependant()
             for dep in dependencies or ()
         )
-        self.execute_dependencies_concurrently = execute_dependencies_concurrently
-        self.response_factory = response_factory
-        self.response_encoder = response_encoder
-        self.include_in_schema = include_in_schema
-        self.name: str = get_name(endpoint) if name is None else name  # type: ignore
-        self.sync_to_thread = sync_to_thread
+        self._app: typing.Optional[ASGIApp] = None
+        self._execute_dependencies_concurrently = execute_dependencies_concurrently
+        self._response_factory = response_factory or partial(
+            JSONResponse,
+            media_type=response_media_type,
+            status_code=response_status_code,
+        )
+        self._response_encoder = response_encoder
+        self._sync_to_thread = sync_to_thread
 
     async def handle(
         self,
@@ -131,17 +157,13 @@ class Operation(BaseRoute):
         ]
         self.dependant = container.solve(
             JoinedDependant(
-                EndpointDependant(self.endpoint, sync_to_thread=self.sync_to_thread),
+                EndpointDependant(self.endpoint, sync_to_thread=self._sync_to_thread),
                 siblings=[*deps, *self.dependencies],
             ),
             scopes=Scopes,
         )
-        flat = self.dependant.get_flat_subdependants()
-        bodies = [dep for dep in flat if isinstance(dep, param_dependants.BodyBinder)]
-        if len(bodies) > 1:
-            raise ValueError("There can only be 1 top level body per operation")
         executor: SupportsAsyncExecutor
-        if self.execute_dependencies_concurrently:
+        if self._execute_dependencies_concurrently:
             executor = ConcurrentAsyncExecutor()
         else:
             executor = AsyncExecutor()
@@ -149,8 +171,8 @@ class Operation(BaseRoute):
             container=container,
             dependant=self.dependant,
             executor=executor,
-            response_encoder=self.response_encoder,
-            response_factory=self.response_factory,
+            response_encoder=self._response_encoder,
+            response_factory=self._response_factory,
         )
 
     def url_path_for(self, name: str, **path_params: str) -> URLPath:

@@ -11,7 +11,23 @@ def test_openapi() -> None:
         "paths": {
             "/v1/items": {
                 "get": {
-                    "responses": {"404": {"description": "Item not found"}},
+                    "responses": {
+                        "404": {"description": "Item not found"},
+                        "200": {
+                            "description": "OK",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "title": "Response",
+                                        "type": "object",
+                                        "additionalProperties": {
+                                            "$ref": "#/components/schemas/Item"
+                                        },
+                                    }
+                                }
+                            },
+                        },
+                    },
                     "tags": ["v1", "items", "read"],
                     "summary": "List all items",
                     "description": "The **items** operation",
@@ -21,6 +37,10 @@ def test_openapi() -> None:
                     "responses": {
                         "404": {"description": "Item not found"},
                         "204": {"description": "Success"},
+                        "200": {
+                            "description": "OK",
+                            "content": {"application/json": {}},
+                        },
                         "422": {
                             "description": "Validation Error",
                             "content": {

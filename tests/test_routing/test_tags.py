@@ -65,23 +65,48 @@ def test_tags_openapi() -> None:
         "paths": {
             "/": {
                 "get": {
-                    "responses": {"200": {"description": "Successful Response"}},
+                    "responses": {
+                        "200": {
+                            "description": "OK",
+                            "content": {"application/json": {}},
+                        }
+                    },
                     "tags": ["get"],
                 },
                 "put": {
-                    "responses": {"200": {"description": "Successful Response"}},
+                    "responses": {
+                        "200": {
+                            "description": "OK",
+                            "content": {"application/json": {}},
+                        }
+                    },
                     "tags": ["put"],
                 },
                 "post": {
-                    "responses": {"200": {"description": "Successful Response"}},
+                    "responses": {
+                        "200": {
+                            "description": "OK",
+                            "content": {"application/json": {}},
+                        }
+                    },
                     "tags": ["post"],
                 },
                 "delete": {
-                    "responses": {"200": {"description": "Successful Response"}},
+                    "responses": {
+                        "200": {
+                            "description": "OK",
+                            "content": {"application/json": {}},
+                        }
+                    },
                     "tags": ["delete"],
                 },
                 "head": {
-                    "responses": {"200": {"description": "Successful Response"}},
+                    "responses": {
+                        "200": {
+                            "description": "OK",
+                            "content": {"application/json": {}},
+                        }
+                    },
                     "tags": ["head"],
                 },
             }

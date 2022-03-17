@@ -8,7 +8,7 @@ from di.api.providers import DependencyProvider as Endpoint
 import xpresso.binders.dependants as param_dependants
 import xpresso.openapi.models as openapi_models
 from xpresso.dependencies.models import Depends
-from xpresso.responses import Responses
+from xpresso.responses import ResponseSpec, ResponseStatusCode
 from xpresso.routing.operation import Operation
 
 
@@ -53,7 +53,9 @@ class Path(starlette.routing.Route):
         parameters: typing.Optional[
             typing.Sequence[param_dependants.ParameterBinderMarker]
         ] = None,
-        responses: typing.Optional[Responses] = None,
+        responses: typing.Optional[
+            typing.Mapping[ResponseStatusCode, ResponseSpec]
+        ] = None,
         tags: typing.Optional[typing.Iterable[str]] = None,
     ) -> None:
         if not path.startswith("/"):

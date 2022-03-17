@@ -39,7 +39,10 @@ def test_serialization(
             "/test/{path}": {
                 "get": {
                     "responses": {
-                        "200": {"description": "Successful Response"},
+                        "200": {
+                            "description": "OK",
+                            "content": {"application/json": {}},
+                        },
                         "422": {
                             "description": "Validation Error",
                             "content": {
@@ -116,7 +119,10 @@ def test_scalar() -> None:
             "/test/{path}": {
                 "get": {
                     "responses": {
-                        "200": {"description": "Successful Response"},
+                        "200": {
+                            "description": "OK",
+                            "content": {"application/json": {}},
+                        },
                         "422": {
                             "description": "Validation Error",
                             "content": {
@@ -193,7 +199,10 @@ def test_array() -> None:
             "/test/{path}": {
                 "get": {
                     "responses": {
-                        "200": {"description": "Successful Response"},
+                        "200": {
+                            "description": "OK",
+                            "content": {"application/json": {}},
+                        },
                         "422": {
                             "description": "Validation Error",
                             "content": {
@@ -278,7 +287,10 @@ def test_object() -> None:
             "/test/{path}": {
                 "get": {
                     "responses": {
-                        "200": {"description": "Successful Response"},
+                        "200": {
+                            "description": "OK",
+                            "content": {"application/json": {}},
+                        },
                         "422": {
                             "description": "Validation Error",
                             "content": {
@@ -366,7 +378,14 @@ def test_include_in_schema() -> None:
         "info": {"title": "API", "version": "0.1.0"},
         "paths": {
             "/test/{path}": {
-                "get": {"responses": {"200": {"description": "Successful Response"}}}
+                "get": {
+                    "responses": {
+                        "200": {
+                            "description": "OK",
+                            "content": {"application/json": {}},
+                        }
+                    }
+                }
             }
         },
     }

@@ -29,8 +29,9 @@ from xpresso.exception_handlers import (
 from xpresso.exceptions import RequestValidationError
 from xpresso.middleware.exceptions import ExceptionMiddleware
 from xpresso.openapi import models as openapi_models
-from xpresso.openapi._builder import genrate_openapi
+from xpresso.openapi._builder import generate_openapi
 from xpresso.openapi._html import get_swagger_ui_html
+from xpresso.responses import ResponseSpec, ResponseStatusCode
 from xpresso.routing.pathitem import Path
 from xpresso.routing.router import Router
 from xpresso.routing.websockets import WebSocketRoute
@@ -63,6 +64,10 @@ class App:
         container: typing.Optional[Container] = None,
         dependencies: typing.Optional[
             typing.Iterable[typing.Union[DependantBase[typing.Any], Depends]]
+        ] = None,
+        tags: typing.Optional[typing.List[str]] = None,
+        responses: typing.Optional[
+            typing.Mapping[ResponseStatusCode, ResponseSpec]
         ] = None,
         debug: bool = False,
         middleware: typing.Optional[typing.Sequence[Middleware]] = None,
@@ -149,6 +154,8 @@ class App:
             middleware=middleware,
             include_in_schema=include_in_schema,
             lifespan=lifespan_ctx,
+            responses=responses,
+            tags=tags,
         )
 
         self._openapi_version = openapi_version
@@ -250,7 +257,7 @@ class App:
     def get_openapi(
         self, servers: typing.List[openapi_models.Server]
     ) -> openapi_models.OpenAPI:
-        return genrate_openapi(
+        return generate_openapi(
             visitor=visit_routes(
                 app_type=App, router=self.router, nodes=[self, self.router], path=""
             ),
