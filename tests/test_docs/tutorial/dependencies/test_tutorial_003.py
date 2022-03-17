@@ -14,7 +14,7 @@ def test_client_config_injection():
 
     # This dependency becomes the provider for the client
     # It will get auto-wired with the config, so we can use it to assert that the config
-    # Was succesfully injected
+    # Was successfully injected
     def get_client(config: HttpBinConfigModel) -> httpx.AsyncClient:
         assert config.url == test_url
         return httpx.AsyncClient(

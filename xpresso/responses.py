@@ -1,11 +1,12 @@
 from typing import Any, Mapping, NamedTuple, Optional, Union
 
 from pydantic import BaseModel
+from starlette.responses import FileResponse as FileResponse  # noqa: F401
 from starlette.responses import HTMLResponse as HTMLResponse  # noqa: F401
 from starlette.responses import JSONResponse as JSONResponse  # noqa: F401
 from starlette.responses import PlainTextResponse as PlainTextResponse  # noqa: F401
 from starlette.responses import RedirectResponse as RedirectResponse  # noqa: F401
-from starlette.responses import Response
+from starlette.responses import Response as Response  # noqa: F401
 from starlette.responses import StreamingResponse as StreamingResponse  # noqa: F401
 
 from xpresso._utils.asgi import XpressoHTTPExtension

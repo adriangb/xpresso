@@ -50,7 +50,7 @@ class _OperationApp(typing.NamedTuple):
     container: Container
     executor: SupportsAsyncExecutor
     response_factory: typing.Callable[[typing.Any], Response]
-    response_encoder: Encoder
+    response_encoder: typing.Optional[Encoder]
 
     async def __call__(
         self,
@@ -79,9 +79,9 @@ class _OperationApp(typing.NamedTuple):
                 if isinstance(endpoint_return, Response):
                     response = endpoint_return
                 else:
-                    response = self.response_factory(
-                        self.response_encoder(endpoint_return)
-                    )
+                    if self.response_encoder:
+                        endpoint_return = self.response_encoder(endpoint_return)
+                    response = self.response_factory(endpoint_return)
                 xpresso_scope.response = response
             await response(scope, receive, send)
             xpresso_scope.response_sent = True
@@ -117,11 +117,11 @@ class Operation(BaseRoute):
         response_factory: typing.Optional[
             typing.Callable[[typing.Any], Response]
         ] = None,
-        response_encoder: Encoder = JsonableEncoder(),
+        response_encoder: typing.Optional[Encoder] = JsonableEncoder(),
         sync_to_thread: bool = True,
         # responses
         default_response_status_code: int = 200,
-        default_response_model: type = TypeUnset,
+        default_response_model: typing.Any = TypeUnset,
         default_response_description: str = "Successful Response",
         default_response_examples: typing.Optional[
             typing.Mapping[str, typing.Union[openapi_models.Example, typing.Any]]
