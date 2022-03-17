@@ -1,18 +1,22 @@
+import http.client
+import inspect
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Set, Tuple, Union
 
 from di.container import Container
+from fastapi import Response
 from pydantic import BaseConfig
 from pydantic.fields import ModelField
 from pydantic.schema import field_schema, get_flat_models_from_fields
 from pydantic.schema import get_model_name_map as get_model_name_map_pydantic
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
+from xpresso._utils.compat import get_args, get_origin, get_type_hints
 from xpresso._utils.routing import VisitedRoute
 from xpresso.binders import dependants as binder_dependants
 from xpresso.openapi import models
 from xpresso.openapi._constants import REF_PREFIX
 from xpresso.openapi._utils import merge_response_specs, parse_examples
-from xpresso.responses import ResponseModel, ResponseSpec, TypeUnset
+from xpresso.responses import ResponseModel, ResponseSpec, ResponseStatusCode, TypeUnset
 from xpresso.routing.operation import Operation
 from xpresso.routing.pathitem import Path
 from xpresso.routing.router import Router
@@ -53,10 +57,21 @@ validation_error_response = models.Response(
     description="Validation Error",
     content={
         "application/json": models.MediaType(
-            schema=models.Schema.parse_obj({"$ref": f"{REF_PREFIX}HTTPValidationError"})
+            schema=models.Schema.parse_obj({"$ref": f"{REF_PREFIX}HTTPValidationError"})  # type: ignore
         )
     },
 )
+
+http_422_status_code_str = str(HTTP_422_UNPROCESSABLE_ENTITY)
+
+status_code_ranges = {
+    "1XX": "Information",
+    "2XX": "Success",
+    "3XX": "Redirection",
+    "4XX": "Client Error",
+    "5XX": "Server Error",
+    "DEFAULT": "Default Response",
+}
 
 
 def get_model_name_map(unique_models: Set[type]) -> Dict[type, str]:
@@ -141,7 +156,10 @@ def get_response_model(
         description=spec.description,
         headers=headers,  # type: ignore[arg-type]
         content={
-            k: models.MediaType(schema=schemas[k], examples=examples[k])
+            k: models.MediaType(
+                schema=schemas[k],  # type: ignore
+                examples=examples[k],
+            )
             for k in content
         }
         or None,
@@ -168,12 +186,28 @@ def get_responses(
     return responses
 
 
+def is_response(tp: type) -> bool:
+    return inspect.isclass(tp) and issubclass(tp, Response)
+
+
+def description_from_user_input_or_status_code(
+    description: Optional[str], status_code: ResponseStatusCode
+) -> str:
+    if description:
+        return description
+    if isinstance(status_code, int):
+        return http.client.responses[status_code]
+    if status_code in status_code_ranges:
+        return status_code_ranges[status_code]
+    raise ValueError(f'Unknown status code range "{status_code}"')
+
+
 def get_operation(
     route: Operation,
     model_name_map: ModelNameMap,
     components: Dict[str, Any],
     tags: List[str],
-    response_specs: Mapping[str, ResponseSpec],
+    response_specs: Dict[str, ResponseSpec],
 ) -> models.Operation:
     data: Dict[str, Any] = {
         "tags": tags or None,
@@ -200,16 +234,66 @@ def get_operation(
     )
     if parameters:
         data["parameters"] = parameters
-    body_dependant = next(
-        (
-            dep
-            for dep in route_dependant.get_flat_subdependants()
-            if isinstance(dep, binder_dependants.BodyBinder)
-        ),
-        None,
-    )
+    body_dependants = [
+        dep
+        for dep in route_dependant.get_flat_subdependants()
+        if isinstance(dep, binder_dependants.BodyBinder)
+    ]
+    if len(body_dependants) > 1:
+        raise ValueError("Only 1 top level body is allowed in OpenAPI specs")
+    body_dependant = next(iter(body_dependants), None)
     if body_dependant is not None:
         data["requestBody"] = get_request_body(body_dependant, model_name_map, schemas)
+    # merge in the default response spec
+    response_model = route.response_model
+    if response_model is TypeUnset:
+        sig_return = inspect.signature(route.endpoint).return_annotation
+        if sig_return is not inspect.Parameter.empty:
+            response_annotation = get_type_hints(route.endpoint)["return"]
+            if (
+                # get_type_hints returns type(None)
+                # if the func is () -> None we don't add a response model
+                # it is rare to want to _document_ "null" as the response model
+                sig_return
+                is None
+            ) or (
+                # this is a special case for () -> FileResponse and the like
+                is_response(response_annotation)
+                or get_origin(response_annotation) is Union
+                and any(is_response(tp) for tp in get_args(response_annotation))
+            ):
+                response_annotation = TypeUnset
+            if response_annotation is not TypeUnset:
+                response_model = response_annotation
+    default_content = {
+        route.response_media_type: ResponseModel(
+            model=response_model,
+            examples=route.response_examples,
+        )
+    }
+    route_response_status_code = str(route.response_status_code)
+    route_response_description = description_from_user_input_or_status_code(
+        route.response_description, route.response_status_code
+    )
+    if route_response_status_code in response_specs:
+        if response_specs[route_response_status_code].content:
+            content = response_specs[route_response_status_code].content
+        else:
+            content = default_content
+        response_specs[route_response_status_code] = merge_response_specs(
+            ResponseSpec(
+                description=route_response_description,
+                content=content,
+                headers=route.response_headers,
+            ),
+            response_specs[route_response_status_code],
+        )
+    else:
+        response_specs[route_response_status_code] = ResponseSpec(
+            description=route_response_description,
+            content=default_content,
+            headers=route.response_headers,
+        )
     data["responses"] = get_responses(
         response_specs=response_specs,
         model_name_map=model_name_map,
@@ -217,11 +301,11 @@ def get_operation(
     )
     if schemas:
         components["schemas"] = {**components.get("schemas", {}), **schemas}
-    http422 = str(HTTP_422_UNPROCESSABLE_ENTITY)
     if ((data.get("parameters", None) or data.get("requestBody", None))) and all(
-        status not in data["responses"] for status in (http422, "4XX", "default")
+        status not in data["responses"]
+        for status in (http_422_status_code_str, "4XX", "default")
     ):
-        data["responses"][http422] = validation_error_response
+        data["responses"][http_422_status_code_str] = validation_error_response
 
         if "ValidationError" not in schemas:
             components["schemas"] = components.get("schemas", None) or {}

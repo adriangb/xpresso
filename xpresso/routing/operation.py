@@ -1,11 +1,5 @@
-import inspect
-import sys
 import typing
-
-if sys.version_info < (3, 9):
-    from typing_extensions import get_args, get_origin
-else:
-    from typing import get_args, get_origin
+from functools import partial
 
 from di.api.dependencies import DependantBase
 from di.api.executor import SupportsAsyncExecutor
@@ -19,30 +13,13 @@ from starlette.responses import JSONResponse, Response
 from starlette.routing import BaseRoute, NoMatchFound, get_name
 from starlette.types import ASGIApp, Receive, Scope, Send
 
-import xpresso.binders.dependants as param_dependants
 import xpresso.openapi.models as openapi_models
 from xpresso._utils.asgi import XpressoHTTPExtension
 from xpresso._utils.endpoint_dependant import Endpoint, EndpointDependant
 from xpresso.dependencies.models import Depends, Scopes
 from xpresso.encoders.api import Encoder
 from xpresso.encoders.json import JsonableEncoder
-from xpresso.openapi._utils import merge_response_specs
-from xpresso.responses import ResponseModel, ResponseSpec, ResponseStatusCode, TypeUnset
-
-
-class _OperationResponseFactory(typing.NamedTuple):
-    status_code: int
-    headers: typing.Optional[typing.Mapping[str, str]]
-    media_type: typing.Optional[str]
-    response_class: typing.Type[Response]
-
-    def __call__(self, content: typing.Any) -> Response:
-        return self.response_class(
-            content,
-            status_code=self.status_code,
-            headers=self.headers,  # type: ignore[arg-type]
-            media_type=self.media_type,  # type: ignore[arg-type]
-        )
+from xpresso.responses import ResponseSpec, ResponseStatusCode, TypeUnset
 
 
 class _OperationApp(typing.NamedTuple):
@@ -87,10 +64,6 @@ class _OperationApp(typing.NamedTuple):
             xpresso_scope.response_sent = True
 
 
-def _is_response(tp: type) -> bool:
-    return inspect.isclass(tp) and issubclass(tp, Response)
-
-
 class Operation(BaseRoute):
     def __init__(
         self,
@@ -120,23 +93,22 @@ class Operation(BaseRoute):
         response_encoder: typing.Optional[Encoder] = JsonableEncoder(),
         sync_to_thread: bool = True,
         # responses
-        default_response_status_code: int = 200,
-        default_response_model: typing.Any = TypeUnset,
-        default_response_description: str = "Successful Response",
-        default_response_examples: typing.Optional[
+        response_status_code: int = 200,
+        response_media_type: str = "application/json",
+        response_model: typing.Any = TypeUnset,
+        response_description: typing.Optional[str] = None,
+        response_examples: typing.Optional[
             typing.Mapping[str, typing.Union[openapi_models.Example, typing.Any]]
         ] = None,
-        default_response_media_type: str = "application/json",
-        default_response_header_values: typing.Optional[
-            typing.Mapping[str, str]
-        ] = None,
-        default_response_header_specs: typing.Optional[
+        response_headers: typing.Optional[
             typing.Mapping[str, typing.Union[openapi_models.ResponseHeader, str]]
         ] = None,
-        default_response_class: typing.Type[Response] = JSONResponse,
     ) -> None:
-        self._app: typing.Optional[ASGIApp] = None
+        # These fields mirror Starlette's Route
         self.endpoint = endpoint
+        self.include_in_schema = include_in_schema
+        self.name: str = get_name(endpoint) if name is None else name  # type: ignore
+        self._app: typing.Optional[ASGIApp] = None
         self.tags = tuple(tags or ())
         self.summary = summary
         self.description = description
@@ -145,68 +117,24 @@ class Operation(BaseRoute):
         self.servers = tuple(servers or ())
         self.external_docs = external_docs
         self.responses = dict(responses or {})
-        if default_response_model is TypeUnset:
-            sig_return = inspect.signature(endpoint).return_annotation
-            if sig_return is not inspect.Parameter.empty:
-                response_annotation = typing.get_type_hints(endpoint)["return"]
-                if (
-                    # get_type_hints returns type(None)
-                    # if the func is () -> None we don't add a response model
-                    # it is rare to want to _document_ "null" as the response model
-                    sig_return
-                    is None
-                ) or (
-                    # this is a special case for () -> FileResponse and the like
-                    _is_response(response_annotation)
-                    or get_origin(response_annotation) is typing.Union
-                    and any(_is_response(tp) for tp in get_args(response_annotation))
-                ):
-                    response_annotation = TypeUnset
-                if response_annotation is not TypeUnset:
-                    default_response_model = response_annotation
-        default_content = {
-            default_response_media_type: ResponseModel(
-                model=default_response_model,
-                examples=default_response_examples,
-            )
-        }
-        if default_response_status_code in self.responses:
-            if self.responses[default_response_status_code].content:
-                content = self.responses[default_response_status_code].content
-            else:
-                content = default_content
-            self.responses[default_response_status_code] = merge_response_specs(
-                ResponseSpec(
-                    description=default_response_description,
-                    content=content,
-                    headers=default_response_header_specs,
-                ),
-                self.responses[default_response_status_code],
-            )
-        else:
-            self.responses[default_response_status_code] = ResponseSpec(
-                description=default_response_description,
-                content=default_content,
-                headers=default_response_header_specs,
-            )
+        self.response_status_code = response_status_code
+        self.response_media_type = response_media_type
+        self.response_model = response_model
+        self.response_description = response_description
+        self.response_examples = response_examples
+        self.response_headers = response_headers
         self.dependencies = tuple(
             dep if not isinstance(dep, Depends) else dep.as_dependant()
             for dep in dependencies or ()
         )
         self.execute_dependencies_concurrently = execute_dependencies_concurrently
-        self.response_factory = (
-            response_factory
-            or _OperationResponseFactory(
-                status_code=default_response_status_code,
-                headers=default_response_header_values,
-                media_type=default_response_media_type,
-                response_class=default_response_class,
-            ).__call__
+        self.response_factory = response_factory or partial(
+            JSONResponse,
+            media_type=response_media_type,
+            status_code=response_status_code,
         )
         self.response_encoder = response_encoder
-        self.include_in_schema = include_in_schema
-        self.name: str = get_name(endpoint) if name is None else name  # type: ignore
-        self.sync_to_thread = sync_to_thread
+        self._sync_to_thread = sync_to_thread
 
     async def handle(
         self,
@@ -229,15 +157,11 @@ class Operation(BaseRoute):
         ]
         self.dependant = container.solve(
             JoinedDependant(
-                EndpointDependant(self.endpoint, sync_to_thread=self.sync_to_thread),
+                EndpointDependant(self.endpoint, sync_to_thread=self._sync_to_thread),
                 siblings=[*deps, *self.dependencies],
             ),
             scopes=Scopes,
         )
-        flat = self.dependant.get_flat_subdependants()
-        bodies = [dep for dep in flat if isinstance(dep, param_dependants.BodyBinder)]
-        if len(bodies) > 1:
-            raise ValueError("There can only be 1 top level body per operation")
         executor: SupportsAsyncExecutor
         if self.execute_dependencies_concurrently:
             executor = ConcurrentAsyncExecutor()

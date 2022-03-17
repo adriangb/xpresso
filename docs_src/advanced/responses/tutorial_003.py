@@ -7,7 +7,7 @@ async def read_item(item_id: FromPath[str]) -> bytes:
 
 get_item = Operation(
     read_item,
-    default_response_media_type="image/png",
+    response_media_type="image/png",
     response_encoder=None,
 )
 

@@ -25,7 +25,7 @@ async def read_item(item_id: FromPath[str]) -> Any:
 
 get_item = Operation(
     read_item,
-    default_response_model=Item,
+    response_model=Item,
     responses={
         404: ResponseSpec(
             description="Item not found",

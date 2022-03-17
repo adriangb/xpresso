@@ -54,15 +54,11 @@ def test_multiple_bodies_are_not_allowed() -> None:
         ]
     )
 
-    # error triggered via lifespan
-    with pytest.raises(ValueError, match=r"There can only be 1 top level body"):
-        with TestClient(app):
-            pass  # pragma: no cover
-
-    # error triggered via request
     client = TestClient(app)
-    with pytest.raises(ValueError, match=r"There can only be 1 top level body"):
-        client.post("/test", data=b"foobarbaz")
+    with pytest.raises(
+        ValueError, match=r"Only 1 top level body is allowed in OpenAPI specs"
+    ):
+        client.get("/openapi.json")
 
 
 def test_usage_outside_of_xpresso() -> None:

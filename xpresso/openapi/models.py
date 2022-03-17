@@ -145,7 +145,7 @@ class Encoding(FrozenBaseModel):
 
 
 class MediaType(FrozenBaseModel):
-    schema_: Optional[Union[Schema, Reference]] = Field(alias="schema")
+    schema_: Annotated[Optional[Union[Schema, Reference]], Field(alias="schema")]
     examples: Optional[Examples] = None
     encoding: Optional[Dict[str, Encoding]] = None
 
@@ -297,7 +297,7 @@ class HTTPBearer(HTTPBase):
 
 class OAuthFlow(FrozenBaseModel):
     refreshUrl: Optional[AnyUrl] = None
-    scopes: Optional[Mapping[str, str]] = Field(default_factory=dict)  # type: ignore
+    scopes: Annotated[Optional[Mapping[str, str]], Field(default_factory=dict)]
 
     def __hash__(self) -> int:  # type: ignore  # for Pylance
         return hash((self.__class__, self.refreshUrl))
@@ -361,7 +361,7 @@ class Tag(FrozenBaseModel):
 class OpenAPI(FrozenBaseModel):
     openapi: str
     info: Info
-    paths: Dict[str, Union[PathItem, Extension]] = Field(default_factory=dict)
+    paths: Annotated[Dict[str, Union[PathItem, Extension]], Field(default_factory=dict)]
     servers: Optional[List[Server]] = None
     # Using Any for Specification Extensions
     components: Optional[Components] = None

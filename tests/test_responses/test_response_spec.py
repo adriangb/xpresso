@@ -17,7 +17,7 @@ def test_default_response_spec_merge_status_code() -> None:
                 "/",
                 post=Operation(
                     endpoint,
-                    default_response_status_code=201,
+                    response_status_code=201,
                 ),
             )
         ]
@@ -62,7 +62,7 @@ def test_default_response_spec_merge_description() -> None:
                 "/",
                 get=Operation(
                     endpoint,
-                    default_response_description="OK",
+                    response_description="OK",
                 ),
             )
         ]
@@ -127,7 +127,7 @@ def test_default_response_spec_response_model_inferred() -> None:
             ),
             Path(
                 "/returns_builtin-overriden",
-                get=Operation(returns_builtin, default_response_model=Tuple[str, str]),
+                get=Operation(returns_builtin, response_model=Tuple[str, str]),
             ),
             Path(
                 "/no_return",

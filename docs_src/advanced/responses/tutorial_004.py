@@ -14,7 +14,7 @@ async def create_item(item: Item) -> None:
 
 post_item = Operation(
     create_item,
-    default_response_status_code=status.HTTP_204_NO_CONTENT,
+    response_status_code=status.HTTP_204_NO_CONTENT,
 )
 
 app = App(routes=[Path("/items/", post=post_item)])
