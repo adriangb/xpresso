@@ -53,6 +53,46 @@ def test_default_response_spec_merge_with_top_level_parameters() -> None:
     assert resp.json() == expected_openapi
 
 
+def test_response_spec_merged_from_router() -> None:
+    async def endpoint() -> None:
+        ...
+
+    app = App(
+        routes=[
+            Path(
+                "/",
+                post=endpoint,
+            )
+        ],
+        responses={200: ResponseSpec(description="All good!")},
+    )
+
+    expected_openapi: Dict[str, Any] = {
+        "openapi": "3.0.3",
+        "info": {"title": "API", "version": "0.1.0"},
+        "paths": {
+            "/": {
+                "post": {
+                    "responses": {
+                        "200": {
+                            "description": "All good!",
+                            "content": {
+                                "application/json": {},
+                            },
+                        }
+                    }
+                }
+            }
+        },
+    }
+
+    client = TestClient(app)
+
+    resp = client.get("/openapi.json")
+    assert resp.status_code == 200, resp.content
+    assert resp.json() == expected_openapi
+
+
 def test_default_response_spec_response_model_inferred() -> None:
     def returns_builtin() -> List[str]:
         ...

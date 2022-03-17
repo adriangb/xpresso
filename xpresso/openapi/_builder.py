@@ -330,12 +330,12 @@ def merge_node_openapi_metadata(
 ) -> Tuple[List[str], Dict[str, ResponseSpec]]:
     new_responses: Dict[str, ResponseSpec] = responses.copy()
     for status_code, response in node.responses.items():
-        status_code = str(status_code)
+        status_code_str = str(status_code)
         if status_code not in responses:
-            new_responses[status_code] = response
+            new_responses[status_code_str] = response
         else:
-            new_responses[status_code] = merge_response_specs(
-                responses[status_code], response
+            new_responses[status_code_str] = merge_response_specs(
+                responses[status_code_str], response
             )
     return [*tags, *node.tags], new_responses
 

@@ -8,7 +8,7 @@ from starlette.types import Receive, Scope, Send
 
 from xpresso._utils.compat import Protocol
 from xpresso.dependencies.models import Depends
-from xpresso.responses import ResponseSpec
+from xpresso.responses import ResponseSpec, ResponseStatusCode
 
 
 class _ASGIApp(Protocol):
@@ -62,7 +62,7 @@ class Router:
         ] = None,
         tags: typing.Optional[typing.List[str]] = None,
         responses: typing.Optional[
-            typing.Mapping[typing.Union[str, int], ResponseSpec]
+            typing.Mapping[ResponseStatusCode, ResponseSpec]
         ] = None,
         include_in_schema: bool = True,
     ) -> None:
