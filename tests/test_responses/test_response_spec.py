@@ -3,11 +3,11 @@ from typing import Any, Dict, List, Tuple, Union
 from pydantic import BaseModel
 
 from xpresso import App, Operation, Path
-from xpresso.responses import FileResponse, JSONResponse
+from xpresso.responses import FileResponse, JSONResponse, ResponseSpec
 from xpresso.testclient import TestClient
 
 
-def test_default_response_spec_merge_status_code() -> None:
+def test_default_response_spec_merge_with_top_level_parameters() -> None:
     async def endpoint() -> None:
         ...
 
@@ -18,6 +18,7 @@ def test_default_response_spec_merge_status_code() -> None:
                 post=Operation(
                     endpoint,
                     response_status_code=201,
+                    responses={201: ResponseSpec(description="Item created")},
                 ),
             )
         ]
@@ -31,7 +32,7 @@ def test_default_response_spec_merge_status_code() -> None:
                 "post": {
                     "responses": {
                         "201": {
-                            "description": "Successful Response",
+                            "description": "Item created",
                             "content": {
                                 "application/json": {},
                             },
@@ -46,48 +47,6 @@ def test_default_response_spec_merge_status_code() -> None:
 
     resp = client.post("/")
     assert resp.status_code == 201, resp.content
-
-    resp = client.get("/openapi.json")
-    assert resp.status_code == 200, resp.content
-    assert resp.json() == expected_openapi
-
-
-def test_default_response_spec_merge_description() -> None:
-    async def endpoint() -> None:
-        ...
-
-    app = App(
-        routes=[
-            Path(
-                "/",
-                get=Operation(
-                    endpoint,
-                    response_description="OK",
-                ),
-            )
-        ]
-    )
-
-    expected_openapi: Dict[str, Any] = {
-        "openapi": "3.0.3",
-        "info": {"title": "API", "version": "0.1.0"},
-        "paths": {
-            "/": {
-                "get": {
-                    "responses": {
-                        "200": {
-                            "description": "OK",
-                            "content": {
-                                "application/json": {},
-                            },
-                        }
-                    }
-                }
-            }
-        },
-    }
-
-    client = TestClient(app)
 
     resp = client.get("/openapi.json")
     assert resp.status_code == 200, resp.content
@@ -164,7 +123,7 @@ def test_default_response_spec_response_model_inferred() -> None:
                 "get": {
                     "responses": {
                         "200": {
-                            "description": "Successful Response",
+                            "description": "OK",
                             "content": {"application/json": {}},
                         }
                     }
@@ -174,7 +133,7 @@ def test_default_response_spec_response_model_inferred() -> None:
                 "get": {
                     "responses": {
                         "200": {
-                            "description": "Successful Response",
+                            "description": "OK",
                             "content": {
                                 "application/json": {
                                     "schema": {
@@ -192,7 +151,7 @@ def test_default_response_spec_response_model_inferred() -> None:
                 "get": {
                     "responses": {
                         "200": {
-                            "description": "Successful Response",
+                            "description": "OK",
                             "content": {
                                 "application/json": {
                                     "schema": {
@@ -215,7 +174,7 @@ def test_default_response_spec_response_model_inferred() -> None:
                 "get": {
                     "responses": {
                         "200": {
-                            "description": "Successful Response",
+                            "description": "OK",
                             "content": {
                                 "application/json": {
                                     "schema": {
@@ -235,7 +194,7 @@ def test_default_response_spec_response_model_inferred() -> None:
                 "get": {
                     "responses": {
                         "200": {
-                            "description": "Successful Response",
+                            "description": "OK",
                             "content": {"application/json": {}},
                         }
                     }
@@ -245,7 +204,7 @@ def test_default_response_spec_response_model_inferred() -> None:
                 "get": {
                     "responses": {
                         "200": {
-                            "description": "Successful Response",
+                            "description": "OK",
                             "content": {
                                 "application/json": {
                                     "schema": {"$ref": "#/components/schemas/Model"}
@@ -259,7 +218,7 @@ def test_default_response_spec_response_model_inferred() -> None:
                 "get": {
                     "responses": {
                         "200": {
-                            "description": "Successful Response",
+                            "description": "OK",
                             "content": {"application/json": {}},
                         }
                     }
@@ -269,7 +228,7 @@ def test_default_response_spec_response_model_inferred() -> None:
                 "get": {
                     "responses": {
                         "200": {
-                            "description": "Successful Response",
+                            "description": "OK",
                             "content": {"application/json": {}},
                         }
                     }
@@ -283,6 +242,49 @@ def test_default_response_spec_response_model_inferred() -> None:
                     "required": ["foo"],
                     "type": "object",
                     "properties": {"foo": {"title": "Foo", "type": "integer"}},
+                }
+            }
+        },
+    }
+
+    client = TestClient(app)
+
+    resp = client.get("/openapi.json")
+    assert resp.status_code == 200, resp.content
+    assert resp.json() == expected_openapi
+
+
+def test_response_description_from_status_code() -> None:
+    async def endpoint() -> None:
+        ...
+
+    app = App(
+        routes=[
+            Path(
+                "/",
+                get=Operation(
+                    endpoint,
+                    response_status_code=201,
+                    responses={429: ResponseSpec(), "5XX": ResponseSpec()},
+                ),
+            )
+        ]
+    )
+
+    expected_openapi: Dict[str, Any] = {
+        "openapi": "3.0.3",
+        "info": {"title": "API", "version": "0.1.0"},
+        "paths": {
+            "/": {
+                "get": {
+                    "responses": {
+                        "429": {"description": "Too Many Requests"},
+                        "5XX": {"description": "Server Error"},
+                        "201": {
+                            "description": "Created",
+                            "content": {"application/json": {}},
+                        },
+                    }
                 }
             }
         },

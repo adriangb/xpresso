@@ -45,7 +45,7 @@ class ResponseModel(NamedTuple):
 
 
 class ResponseSpec(BaseModel):
-    description: str
+    description: Optional[str] = None
     content: Optional[Mapping[str, Union[ResponseModel, type]]] = None
     headers: Optional[Mapping[str, Union[ResponseHeader, str]]] = None
 

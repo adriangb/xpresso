@@ -25,7 +25,7 @@ get_item = Operation(
     read_item,
     responses={
         200: ResponseSpec(
-            description="Successful Response",
+            description="OK",
             content={"application/json": Item, "image/png": bytes},
         )
     },

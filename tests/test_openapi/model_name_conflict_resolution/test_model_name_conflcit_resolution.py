@@ -29,7 +29,7 @@ def test_duplicate_model_name_in_parameters() -> None:
                 "get": {
                     "responses": {
                         "200": {
-                            "description": "Successful Response",
+                            "description": "OK",
                             "content": {"application/json": {}},
                         },
                         "422": {
@@ -139,7 +139,7 @@ def test_duplicate_model_name_in_form_data() -> None:
                 "get": {
                     "responses": {
                         "200": {
-                            "description": "Successful Response",
+                            "description": "OK",
                             "content": {"application/json": {}},
                         },
                         "422": {
@@ -245,7 +245,7 @@ def test_model_shared_between_params_and_body() -> None:
                 "get": {
                     "responses": {
                         "200": {
-                            "description": "Successful Response",
+                            "description": "OK",
                             "content": {"application/json": {}},
                         },
                         "422": {

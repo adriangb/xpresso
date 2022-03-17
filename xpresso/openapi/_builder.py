@@ -1,14 +1,13 @@
-import http.client
 import inspect
+from http import HTTPStatus
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Set, Tuple, Union
 
 from di.container import Container
-from fastapi import Response
 from pydantic import BaseConfig
 from pydantic.fields import ModelField
 from pydantic.schema import field_schema, get_flat_models_from_fields
 from pydantic.schema import get_model_name_map as get_model_name_map_pydantic
-from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
+from starlette.responses import Response
 
 from xpresso._utils.compat import get_args, get_origin, get_type_hints
 from xpresso._utils.routing import VisitedRoute
@@ -16,7 +15,7 @@ from xpresso.binders import dependants as binder_dependants
 from xpresso.openapi import models
 from xpresso.openapi._constants import REF_PREFIX
 from xpresso.openapi._utils import merge_response_specs, parse_examples
-from xpresso.responses import ResponseModel, ResponseSpec, ResponseStatusCode, TypeUnset
+from xpresso.responses import ResponseModel, ResponseSpec, TypeUnset
 from xpresso.routing.operation import Operation
 from xpresso.routing.pathitem import Path
 from xpresso.routing.router import Router
@@ -62,15 +61,17 @@ validation_error_response = models.Response(
     },
 )
 
-http_422_status_code_str = str(HTTP_422_UNPROCESSABLE_ENTITY)
-
-status_code_ranges = {
+status_code_range_descriptions = {
     "1XX": "Information",
     "2XX": "Success",
     "3XX": "Redirection",
     "4XX": "Client Error",
     "5XX": "Server Error",
     "DEFAULT": "Default Response",
+}
+
+status_code_descriptions = {
+    str(v.value): v.phrase for v in HTTPStatus.__members__.values()
 }
 
 
@@ -127,8 +128,21 @@ def get_schema(
     return models.Schema(**schema)
 
 
+def description_from_user_input_or_status_code(
+    description: Optional[str], status_code: str
+) -> str:
+    if description:
+        return description
+    if status_code in status_code_descriptions:
+        return status_code_descriptions[status_code]
+    if status_code in status_code_range_descriptions:
+        return status_code_range_descriptions[status_code]
+    raise ValueError(f'Unknown status code "{status_code}"')
+
+
 def get_response_model(
     spec: ResponseSpec,
+    status_code: str,
     model_name_map: ModelNameMap,
     schemas: Dict[str, Any],
 ) -> models.Response:
@@ -153,7 +167,9 @@ def get_response_model(
         for k, v in content.items()
     }
     return models.Response(
-        description=spec.description,
+        description=description_from_user_input_or_status_code(
+            spec.description, status_code
+        ),
         headers=headers,  # type: ignore[arg-type]
         content={
             k: models.MediaType(
@@ -178,28 +194,18 @@ def get_responses(
             or f"{status[0]}XX" in responses
             or (
                 status.endswith("XX")
-                and any(s.startswith(status[0]) for s in responses)
+                and any(str(s).startswith(status[0]) for s in responses)
             )
         ):
             raise ValueError("Duplicate response status codes are not allowed")
-        responses[status] = get_response_model(response_spec, model_name_map, schemas)
+        responses[status] = get_response_model(
+            response_spec, status, model_name_map, schemas
+        )
     return responses
 
 
 def is_response(tp: type) -> bool:
     return inspect.isclass(tp) and issubclass(tp, Response)
-
-
-def description_from_user_input_or_status_code(
-    description: Optional[str], status_code: ResponseStatusCode
-) -> str:
-    if description:
-        return description
-    if isinstance(status_code, int):
-        return http.client.responses[status_code]
-    if status_code in status_code_ranges:
-        return status_code_ranges[status_code]
-    raise ValueError(f'Unknown status code range "{status_code}"')
 
 
 def get_operation(
@@ -273,7 +279,7 @@ def get_operation(
     }
     route_response_status_code = str(route.response_status_code)
     route_response_description = description_from_user_input_or_status_code(
-        route.response_description, route.response_status_code
+        route.response_description, route_response_status_code
     )
     if route_response_status_code in response_specs:
         if response_specs[route_response_status_code].content:
@@ -302,10 +308,9 @@ def get_operation(
     if schemas:
         components["schemas"] = {**components.get("schemas", {}), **schemas}
     if ((data.get("parameters", None) or data.get("requestBody", None))) and all(
-        status not in data["responses"]
-        for status in (http_422_status_code_str, "4XX", "default")
+        status not in data["responses"] for status in ("422", "4XX", "default")
     ):
-        data["responses"][http_422_status_code_str] = validation_error_response
+        data["responses"]["422"] = validation_error_response
 
         if "ValidationError" not in schemas:
             components["schemas"] = components.get("schemas", None) or {}

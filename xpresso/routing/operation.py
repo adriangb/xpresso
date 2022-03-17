@@ -108,7 +108,6 @@ class Operation(BaseRoute):
         self.endpoint = endpoint
         self.include_in_schema = include_in_schema
         self.name: str = get_name(endpoint) if name is None else name  # type: ignore
-        self._app: typing.Optional[ASGIApp] = None
         self.tags = tuple(tags or ())
         self.summary = summary
         self.description = description
@@ -127,13 +126,14 @@ class Operation(BaseRoute):
             dep if not isinstance(dep, Depends) else dep.as_dependant()
             for dep in dependencies or ()
         )
-        self.execute_dependencies_concurrently = execute_dependencies_concurrently
-        self.response_factory = response_factory or partial(
+        self._app: typing.Optional[ASGIApp] = None
+        self._execute_dependencies_concurrently = execute_dependencies_concurrently
+        self._response_factory = response_factory or partial(
             JSONResponse,
             media_type=response_media_type,
             status_code=response_status_code,
         )
-        self.response_encoder = response_encoder
+        self._response_encoder = response_encoder
         self._sync_to_thread = sync_to_thread
 
     async def handle(
@@ -163,7 +163,7 @@ class Operation(BaseRoute):
             scopes=Scopes,
         )
         executor: SupportsAsyncExecutor
-        if self.execute_dependencies_concurrently:
+        if self._execute_dependencies_concurrently:
             executor = ConcurrentAsyncExecutor()
         else:
             executor = AsyncExecutor()
@@ -171,8 +171,8 @@ class Operation(BaseRoute):
             container=container,
             dependant=self.dependant,
             executor=executor,
-            response_encoder=self.response_encoder,
-            response_factory=self.response_factory,
+            response_encoder=self._response_encoder,
+            response_factory=self._response_factory,
         )
 
     def url_path_for(self, name: str, **path_params: str) -> URLPath:

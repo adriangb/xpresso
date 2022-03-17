@@ -27,10 +27,7 @@ get_item = Operation(
     read_item,
     response_model=Item,
     responses={
-        404: ResponseSpec(
-            description="Item not found",
-            content={"application/json": Message},
-        )
+        404: ResponseSpec(content={"application/json": Message}),
     },
 )
 

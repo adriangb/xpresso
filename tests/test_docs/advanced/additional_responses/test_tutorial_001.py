@@ -14,7 +14,7 @@ openapi_schema: Dict[str, Any] = {
             "get": {
                 "responses": {
                     "404": {
-                        "description": "Item not found",
+                        "description": "Not Found",
                         "content": {
                             "application/json": {
                                 "schema": {"$ref": "#/components/schemas/Message"}
@@ -22,7 +22,7 @@ openapi_schema: Dict[str, Any] = {
                         },
                     },
                     "200": {
-                        "description": "Successful Response",
+                        "description": "OK",
                         "content": {
                             "application/json": {
                                 "schema": {"$ref": "#/components/schemas/Item"}

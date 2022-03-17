@@ -20,7 +20,7 @@ def test_bytes():
                 "post": {
                     "responses": {
                         "200": {
-                            "description": "Successful Response",
+                            "description": "OK",
                             "content": {"application/json": {}},
                         },
                         "422": {
@@ -96,7 +96,7 @@ def test_uploadfile():
                 "post": {
                     "responses": {
                         "200": {
-                            "description": "Successful Response",
+                            "description": "OK",
                             "content": {"application/json": {}},
                         },
                         "422": {
@@ -177,7 +177,7 @@ def test_uploadfile_custom_format():
                 "post": {
                     "responses": {
                         "200": {
-                            "description": "Successful Response",
+                            "description": "OK",
                             "content": {"application/json": {}},
                         },
                         "422": {
@@ -258,7 +258,7 @@ def test_custom_media_type():
                 "post": {
                     "responses": {
                         "200": {
-                            "description": "Successful Response",
+                            "description": "OK",
                             "content": {"application/json": {}},
                         },
                         "422": {
@@ -339,7 +339,7 @@ def test_include_in_schema() -> None:
                 "post": {
                     "responses": {
                         "200": {
-                            "description": "Successful Response",
+                            "description": "OK",
                             "content": {"application/json": {}},
                         },
                         "422": {

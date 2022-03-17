@@ -34,7 +34,7 @@ def test_multiple_content_types():
                 "post": {
                     "responses": {
                         "200": {
-                            "description": "Successful Response",
+                            "description": "OK",
                             "content": {
                                 "application/json": {
                                     "schema": {"title": "Response", "type": "string"}
@@ -138,7 +138,7 @@ def test_include_in_schema():
                 "post": {
                     "responses": {
                         "200": {
-                            "description": "Successful Response",
+                            "description": "OK",
                             "content": {
                                 "application/json": {
                                     "schema": {"title": "Response", "type": "string"}

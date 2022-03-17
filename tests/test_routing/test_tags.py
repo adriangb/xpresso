@@ -67,7 +67,7 @@ def test_tags_openapi() -> None:
                 "get": {
                     "responses": {
                         "200": {
-                            "description": "Successful Response",
+                            "description": "OK",
                             "content": {"application/json": {}},
                         }
                     },
@@ -76,7 +76,7 @@ def test_tags_openapi() -> None:
                 "put": {
                     "responses": {
                         "200": {
-                            "description": "Successful Response",
+                            "description": "OK",
                             "content": {"application/json": {}},
                         }
                     },
@@ -85,7 +85,7 @@ def test_tags_openapi() -> None:
                 "post": {
                     "responses": {
                         "200": {
-                            "description": "Successful Response",
+                            "description": "OK",
                             "content": {"application/json": {}},
                         }
                     },
@@ -94,7 +94,7 @@ def test_tags_openapi() -> None:
                 "delete": {
                     "responses": {
                         "200": {
-                            "description": "Successful Response",
+                            "description": "OK",
                             "content": {"application/json": {}},
                         }
                     },
@@ -103,7 +103,7 @@ def test_tags_openapi() -> None:
                 "head": {
                     "responses": {
                         "200": {
-                            "description": "Successful Response",
+                            "description": "OK",
                             "content": {"application/json": {}},
                         }
                     },

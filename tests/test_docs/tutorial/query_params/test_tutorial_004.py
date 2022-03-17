@@ -15,7 +15,7 @@ openapi_schema: Dict[str, Any] = {
             "get": {
                 "responses": {
                     "200": {
-                            "description": "Successful Response",
+                            "description": "OK",
                             "content": {"application/json": {}},
                         },
                     "422": {

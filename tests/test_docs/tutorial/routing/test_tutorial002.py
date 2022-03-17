@@ -14,7 +14,7 @@ def test_openapi() -> None:
                     "responses": {
                         "404": {"description": "Item not found"},
                         "200": {
-                            "description": "Successful Response",
+                            "description": "OK",
                             "content": {
                                 "application/json": {
                                     "schema": {
@@ -38,7 +38,7 @@ def test_openapi() -> None:
                         "404": {"description": "Item not found"},
                         "204": {"description": "Success"},
                         "200": {
-                            "description": "Successful Response",
+                            "description": "OK",
                             "content": {"application/json": {}},
                         },
                         "422": {

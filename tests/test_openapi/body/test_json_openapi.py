@@ -30,7 +30,7 @@ def test_pydantic_json_body() -> None:
                 "post": {
                     "responses": {
                         "200": {
-                            "description": "Successful Response",
+                            "description": "OK",
                             "content": {"application/json": {}},
                         },
                         "422": {
@@ -125,7 +125,7 @@ def test_builtin() -> None:
                 "post": {
                     "responses": {
                         "200": {
-                            "description": "Successful Response",
+                            "description": "OK",
                             "content": {"application/json": {}},
                         },
                         "422": {
@@ -205,7 +205,7 @@ def test_optional() -> None:
                 "post": {
                     "responses": {
                         "200": {
-                            "description": "Successful Response",
+                            "description": "OK",
                             "content": {"application/json": {}},
                         },
                         "422": {
@@ -306,7 +306,7 @@ def test_nullable() -> None:
                 "post": {
                     "responses": {
                         "200": {
-                            "description": "Successful Response",
+                            "description": "OK",
                             "content": {"application/json": {}},
                         },
                         "422": {
@@ -404,7 +404,7 @@ def test_include_in_schema() -> None:
                 "post": {
                     "responses": {
                         "200": {
-                            "description": "Successful Response",
+                            "description": "OK",
                             "content": {"application/json": {}},
                         },
                         "422": {

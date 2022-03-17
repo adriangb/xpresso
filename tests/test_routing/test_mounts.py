@@ -59,7 +59,7 @@ def test_openapi_routing_for_mounted_path() -> None:
                 "get": {
                     "responses": {
                         "200": {
-                            "description": "Successful Response",
+                            "description": "OK",
                             "content": {
                                 "application/json": {
                                     "schema": {"title": "Response", "type": "integer"}
@@ -183,7 +183,7 @@ def test_mounted_xpresso_app_openapi() -> None:
                 "get": {
                     "responses": {
                         "200": {
-                            "description": "Successful Response",
+                            "description": "OK",
                             "content": {
                                 "application/json": {
                                     "schema": {"title": "Response", "type": "integer"}

@@ -49,7 +49,7 @@ def test_openapi_schema() -> None:
                 "put": {
                     "responses": {
                         "200": {
-                            "description": "Successful Response",
+                            "description": "OK",
                             "content": {
                                 "application/json": {
                                     "schema": {
