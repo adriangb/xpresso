@@ -230,7 +230,7 @@ class App:
                         )
             if isinstance(route.route, Path):
                 for operation in route.route.operations.values():
-                    operation.solve(
+                    operation.prepare(
                         dependencies=[
                             *dependencies,
                             *route.route.dependencies,

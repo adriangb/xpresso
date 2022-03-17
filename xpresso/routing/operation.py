@@ -22,6 +22,10 @@ from xpresso.encoders.json import JsonableEncoder
 from xpresso.responses import ResponseSpec, ResponseStatusCode, TypeUnset
 
 
+class NotPreparedError(Exception):
+    pass
+
+
 class _OperationApp(typing.NamedTuple):
     dependant: SolvedDependant[typing.Any]
     container: Container
@@ -62,6 +66,13 @@ class _OperationApp(typing.NamedTuple):
                 xpresso_scope.response = response
             await response(scope, receive, send)
             xpresso_scope.response_sent = True
+
+
+async def _not_prepared_app(*args: typing.Any) -> None:
+    raise NotPreparedError(
+        "Operation.prepare() was never called on this Operation."
+        " Perhaps you tried to use an Xpresso Operation outside of an Xpresso App?"
+    )
 
 
 class Operation(BaseRoute):
@@ -126,7 +137,7 @@ class Operation(BaseRoute):
             dep if not isinstance(dep, Depends) else dep.as_dependant()
             for dep in dependencies or ()
         )
-        self._app: typing.Optional[ASGIApp] = None
+        self._app: ASGIApp = _not_prepared_app
         self._execute_dependencies_concurrently = execute_dependencies_concurrently
         self._response_factory = response_factory or partial(
             JSONResponse,
@@ -142,23 +153,21 @@ class Operation(BaseRoute):
         receive: Receive,
         send: Send,
     ) -> None:
-        if self._app is None:
-            raise RuntimeError("Operation cannot be used outside of a Xpresso App")
         return await self._app(scope, receive, send)
 
-    def solve(
+    def prepare(
         self,
         container: Container,
         dependencies: typing.Iterable[typing.Union[DependantBase[typing.Any], Depends]],
     ) -> None:
         deps = [
             dep if not isinstance(dep, Depends) else dep.as_dependant()
-            for dep in dependencies or ()
+            for dep in [*dependencies, *self.dependencies]
         ]
         self.dependant = container.solve(
             JoinedDependant(
                 EndpointDependant(self.endpoint, sync_to_thread=self._sync_to_thread),
-                siblings=[*deps, *self.dependencies],
+                siblings=deps,
             ),
             scopes=Scopes,
         )

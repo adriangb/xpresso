@@ -2,6 +2,7 @@ import pytest
 import starlette.routing
 
 from xpresso import App, FromFile, FromJson, Operation, Path
+from xpresso.routing.operation import NotPreparedError
 from xpresso.testclient import TestClient
 
 
@@ -64,14 +65,14 @@ def test_multiple_bodies_are_not_allowed() -> None:
 def test_usage_outside_of_xpresso() -> None:
     app = starlette.routing.Router(routes=[Path("/", get=endpoint_1)])
 
+    msg = r"Operation.prepare\(\) was never called on this Operation"
+
     # error triggered with lifespan
     with TestClient(app) as client:
-        with pytest.raises(
-            RuntimeError, match=r"cannot be used outside of a Xpresso App"
-        ):
+        with pytest.raises(NotPreparedError, match=msg):
             client.get("/")
 
     # error triggered without lifespan
     client = TestClient(app)
-    with pytest.raises(RuntimeError, match=r"cannot be used outside of a Xpresso App"):
+    with pytest.raises(NotPreparedError, match=msg):
         client.get("/")
