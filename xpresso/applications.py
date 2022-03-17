@@ -29,7 +29,7 @@ from xpresso.exception_handlers import (
 from xpresso.exceptions import RequestValidationError
 from xpresso.middleware.exceptions import ExceptionMiddleware
 from xpresso.openapi import models as openapi_models
-from xpresso.openapi._builder import genrate_openapi
+from xpresso.openapi._builder import generate_openapi
 from xpresso.openapi._html import get_swagger_ui_html
 from xpresso.routing.pathitem import Path
 from xpresso.routing.router import Router
@@ -250,7 +250,7 @@ class App:
     def get_openapi(
         self, servers: typing.List[openapi_models.Server]
     ) -> openapi_models.OpenAPI:
-        return genrate_openapi(
+        return generate_openapi(
             visitor=visit_routes(
                 app_type=App, router=self.router, nodes=[self, self.router], path=""
             ),

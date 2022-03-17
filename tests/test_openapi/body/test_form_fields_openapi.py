@@ -35,7 +35,10 @@ def test_form_field_scalar(
             "/": {
                 "post": {
                     "responses": {
-                        "200": {"description": "Successful Response"},
+                        "200": {
+                            "description": "Successful Response",
+                            "content": {"application/json": {}},
+                        },
                         "422": {
                             "description": "Validation Error",
                             "content": {
@@ -132,7 +135,10 @@ def test_form_field_array(
             "/": {
                 "post": {
                     "responses": {
-                        "200": {"description": "Successful Response"},
+                        "200": {
+                            "description": "Successful Response",
+                            "content": {"application/json": {}},
+                        },
                         "422": {
                             "description": "Validation Error",
                             "content": {
@@ -235,7 +241,10 @@ def test_form_field_object(
             "/": {
                 "post": {
                     "responses": {
-                        "200": {"description": "Successful Response"},
+                        "200": {
+                            "description": "Successful Response",
+                            "content": {"application/json": {}},
+                        },
                         "422": {
                             "description": "Validation Error",
                             "content": {
@@ -334,7 +343,10 @@ def test_include_in_schema() -> None:
             "/": {
                 "post": {
                     "responses": {
-                        "200": {"description": "Successful Response"},
+                        "200": {
+                            "description": "Successful Response",
+                            "content": {"application/json": {}},
+                        },
                         "422": {
                             "description": "Validation Error",
                             "content": {

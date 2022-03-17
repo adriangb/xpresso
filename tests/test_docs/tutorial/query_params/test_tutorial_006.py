@@ -13,7 +13,14 @@ openapi_schema: Dict[str, Any] = {
         "/items/": {
             "get": {
                 "responses": {
-                    "200": {"description": "Successful Response"},
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/Filter"}
+                            }
+                        },
+                    },
                     "422": {
                         "description": "Validation Error",
                         "content": {

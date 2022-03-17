@@ -17,7 +17,10 @@ def test_openapi() -> None:
         "info": {"title": "API", "version": "0.1.0"},
         "paths": {
             "/mount/mount-again/items": {
-                "get": {"responses": {"200": {"description": "Successful Response"}}}
+                "get": {"responses": {"200": {
+                            "description": "Successful Response",
+                            "content": {"application/json": {}},
+                        }}}
             }
         },
     }

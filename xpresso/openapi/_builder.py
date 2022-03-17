@@ -1,19 +1,18 @@
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Set, Tuple, cast
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Set, Tuple, Union
 
 from di.container import Container
+from pydantic import BaseConfig
+from pydantic.fields import ModelField
+from pydantic.schema import field_schema, get_flat_models_from_fields
+from pydantic.schema import get_model_name_map as get_model_name_map_pydantic
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
 from xpresso._utils.routing import VisitedRoute
-from xpresso._utils.typing import get_model_name_map
 from xpresso.binders import dependants as binder_dependants
 from xpresso.openapi import models
-from xpresso.openapi._responses import (
-    get_response,
-    get_response_specs_from_return_type_hints,
-    merge_response_models,
-)
-from xpresso.openapi.constants import REF_PREFIX
-from xpresso.responses import Responses, ResponseSpec
+from xpresso.openapi._constants import REF_PREFIX
+from xpresso.openapi._utils import merge_response_specs, parse_examples
+from xpresso.responses import ResponseModel, ResponseSpec, TypeUnset
 from xpresso.routing.operation import Operation
 from xpresso.routing.pathitem import Path
 from xpresso.routing.router import Router
@@ -50,6 +49,21 @@ validation_error_response_definition = {
     },
 }
 
+validation_error_response = models.Response(
+    description="Validation Error",
+    content={
+        "application/json": models.MediaType(
+            schema=models.Schema.parse_obj({"$ref": f"{REF_PREFIX}HTTPValidationError"})
+        )
+    },
+)
+
+
+def get_model_name_map(unique_models: Set[type]) -> Dict[type, str]:
+    # this works with any class, but Pydantic types it as if it only works with Pydantic models
+    # if this at some point breaks, we'll just implement it in this function
+    return get_model_name_map_pydantic({model for model in unique_models if hasattr(model, "__name__")})  # type: ignore[arg-type]
+
 
 def get_parameters(
     deps: List[binder_dependants.ParameterBinder],
@@ -81,15 +95,66 @@ def get_request_body(
     return models.RequestBody(content={})
 
 
+def get_schema(
+    type_: type, model_name_map: ModelNameMap, schemas: Dict[str, Any]
+) -> models.Schema:
+    field = ModelField.infer(
+        name="Response",
+        value=...,
+        annotation=type_,
+        class_validators=None,
+        config=BaseConfig,
+    )
+    flat_models = get_flat_models_from_fields([field], known_models=set())
+    model_name_map = get_model_name_map(flat_models)
+    schema, new_schemas, _ = field_schema(field, model_name_map=model_name_map, ref_prefix=REF_PREFIX)  # type: ignore[arg-type]
+    schemas.update(new_schemas)
+    return models.Schema(**schema)
+
+
+def get_response_model(
+    spec: ResponseSpec,
+    model_name_map: ModelNameMap,
+    schemas: Dict[str, Any],
+) -> models.Response:
+    headers = {
+        header: models.ResponseHeader(description=header_or_description)
+        if isinstance(header_or_description, str)
+        else header_or_description
+        for header, header_or_description in (spec.headers or {}).items()
+    } or None
+    content = {
+        k: v if isinstance(v, ResponseModel) else ResponseModel(v)
+        for k, v in (spec.content or {}).items()
+    }
+    examples = {
+        k: parse_examples(v.examples) if v.examples is not None else None
+        for k, v in content.items()
+    }
+    schemas = {
+        k: get_schema(v.model, model_name_map, schemas)
+        if v.model is not TypeUnset
+        else None
+        for k, v in content.items()
+    }
+    return models.Response(
+        description=spec.description,
+        headers=headers,  # type: ignore[arg-type]
+        content={
+            k: models.MediaType(schema=schemas[k], examples=examples[k])
+            for k in content
+        }
+        or None,
+    )
+
+
 def get_responses(
-    route: Operation,
-    response_specs: Responses,
+    response_specs: Mapping[str, ResponseSpec],
     model_name_map: ModelNameMap,
     schemas: Dict[str, Any],
 ) -> Dict[str, models.Response]:
     responses: Dict[str, models.Response] = {}
-    for status_code, response in response_specs.items():
-        status = str(status_code)
+    for status, response_spec in response_specs.items():
         if (
             status in responses
             or f"{status[0]}XX" in responses
@@ -99,31 +164,8 @@ def get_responses(
             )
         ):
             raise ValueError("Duplicate response status codes are not allowed")
-        if isinstance(response, ResponseSpec):
-            model = get_response(response, model_name_map, schemas)
-        else:
-            # iterable of response specs
-            model = merge_response_models(
-                (get_response(r, model_name_map, schemas) for r in response),
-                default_description="Successful Response",
-            )
-        responses[status] = model
-    if responses:
-        return responses
-    responses_from_type_hints = get_response_specs_from_return_type_hints(
-        route.endpoint
-    )
-    responses_from_type_hints = responses_from_type_hints or [
-        ResponseSpec(description="Successful Response")
-    ]
-    response_model = merge_response_models(
-        (
-            get_response(spec, model_name_map, schemas)
-            for spec in responses_from_type_hints
-        ),
-        default_description="Successful Response",
-    )
-    return {"200": response_model}
+        responses[status] = get_response_model(response_spec, model_name_map, schemas)
+    return responses
 
 
 def get_operation(
@@ -131,7 +173,7 @@ def get_operation(
     model_name_map: ModelNameMap,
     components: Dict[str, Any],
     tags: List[str],
-    response_specs: Responses,
+    response_specs: Mapping[str, ResponseSpec],
 ) -> models.Operation:
     data: Dict[str, Any] = {
         "tags": tags or None,
@@ -169,27 +211,17 @@ def get_operation(
     if body_dependant is not None:
         data["requestBody"] = get_request_body(body_dependant, model_name_map, schemas)
     data["responses"] = get_responses(
-        route,
         response_specs=response_specs,
         model_name_map=model_name_map,
         schemas=schemas,
     )
-    if not data["responses"]:
-        data["responses"] = {"200": {"description": "Successful Response"}}
     if schemas:
         components["schemas"] = {**components.get("schemas", {}), **schemas}
     http422 = str(HTTP_422_UNPROCESSABLE_ENTITY)
     if ((data.get("parameters", None) or data.get("requestBody", None))) and all(
         status not in data["responses"] for status in (http422, "4XX", "default")
     ):
-        data["responses"][http422] = {
-            "description": "Validation Error",
-            "content": {
-                "application/json": {
-                    "schema": {"$ref": f"{REF_PREFIX}HTTPValidationError"}
-                }
-            },
-        }
+        data["responses"][http422] = validation_error_response
 
         if "ValidationError" not in schemas:
             components["schemas"] = components.get("schemas", None) or {}
@@ -202,43 +234,60 @@ def get_operation(
     return models.Operation(**data)
 
 
+def merge_node_openapi_metadata(
+    node: Union[Router, Path, Operation],
+    tags: List[str],
+    responses: Dict[str, ResponseSpec],
+) -> Tuple[List[str], Dict[str, ResponseSpec]]:
+    new_responses: Dict[str, ResponseSpec] = responses.copy()
+    for status_code, response in node.responses.items():
+        status_code = str(status_code)
+        if status_code not in responses:
+            new_responses[status_code] = response
+        else:
+            new_responses[status_code] = merge_response_specs(
+                responses[status_code], response
+            )
+    return [*tags, *node.tags], new_responses
+
+
 def get_paths_items(
     visitor: Iterable[VisitedRoute[Any]],
     model_name_map: ModelNameMap,
     components: Dict[str, Any],
 ) -> Dict[str, models.PathItem]:
-    paths: Dict[str, models.PathItem] = {}
+    paths: "Dict[str, models.PathItem]" = {}
     for visited_route in visitor:
         if isinstance(visited_route.route, Path):
             path_item = visited_route.route
             if not path_item.include_in_schema:
                 continue
-            tags: List[str] = []
-            responses = dict(cast(Responses, {}))
+            tags: "List[str]" = []
             include_in_schema = True
+            responses: "Dict[str, ResponseSpec]" = {}
             for node in visited_route.nodes:
                 if isinstance(node, Router):
                     if not node.include_in_schema:
                         include_in_schema = False
                         break
-                    responses.update(node.responses)
-                    tags.extend(node.tags)
+                    tags, responses = merge_node_openapi_metadata(node, tags, responses)
             if not include_in_schema:
                 continue
-            tags.extend(path_item.tags)
-            responses.update(path_item.responses)
-            operations: Dict[str, models.Operation] = {
-                method.lower(): get_operation(
+            tags, responses = merge_node_openapi_metadata(path_item, tags, responses)
+            operations: "Dict[str, models.Operation]" = {}
+            for method, operation in path_item.operations.items():
+                if not operation.include_in_schema:
+                    continue
+                operation_tags, operation_responses = merge_node_openapi_metadata(
+                    operation, tags, responses
+                )
+                operations[method.lower()] = get_operation(
                     operation,
                     model_name_map=model_name_map,
                     components=components,
-                    tags=[*tags, *operation.tags],
-                    response_specs={**responses, **operation.responses},
+                    tags=operation_tags,
+                    response_specs=operation_responses,
                 )
-                for method, operation in path_item.operations.items()
-                if operation.include_in_schema
-            }
-
             paths[visited_route.path] = models.PathItem(
                 description=visited_route.route.description,
                 summary=visited_route.route.summary,
@@ -278,10 +327,17 @@ def get_flat_models(routes: Routes) -> Set[type]:
                 ):
                     if dep.openapi is not None:
                         res.update(dep.openapi.get_models())
+            for response in operation.responses.values():
+                for response_model in (response.content or {}).values():
+                    if (
+                        isinstance(response_model, ResponseModel)
+                        and response_model.model is not TypeUnset
+                    ):
+                        res.add(response_model.model)
     return res
 
 
-def genrate_openapi(
+def generate_openapi(
     visitor: Iterable[VisitedRoute[Any]],
     container: Container,
     version: str,

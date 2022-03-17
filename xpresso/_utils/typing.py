@@ -14,7 +14,6 @@ from pydantic.fields import (
     ModelField,
 )
 from pydantic.schema import TypeModelOrEnum
-from pydantic.schema import get_model_name_map as get_model_name_map_pydantic
 
 T = typing.TypeVar("T")
 
@@ -43,12 +42,6 @@ def filter_pydantic_models_from_mapping(
 ) -> typing.Dict[TypeModelOrEnum, T]:
     keys = filter_pydantic_models_from_set(m.keys())
     return {k: m[k] for k in keys}
-
-
-def get_model_name_map(unique_models: typing.Set[type]) -> typing.Dict[type, str]:
-    # this works with any class, but Pydantic types it as if it isn't
-    # if this at some point breaks, we'll just implement it in this function
-    return get_model_name_map_pydantic(unique_models)  # type: ignore[arg-type]
 
 
 def is_sequence_like(field: ModelField) -> bool:

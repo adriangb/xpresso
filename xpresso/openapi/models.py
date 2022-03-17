@@ -131,7 +131,7 @@ class Example(FrozenBaseModel):
     summary: Optional[str] = None
     description: Optional[str] = None
     value: Any = None
-    external_value: Annotated[Optional[str], Field(alias="externalValue")]
+    external_value: Annotated[Optional[str], Field(alias="externalValue")] = None
 
 
 Examples = Mapping[str, Union[Example, Reference]]
@@ -217,7 +217,7 @@ class ResponseHeader(FrozenBaseModel):
     # Serialization rules for simple scenarios
     style: HeaderParamStyles = "simple"
     explode: bool = False
-    schema_: Optional[Union[Schema, Reference]] = Field(None, alias="schema")
+    schema_: Annotated[Optional[Union[Schema, Reference]], Field(alias="schema")] = None
     examples: Optional[Examples] = None
     # Serialization rules for more complex scenarios
     content: Optional[Dict[str, MediaType]] = None
