@@ -27,7 +27,7 @@ from xpresso.dependencies.models import Depends, Scopes
 from xpresso.encoders.api import Encoder
 from xpresso.encoders.json import JsonableEncoder
 from xpresso.openapi._utils import merge_response_specs
-from xpresso.responses import ResponseModel, ResponseSpec, TypeUnset
+from xpresso.responses import ResponseModel, ResponseSpec, ResponseStatusCode, TypeUnset
 
 
 class _OperationResponseFactory(typing.NamedTuple):
@@ -106,7 +106,7 @@ class Operation(BaseRoute):
         servers: typing.Optional[typing.Sequence[openapi_models.Server]] = None,
         external_docs: typing.Optional[openapi_models.ExternalDocumentation] = None,
         responses: typing.Optional[
-            typing.Mapping[typing.Union[int, str], ResponseSpec]
+            typing.Mapping[ResponseStatusCode, ResponseSpec]
         ] = None,
         # xpresso params
         name: typing.Optional[str] = None,

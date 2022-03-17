@@ -10,6 +10,7 @@ from starlette.responses import Response as Response  # noqa: F401
 from starlette.responses import StreamingResponse as StreamingResponse  # noqa: F401
 
 from xpresso._utils.asgi import XpressoHTTPExtension
+from xpresso._utils.compat import Literal
 from xpresso.exceptions import XpressoError
 from xpresso.openapi.models import Example, ResponseHeader
 from xpresso.requests import Request
@@ -65,3 +66,6 @@ class PlainTextResponseSpec(ResponseSpec):
     content: Optional[Mapping[str, Union[ResponseModel, type]]] = {
         "text/plain": ResponseModel(str)
     }
+
+
+ResponseStatusCode = Union[Literal["default", "2XX", "3XX", "4XX", "5XX"], int]
