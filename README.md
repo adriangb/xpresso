@@ -128,7 +128,6 @@ Most of this APIs will be _generally_ stable going forward, although some minor 
 
 1. Low-level API for binders (stuff in `xpresso.binders`): this is public, but should be considered experimental and is likely to change. The high level APIs (`FromPath[str]` and `Annotated[str, PathParam(...)]`) are likely to be stable.
 1. Security dependencies and OpenAPI integration. This part used to exist, but needed some work. It is planned for the future, but we need to think about the scope of these features and the API.
-1. Specification of reponse models / metadata. This currently works, but there is no deep merging with the automatic inference of models, and the API is overal quite klunky. Expect this to be completely re-writing.
 
 [Starlette]: https://github.com/encode/starlette
 [Pydantic]: https://github.com/samuelcolvin/pydantic/
