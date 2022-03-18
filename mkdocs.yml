@@ -52,6 +52,7 @@ nav:
     - Lifespans: "tutorial/lifespan.md"
     - Routing: "tutorial/routing.md"
   - Advanced Usage:
+    - Customizing Responses: advanced/responses.md
     - WebSockets: advanced/websockets.md
     - Dependencies:
       - Performance: "advanced/dependencies/performance.md"
