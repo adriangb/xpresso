@@ -51,5 +51,5 @@ Status codes, media types and headers are merged.
 Examples and response models are overridden.
 
 ```python
---8<-- "docs_src/advanced/responses/tutorial_004.py"
+--8<-- "docs_src/advanced/responses/tutorial_005.py"
 ```
