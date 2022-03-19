@@ -1103,7 +1103,8 @@ Status codes, media types and headers are merged.
 Examples and response models are overridden.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">pydantic</span> <span class="kn">import</span> <span class="n">BaseModel</span>
 
-<span class="kn">from</span> <span class="nn">xpresso</span> <span class="kn">import</span> <span class="n">App</span><span class="p">,</span> <span class="n">Operation</span><span class="p">,</span> <span class="n">Path</span><span class="p">,</span> <span class="n">status</span>
+<span class="kn">from</span> <span class="nn">xpresso</span> <span class="kn">import</span> <span class="n">App</span><span class="p">,</span> <span class="n">FromPath</span><span class="p">,</span> <span class="n">HTTPException</span><span class="p">,</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">xpresso.responses</span> <span class="kn">import</span> <span class="n">ResponseSpec</span>
 
 
 <span class="k">class</span> <span class="nc">Item</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
@@ -1111,16 +1112,25 @@ Examples and response models are overridden.</p>
     <span class="n">value</span><span class="p">:</span> <span class="nb">str</span>
 
 
-<span class="k">async</span> <span class="k">def</span> <span class="nf">create_item</span><span class="p">(</span><span class="n">item</span><span class="p">:</span> <span class="n">Item</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="o">...</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">read_item</span><span class="p">(</span><span class="n">item_id</span><span class="p">:</span> <span class="n">FromPath</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Item</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">item_id</span> <span class="o">==</span> <span class="s2">&quot;foo&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Item</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s2">&quot;foo&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">&quot;there goes my hero&quot;</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">404</span><span class="p">)</span>
 
 
-<span class="n">post_item</span> <span class="o">=</span> <span class="n">Operation</span><span class="p">(</span>
-    <span class="n">create_item</span><span class="p">,</span>
-    <span class="n">response_status_code</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_204_NO_CONTENT</span><span class="p">,</span>
+<span class="n">app</span> <span class="o">=</span> <span class="n">App</span><span class="p">(</span>
+    <span class="n">routes</span><span class="o">=</span><span class="p">[</span>
+        <span class="n">Path</span><span class="p">(</span>
+            <span class="s2">&quot;/items/</span><span class="si">{item_id}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">get</span><span class="o">=</span><span class="n">read_item</span><span class="p">,</span>
+            <span class="n">responses</span><span class="o">=</span><span class="p">{</span>
+                <span class="mi">404</span><span class="p">:</span> <span class="n">ResponseSpec</span><span class="p">(</span>
+                    <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Item not found&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">},</span>
+        <span class="p">)</span>
+    <span class="p">]</span>
 <span class="p">)</span>
-
-<span class="n">app</span> <span class="o">=</span> <span class="n">App</span><span class="p">(</span><span class="n">routes</span><span class="o">=</span><span class="p">[</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;/items/&quot;</span><span class="p">,</span> <span class="n">post</span><span class="o">=</span><span class="n">post_item</span><span class="p">)])</span>
 </code></pre></div>
 
               
