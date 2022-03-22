@@ -1,20 +1,10 @@
-from dataclasses import dataclass
 from typing import Dict, Optional
 
 import pytest
 from starlette.responses import Response
 from starlette.testclient import TestClient
 
-from xpresso import (
-    App,
-    ExtractField,
-    File,
-    FromFile,
-    FromFormData,
-    Path,
-    Request,
-    UploadFile,
-)
+from xpresso import App, File, FromFile, Path, Request, UploadFile
 from xpresso.typing import Annotated
 
 
@@ -82,36 +72,6 @@ def test_uploadfile_empty_file(
     with TestClient(app) as client:
         resp = client.post("/", data=value)
     assert resp.status_code == 200
-
-
-def test_file_cannot_come_from_form_data_bytes():
-    # This is really a limitation of files:
-    # 1. We don't know the encoding
-    # 2. If we did, encoding it back into bytes would make not sense, users should not do this
-    # The only way this can happen is if someone tries to extract a file from form data
-    # so we use form data to test here, even if the issue is technically unrelated to form data
-
-    @dataclass(frozen=True)
-    class FormDataModel:
-        file: ExtractField[FromFile[bytes]]
-
-    async def test(form: FromFormData[FormDataModel]) -> None:
-        raise AssertionError("Should not be called")  # pragma: no cover
-
-    app = App([Path("/", post=test)])
-
-    with TestClient(app) as client:
-        resp = client.post("/", data={"file": "this can't be a file!"})
-        assert resp.status_code == 422, resp.content
-        assert resp.json() == {
-            "detail": [
-                {
-                    "loc": ["body", "file"],
-                    "msg": "Expected a file, got a string",
-                    "type": "type_error",
-                }
-            ]
-        }
 
 
 @pytest.mark.parametrize(

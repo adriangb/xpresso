@@ -11,7 +11,7 @@ from pydantic import BaseModel
 from starlette.responses import Response
 from starlette.testclient import TestClient
 
-from xpresso import App, Form, FormEncodedField, FromFormData, FromFormField, Path
+from xpresso import App, Form, FormField, FromFormData, FromFormField, Path
 
 
 def test_form_field_scalar_defaults() -> None:
@@ -33,7 +33,7 @@ def test_form_field_scalar_defaults() -> None:
 def test_form_field_scalar_style_form_explode_true() -> None:
     @dataclass(frozen=True)
     class FormModel:
-        field: Annotated[int, FormEncodedField(style="form", explode=True)]
+        field: Annotated[int, FormField(style="form", explode=True)]
 
     async def endpoint(form: FromFormData[FormModel]) -> Response:
         assert form.field == 2
@@ -49,7 +49,7 @@ def test_form_field_scalar_style_form_explode_true() -> None:
 def test_form_field_scalar_style_form_explode_false() -> None:
     @dataclass(frozen=True)
     class FormModel:
-        field: Annotated[int, FormEncodedField(style="form", explode=False)]
+        field: Annotated[int, FormField(style="form", explode=False)]
 
     async def endpoint(form: FromFormData[FormModel]) -> Response:
         assert form.field == 2
@@ -83,7 +83,7 @@ def test_form_field_array_defaults() -> None:
 def test_form_field_array_style_form_explode_true() -> None:
     @dataclass(frozen=True)
     class FormModel:
-        field: Annotated[typing.List[int], FormEncodedField(explode=True)]
+        field: Annotated[typing.List[int], FormField(explode=True)]
 
     async def endpoint(form: FromFormData[FormModel]) -> Response:
         assert form.field == [1, 2]
@@ -99,7 +99,7 @@ def test_form_field_array_style_form_explode_true() -> None:
 def test_form_field_array_style_form_explode_false() -> None:
     @dataclass(frozen=True)
     class FormModel:
-        field: Annotated[typing.List[int], FormEncodedField(explode=False)]
+        field: Annotated[typing.List[int], FormField(explode=False)]
 
     async def endpoint(form: FromFormData[FormModel]) -> Response:
         assert form.field == [1, 2]
@@ -116,7 +116,7 @@ def test_form_field_array_style_spaceDelimited_explode_true() -> None:
     @dataclass(frozen=True)
     class FormModel:
         field: Annotated[
-            typing.List[int], FormEncodedField(style="spaceDelimited", explode=True)
+            typing.List[int], FormField(style="spaceDelimited", explode=True)
         ]
 
     async def endpoint(form: FromFormData[FormModel]) -> Response:
@@ -134,7 +134,7 @@ def test_form_field_array_style_spaceDelimited_explode_false() -> None:
     @dataclass(frozen=True)
     class FormModel:
         field: Annotated[
-            typing.List[int], FormEncodedField(style="spaceDelimited", explode=False)
+            typing.List[int], FormField(style="spaceDelimited", explode=False)
         ]
 
     async def endpoint(form: FromFormData[FormModel]) -> Response:
@@ -152,7 +152,7 @@ def test_form_field_array_style_pipeDelimited_explode_true() -> None:
     @dataclass(frozen=True)
     class FormModel:
         field: Annotated[
-            typing.List[int], FormEncodedField(style="pipeDelimited", explode=True)
+            typing.List[int], FormField(style="pipeDelimited", explode=True)
         ]
 
     async def endpoint(form: FromFormData[FormModel]) -> Response:
@@ -170,7 +170,7 @@ def test_form_field_array_style_pipeDelimited_explode_false() -> None:
     @dataclass(frozen=True)
     class FormModel:
         field: Annotated[
-            typing.List[int], FormEncodedField(style="pipeDelimited", explode=False)
+            typing.List[int], FormField(style="pipeDelimited", explode=False)
         ]
 
     async def endpoint(form: FromFormData[FormModel]) -> Response:
@@ -208,7 +208,7 @@ def test_form_field_shallow_object_defaults() -> None:
 def test_form_field_shallow_object_style_form_explode_true() -> None:
     @dataclass(frozen=True)
     class FormModel:
-        field: Annotated[ShallowObject, FormEncodedField(explode=True)]
+        field: Annotated[ShallowObject, FormField(explode=True)]
 
     async def endpoint(form: FromFormData[FormModel]) -> Response:
         assert form.field == ShallowObject(a=1, b="2")
@@ -224,7 +224,7 @@ def test_form_field_shallow_object_style_form_explode_true() -> None:
 def test_form_field_shallow_object_style_form_explode_false() -> None:
     @dataclass(frozen=True)
     class FormModel:
-        field: Annotated[ShallowObject, FormEncodedField(explode=False)]
+        field: Annotated[ShallowObject, FormField(explode=False)]
 
     async def endpoint(form: FromFormData[FormModel]) -> Response:
         assert form.field == ShallowObject(a=1, b="2")
@@ -240,9 +240,7 @@ def test_form_field_shallow_object_style_form_explode_false() -> None:
 def test_form_field_shallow_object_style_deepObject_explode_true() -> None:
     @dataclass(frozen=True)
     class FormModel:
-        field: Annotated[
-            ShallowObject, FormEncodedField(style="deepObject", explode=True)
-        ]
+        field: Annotated[ShallowObject, FormField(style="deepObject", explode=True)]
 
     async def endpoint(form: FromFormData[FormModel]) -> Response:
         assert form.field == ShallowObject(a=1, b="2")
@@ -258,9 +256,7 @@ def test_form_field_shallow_object_style_deepObject_explode_true() -> None:
 def test_form_field_deep_object_style_deepObject_explode_true() -> None:
     @dataclass(frozen=True)
     class FormModel:
-        field: Annotated[
-            ShallowObject, FormEncodedField(style="deepObject", explode=True)
-        ]
+        field: Annotated[ShallowObject, FormField(style="deepObject", explode=True)]
 
     async def endpoint(form: FromFormData[FormModel]) -> Response:
         assert form.field == ShallowObject(a=1, b="2")
@@ -281,7 +277,7 @@ def test_form_field_deep_object_style_deepObject_explode_true() -> None:
 
 def test_form_field_alias_scalar() -> None:
     class FormModel(BaseModel):
-        field: Annotated[int, FormEncodedField(alias="realFieldName")]
+        field: Annotated[int, FormField(alias="realFieldName")]
 
     async def endpoint(form: FromFormData[FormModel]) -> Response:
         assert form.field == 2
@@ -296,7 +292,7 @@ def test_form_field_alias_scalar() -> None:
 
 def test_form_field_alias_array() -> None:
     class FormModel(BaseModel):
-        field: Annotated[typing.List[int], FormEncodedField(alias="realFieldName")]
+        field: Annotated[typing.List[int], FormField(alias="realFieldName")]
 
     async def endpoint(form: FromFormData[FormModel]) -> Response:
         assert form.field == [1, 2]
@@ -313,7 +309,7 @@ def test_form_field_alias_deepObject() -> None:
     @dataclass(frozen=True)
     class FormModel:
         field: Annotated[
-            ShallowObject, FormEncodedField(style="deepObject", alias="readlFieldName")
+            ShallowObject, FormField(style="deepObject", alias="readlFieldName")
         ]
 
     async def endpoint(form: FromFormData[FormModel]) -> Response:
@@ -336,7 +332,7 @@ def test_form_field_alias_deepObject() -> None:
 def test_invalid_serialization() -> None:
     @dataclass(frozen=True)
     class FormModel:
-        field: Annotated[ShallowObject, FormEncodedField(explode=False)]
+        field: Annotated[ShallowObject, FormField(explode=False)]
 
     async def endpoint(form: FromFormData[FormModel]) -> Response:
         raise AssertionError("Should not be called")  # pragma: no cover

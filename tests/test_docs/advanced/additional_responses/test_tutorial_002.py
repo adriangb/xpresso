@@ -1,4 +1,3 @@
-
 from typing import Any, Dict
 
 from docs_src.advanced.responses.tutorial_002 import app
@@ -21,7 +20,6 @@ openapi_schema: Dict[str, Any] = {
                             },
                             "image/png": {
                                 "schema": {
-                                    "title": "Response",
                                     "type": "string",
                                     "format": "binary",
                                 }

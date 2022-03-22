@@ -11,9 +11,8 @@ from starlette.testclient import TestClient
 
 from xpresso import (
     App,
-    ExtractField,
-    File,
-    FromFile,
+    FormFile,
+    FromFormFile,
     FromMultipart,
     Multipart,
     Path,
@@ -23,7 +22,7 @@ from xpresso import (
 
 def test_file() -> None:
     class FormDataModel(BaseModel):
-        file: ExtractField[FromFile[UploadFile]]
+        file: FromFormFile[UploadFile]
 
     async def endpoint(body: FromMultipart[FormDataModel]) -> None:
         ...
@@ -111,7 +110,7 @@ def test_file() -> None:
 
 def test_file_media_type() -> None:
     class FormDataModel(BaseModel):
-        file: ExtractField[Annotated[bytes, File(media_type="application/json")]]
+        file: Annotated[bytes, FormFile(media_type="application/json")]
 
     async def endpoint(body: FromMultipart[FormDataModel]) -> None:
         ...
@@ -220,51 +219,9 @@ def test_include_in_schema() -> None:
                         "200": {
                             "description": "OK",
                             "content": {"application/json": {}},
-                        },
-                        "422": {
-                            "description": "Validation Error",
-                            "content": {
-                                "application/json": {
-                                    "schema": {
-                                        "$ref": "#/components/schemas/HTTPValidationError"
-                                    }
-                                }
-                            },
-                        },
-                    },
-                    "requestBody": {"content": {}},
-                }
-            }
-        },
-        "components": {
-            "schemas": {
-                "ValidationError": {
-                    "title": "ValidationError",
-                    "required": ["loc", "msg", "type"],
-                    "type": "object",
-                    "properties": {
-                        "loc": {
-                            "title": "Location",
-                            "type": "array",
-                            "items": {
-                                "oneOf": [{"type": "string"}, {"type": "integer"}]
-                            },
-                        },
-                        "msg": {"title": "Message", "type": "string"},
-                        "type": {"title": "Error Type", "type": "string"},
-                    },
-                },
-                "HTTPValidationError": {
-                    "title": "HTTPValidationError",
-                    "type": "object",
-                    "properties": {
-                        "detail": {
-                            "title": "Detail",
-                            "type": "array",
-                            "items": {"$ref": "#/components/schemas/ValidationError"},
                         }
-                    },
-                },
+                    }
+                }
             }
         },
     }

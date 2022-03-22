@@ -7,7 +7,7 @@ from di.dependant import Dependant
 from di.dependant import Injectable as InjectableBase
 from di.dependant import Marker
 
-from xpresso._utils.compat import Literal
+from xpresso._utils.typing import Literal
 
 T = typing.TypeVar("T")
 

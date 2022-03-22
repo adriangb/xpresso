@@ -18,7 +18,6 @@ openapi_schema: Dict[str, Any] = {
                         "content": {
                             "image/png": {
                                 "schema": {
-                                    "title": "Response",
                                     "type": "string",
                                     "format": "binary",
                                 }

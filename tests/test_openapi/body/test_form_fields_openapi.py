@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from starlette.responses import Response
 from starlette.testclient import TestClient
 
-from xpresso import App, FormEncodedField, FromFormData, Path
+from xpresso import App, FormField, FromFormData, Path
 from xpresso.openapi.models import FormDataStyles
 from xpresso.typing import Annotated
 
@@ -21,7 +21,7 @@ def test_form_field_scalar(
 ) -> None:
     @dataclass(frozen=True)
     class FormDataModel:
-        field: Annotated[int, FormEncodedField(style=style, explode=explode)]
+        field: Annotated[int, FormField(style=style, explode=explode)]
 
     async def endpoint(form: FromFormData[FormDataModel]) -> Response:
         ...
@@ -119,9 +119,7 @@ def test_form_field_array(
 ) -> None:
     @dataclass(frozen=True)
     class FormDataModel:
-        field: Annotated[
-            typing.List[int], FormEncodedField(style=style, explode=explode)
-        ]
+        field: Annotated[typing.List[int], FormField(style=style, explode=explode)]
 
     async def endpoint(form: FromFormData[FormDataModel]) -> Response:
         ...
@@ -227,7 +225,7 @@ def test_form_field_object(
 
     @dataclass(frozen=True)
     class FormDataModel:
-        field: Annotated[ShallowObject, FormEncodedField(style=style, explode=explode)]
+        field: Annotated[ShallowObject, FormField(style=style, explode=explode)]
 
     async def endpoint(form: FromFormData[FormDataModel]) -> Response:
         ...
@@ -329,7 +327,7 @@ def test_form_field_object(
 def test_include_in_schema() -> None:
     @dataclass(frozen=True)
     class FormDataModel:
-        field: Annotated[str, FormEncodedField(include_in_schema=False)]
+        field: Annotated[str, FormField(include_in_schema=False)]
 
     async def endpoint(form: FromFormData[FormDataModel]) -> Response:
         ...

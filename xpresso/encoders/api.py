@@ -1,6 +1,6 @@
 from typing import Any
 
-from xpresso._utils.compat import Protocol
+from xpresso._utils.typing import Protocol
 
 
 class Encoder(Protocol):

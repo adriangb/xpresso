@@ -177,7 +177,6 @@ def test_default_response_spec_response_model_inferred() -> None:
                             "content": {
                                 "application/json": {
                                     "schema": {
-                                        "title": "Response",
                                         "type": "array",
                                         "items": {"type": "string"},
                                     }
@@ -195,7 +194,6 @@ def test_default_response_spec_response_model_inferred() -> None:
                             "content": {
                                 "application/json": {
                                     "schema": {
-                                        "title": "Response",
                                         "maxItems": 2,
                                         "minItems": 2,
                                         "type": "array",
@@ -218,7 +216,6 @@ def test_default_response_spec_response_model_inferred() -> None:
                             "content": {
                                 "application/json": {
                                     "schema": {
-                                        "title": "Response",
                                         "anyOf": [
                                             {"type": "string"},
                                             {"type": "integer"},

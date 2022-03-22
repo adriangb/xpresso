@@ -1,64 +1,25 @@
-import inspect
-import typing
-from enum import Enum
+import sys
 
-from pydantic import BaseConfig, BaseModel
-from pydantic.fields import (
-    MAPPING_LIKE_SHAPES,
-    SHAPE_FROZENSET,
-    SHAPE_LIST,
-    SHAPE_SEQUENCE,
-    SHAPE_SET,
-    SHAPE_TUPLE,
-    SHAPE_TUPLE_ELLIPSIS,
-    ModelField,
-)
-from pydantic.schema import TypeModelOrEnum
+if sys.version_info < (3, 9):
+    from typing_extensions import Annotated as Annotated  # noqa: F401
+    from typing_extensions import get_args as get_args  # noqa: F401
+    from typing_extensions import get_origin as get_origin  # noqa: F401
+    from typing_extensions import get_type_hints as get_type_hints  # noqa: F401
+else:
+    from typing import Annotated as Annotated  # noqa: F401
+    from typing import get_args as get_args  # noqa: F401
+    from typing import get_origin as get_origin  # noqa: F401
+    from typing import get_type_hints as get_type_hints  # noqa: F401
 
-T = typing.TypeVar("T")
+if sys.version_info < (3, 8):
+    from typing_extensions import Literal as Literal  # noqa: F401
+    from typing_extensions import Protocol as Protocol  # noqa: F401
+    from typing_extensions import TypedDict as TypedDict  # noqa: F401
+    from typing_extensions import runtime_checkable as runtime_checkable  # noqa: F401
+else:
 
+    from typing import Literal as Literal  # noqa: F401
+    from typing import Protocol as Protocol  # noqa: F401
+    from typing import runtime_checkable as runtime_checkable  # noqa: F401
 
-def model_field_from_param(param: inspect.Parameter) -> ModelField:
-    return ModelField.infer(
-        name=param.name,
-        value=param.default if param.default is not param.empty else ...,
-        annotation=param.annotation,
-        class_validators={},
-        config=BaseConfig,
-    )
-
-
-def filter_pydantic_models_from_set(
-    s: typing.AbstractSet[typing.Any],
-) -> typing.Set[TypeModelOrEnum]:
-    def f(x: typing.Any) -> bool:
-        return inspect.isclass(x) and issubclass(x, (BaseModel, Enum))
-
-    return set(filter(f, s))
-
-
-def filter_pydantic_models_from_mapping(
-    m: typing.Mapping[typing.Any, T]
-) -> typing.Dict[TypeModelOrEnum, T]:
-    keys = filter_pydantic_models_from_set(m.keys())
-    return {k: m[k] for k in keys}
-
-
-def is_sequence_like(field: ModelField) -> bool:
-    return field.shape in (
-        SHAPE_TUPLE,
-        SHAPE_TUPLE_ELLIPSIS,
-        SHAPE_LIST,
-        SHAPE_SET,
-        SHAPE_FROZENSET,
-        SHAPE_LIST,
-        SHAPE_SEQUENCE,
-    )
-
-
-def is_mapping_like(field: ModelField) -> bool:
-    return (
-        field.shape in MAPPING_LIKE_SHAPES
-        or inspect.isclass(field.type_)
-        and issubclass(field.type_, BaseModel)
-    )
+    from typing_extensions import TypedDict as TypedDict  # noqa: F401

@@ -1,8 +1,10 @@
+from typing import Any, Dict
+
 from pydantic.fields import ModelField
 from pydantic.schema import field_schema
 
-from xpresso._utils.typing import filter_pydantic_models_from_mapping
-from xpresso.binders.api import ModelNameMap, Schemas
+from xpresso._utils.pydantic_utils import filter_pydantic_models_from_mapping
+from xpresso.binders.api import ModelNameMap
 from xpresso.openapi import models as openapi_models
 from xpresso.openapi._constants import REF_PREFIX
 
@@ -10,7 +12,7 @@ from xpresso.openapi._constants import REF_PREFIX
 def openapi_schema_from_pydantic_field(
     field: ModelField,
     model_name_map: ModelNameMap,
-    schemas: Schemas,
+    schemas: Dict[str, Any],
 ) -> openapi_models.Schema:
     schema, refs, _ = field_schema(
         field,

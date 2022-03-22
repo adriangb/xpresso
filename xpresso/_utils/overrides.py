@@ -8,7 +8,7 @@ from di.api.providers import DependencyProvider
 from di.container import Container
 from di.dependant import Dependant
 
-from xpresso._utils.compat import Annotated, get_args, get_origin
+from xpresso._utils.typing import Annotated, get_args, get_origin
 
 
 def get_type(param: inspect.Parameter) -> type:

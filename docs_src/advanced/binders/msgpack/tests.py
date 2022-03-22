@@ -77,7 +77,8 @@ def test_openapi_schema() -> None:
                                     "format": "binary",
                                 }
                             }
-                        }
+                        },
+                        "required": True,
                     },
                 }
             }

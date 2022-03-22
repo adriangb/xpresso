@@ -9,8 +9,8 @@ from pydantic.schema import field_schema, get_flat_models_from_fields
 from pydantic.schema import get_model_name_map as get_model_name_map_pydantic
 from starlette.responses import Response
 
-from xpresso._utils.compat import get_args, get_origin, get_type_hints
 from xpresso._utils.routing import VisitedRoute
+from xpresso._utils.typing import get_args, get_origin, get_type_hints
 from xpresso.binders import dependants as binder_dependants
 from xpresso.openapi import models
 from xpresso.openapi._constants import REF_PREFIX
@@ -82,33 +82,17 @@ def get_model_name_map(unique_models: Set[type]) -> Dict[type, str]:
 
 
 def get_parameters(
-    deps: List[binder_dependants.ParameterBinder],
+    deps: List[binder_dependants.Binder],
     model_name_map: ModelNameMap,
-    schemas: Dict[str, Any],
 ) -> Optional[List[models.ConcreteParameter]]:
-    parameters: List[models.ConcreteParameter] = [
-        dependant.openapi.get_openapi_parameter(
-            model_name_map=model_name_map, schemas=schemas
+    parameters: List[models.ConcreteParameter] = []
+    for dependant in deps:
+        parameters.extend(
+            dependant.openapi.get_openapi(model_name_map).parameters or ()
         )
-        for dependant in deps
-        if dependant.openapi and dependant.openapi.include_in_schema
-    ]
-
     if parameters:
         return list(sorted(parameters, key=lambda param: param.name))
     return None
-
-
-def get_request_body(
-    dependant: binder_dependants.BodyBinder,
-    model_name_map: ModelNameMap,
-    schemas: Dict[str, Any],
-) -> models.RequestBody:
-    if dependant.openapi and dependant.openapi.include_in_schema:
-        return dependant.openapi.get_openapi_body(
-            model_name_map=model_name_map, schemas=schemas
-        )
-    return models.RequestBody(content={})
 
 
 def get_schema(
@@ -124,6 +108,8 @@ def get_schema(
     flat_models = get_flat_models_from_fields([field], known_models=set())
     model_name_map = get_model_name_map(flat_models)
     schema, new_schemas, _ = field_schema(field, model_name_map=model_name_map, ref_prefix=REF_PREFIX)  # type: ignore[arg-type]
+    if "title" in schema and schema["title"] == "Response":
+        schema.pop("title", None)
     schemas.update(new_schemas)
     return models.Schema(**schema)
 
@@ -226,30 +212,34 @@ def get_operation(
     docstring = getattr(route.endpoint, "__doc__", None)
     if docstring and not data["description"]:
         data["description"] = docstring
-    schemas: Dict[str, Any] = {}
     route_dependant = route.dependant
-    assert route_dependant is not None
-    parameters = get_parameters(
-        [
-            dep
-            for dep in route_dependant.get_flat_subdependants()
-            if isinstance(dep, binder_dependants.ParameterBinder)
-        ],
-        model_name_map,
-        schemas,
-    )
-    if parameters:
-        data["parameters"] = parameters
-    body_dependants = [
-        dep
+    openapis = [
+        dep.openapi.get_openapi(model_name_map)
         for dep in route_dependant.get_flat_subdependants()
-        if isinstance(dep, binder_dependants.BodyBinder)
+        if isinstance(dep, binder_dependants.Binder)
     ]
-    if len(body_dependants) > 1:
-        raise ValueError("Only 1 top level body is allowed in OpenAPI specs")
-    body_dependant = next(iter(body_dependants), None)
-    if body_dependant is not None:
-        data["requestBody"] = get_request_body(body_dependant, model_name_map, schemas)
+    schemas = {
+        name: schema for oai in openapis for name, schema in (oai.schemas or {}).items()
+    }
+    params = [param for oai in openapis for param in oai.parameters or ()]
+    request_body: Optional[models.RequestBody] = None
+    for oai in openapis:
+        if oai.body:
+            if request_body:
+                raise ValueError("Only 1 top level body is allowed")
+            # sort so that generated openapi is deterministic
+            request_body_content = dict(
+                sorted(
+                    [(k, v) for k, v in oai.body.content.items()], key=lambda kv: kv[0]
+                )
+            )
+            request_body = models.RequestBody(
+                content=request_body_content, required=oai.body.required
+            )
+    # sort so that generated openapi is deterministic
+    params = list(sorted(params, key=lambda param: param.name))
+    data["parameters"] = params or None
+    data["requestBody"] = request_body
     # merge in the default response spec
     response_model = route.response_model
     if response_model is TypeUnset:
@@ -412,10 +402,9 @@ def get_flat_models(routes: Routes) -> Set[type]:
             for dep in flat_dependencies:
                 if isinstance(
                     dep,
-                    (binder_dependants.ParameterBinder, binder_dependants.BodyBinder),
+                    binder_dependants.Binder,
                 ):
-                    if dep.openapi is not None:
-                        res.update(dep.openapi.get_models())
+                    res.update(dep.openapi.get_models())
             for response in operation.responses.values():
                 for response_model in (response.content or {}).values():
                     if (

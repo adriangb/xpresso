@@ -5,7 +5,7 @@ from tests.test_openapi.model_name_conflict_resolution.user1 import User as User
 from tests.test_openapi.model_name_conflict_resolution.user2 import User as User2
 from xpresso import (
     App,
-    ExtractField,
+    FromFormField,
     FromHeader,
     FromJson,
     FromMultipart,
@@ -123,8 +123,8 @@ def test_duplicate_model_name_in_parameters() -> None:
 def test_duplicate_model_name_in_form_data() -> None:
     @dataclass
     class FormData:
-        field1: ExtractField[FromJson[User1]]
-        field2: ExtractField[FromJson[User2]]
+        field1: FromFormField[User1]
+        field2: FromFormField[User2]
 
     async def endpoint(form: FromMultipart[FormData]) -> None:
         ...
@@ -169,8 +169,8 @@ def test_duplicate_model_name_in_form_data() -> None:
                                     },
                                 },
                                 "encoding": {
-                                    "field1": {"contentType": "application/json"},
-                                    "field2": {"contentType": "application/json"},
+                                    "field1": {"style": "form", "explode": True},
+                                    "field2": {"style": "form", "explode": True},
                                 },
                             }
                         },

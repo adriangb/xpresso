@@ -4,21 +4,18 @@ from starlette.responses import Response
 
 from xpresso.applications import App
 from xpresso.bodies import (
-    ByContentType,
-    ExtractField,
-    ExtractRepeatedField,
     File,
     Form,
-    FormEncodedField,
     FormField,
+    FormFile,
     FromFile,
     FromFormData,
     FromFormField,
+    FromFormFile,
     FromJson,
     FromMultipart,
     Json,
     Multipart,
-    RepeatedFormField,
 )
 from xpresso.datastructures import BinaryStream, UploadFile
 from xpresso.dependencies.models import Depends
@@ -50,8 +47,8 @@ __all__ = (
     "CookieParam",
     "PathParam",
     "Json",
-    "ExtractField",
-    "ExtractRepeatedField",
+    "FormFile",
+    "FromFormFile",
     "Form",
     "File",
     "Multipart",
@@ -65,17 +62,14 @@ __all__ = (
     "FromFormData",
     "FromHeader",
     "FromJson",
-    "FormEncodedField",
+    "FormField",
     "FromPath",
     "FromQuery",
     "HTTPException",
-    "RepeatedFormField",
-    "FormField",
     "FromFile",
     "status",
     "Request",
     "Response",
-    "ByContentType",
     "WebSocketRoute",
     "WebSocket",
 )

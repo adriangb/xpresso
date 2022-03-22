@@ -12,7 +12,7 @@ except ImportError:  # pragma: no cover
     EmailStr = str  # type: ignore
 
 
-from xpresso._utils.compat import Annotated, Literal
+from xpresso._utils.typing import Annotated, Literal
 
 
 class FrozenBaseModel(BaseModel):

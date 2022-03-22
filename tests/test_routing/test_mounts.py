@@ -61,9 +61,7 @@ def test_openapi_routing_for_mounted_path() -> None:
                         "200": {
                             "description": "OK",
                             "content": {
-                                "application/json": {
-                                    "schema": {"title": "Response", "type": "integer"}
-                                }
+                                "application/json": {"schema": {"type": "integer"}}
                             },
                         },
                         "422": {
@@ -185,9 +183,7 @@ def test_mounted_xpresso_app_openapi() -> None:
                         "200": {
                             "description": "OK",
                             "content": {
-                                "application/json": {
-                                    "schema": {"title": "Response", "type": "integer"}
-                                }
+                                "application/json": {"schema": {"type": "integer"}}
                             },
                         },
                         "422": {

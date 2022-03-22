@@ -19,7 +19,7 @@ openapi_schema: Dict[str, Any] = {
                         "description": "OK",
                         "content": {
                             "application/json": {
-                                "schema": {"title": "Response", "type": "integer"}
+                                "schema": {"type": "integer"}
                             }
                         },
                     },

@@ -1,12 +1,14 @@
 import typing
 
-import xpresso.binders.dependants as param_dependants
-from xpresso._utils.compat import Annotated
-from xpresso.binders._parameters.extractors.cookie import CookieParameterExtractorMarker
-from xpresso.binders._parameters.extractors.header import HeaderParameterExtractorMarker
-from xpresso.binders._parameters.extractors.path import PathParameterExtractorMarker
-from xpresso.binders._parameters.extractors.query import QueryParameterExtractorMarker
-from xpresso.binders._parameters.openapi import OpenAPIParameterMarker
+import xpresso.binders.dependants as dependants
+from xpresso._utils.typing import Annotated
+from xpresso.binders._binders import (
+    cookie_params,
+    header_params,
+    param_openapi,
+    path_params,
+    query_params,
+)
 from xpresso.openapi import models as openapi_models
 
 Example = typing.Union[openapi_models.Example, typing.Any]
@@ -21,13 +23,13 @@ def QueryParam(
     description: typing.Optional[str] = None,
     deprecated: typing.Optional[bool] = None,
     include_in_schema: bool = True,
-) -> param_dependants.ParameterBinderMarker:
-    extractor = QueryParameterExtractorMarker(
+) -> dependants.BinderMarker:
+    extractor = query_params.ExtractorMarker(
         alias=alias,
         explode=explode,
         style=style,
     )
-    openapi = OpenAPIParameterMarker(
+    openapi = param_openapi.OpenAPIMarker(
         alias=alias,
         description=description,
         style=style,
@@ -37,8 +39,7 @@ def QueryParam(
         include_in_schema=include_in_schema,
         param_cls=openapi_models.Query,
     )
-    return param_dependants.ParameterBinderMarker(
-        in_="query",
+    return dependants.BinderMarker(
         extractor_marker=extractor,
         openapi_marker=openapi,
     )
@@ -53,13 +54,13 @@ def PathParam(
     description: typing.Optional[str] = None,
     deprecated: typing.Optional[bool] = None,
     include_in_schema: bool = True,
-) -> param_dependants.ParameterBinderMarker:
-    extractor = PathParameterExtractorMarker(
+) -> dependants.BinderMarker:
+    extractor = path_params.ExtractorMarker(
         alias=alias,
         explode=explode,
         style=style,
     )
-    openapi = OpenAPIParameterMarker(
+    openapi = param_openapi.OpenAPIMarker(
         alias=alias,
         description=description,
         style=style,
@@ -70,8 +71,7 @@ def PathParam(
         param_cls=openapi_models.Path,
         required=True,
     )
-    return param_dependants.ParameterBinderMarker(
-        in_="path",
+    return dependants.BinderMarker(
         extractor_marker=extractor,
         openapi_marker=openapi,
     )
@@ -86,13 +86,13 @@ def HeaderParam(
     description: typing.Optional[str] = None,
     deprecated: typing.Optional[bool] = None,
     include_in_schema: bool = True,
-) -> param_dependants.ParameterBinderMarker:
-    extractor = HeaderParameterExtractorMarker(
+) -> dependants.BinderMarker:
+    extractor = header_params.ExtractorMarker(
         alias=alias,
         explode=explode,
         convert_underscores=convert_underscores,
     )
-    openapi = OpenAPIParameterMarker(
+    openapi = param_openapi.OpenAPIMarker(
         alias=alias,
         description=description,
         explode=explode,
@@ -102,8 +102,7 @@ def HeaderParam(
         include_in_schema=include_in_schema,
         param_cls=openapi_models.Header,
     )
-    return param_dependants.ParameterBinderMarker(
-        in_="header",
+    return dependants.BinderMarker(
         extractor_marker=extractor,
         openapi_marker=openapi,
     )
@@ -117,12 +116,12 @@ def CookieParam(
     description: typing.Optional[str] = None,
     deprecated: typing.Optional[bool] = None,
     include_in_schema: bool = True,
-) -> param_dependants.ParameterBinderMarker:
-    extractor = CookieParameterExtractorMarker(
+) -> dependants.BinderMarker:
+    extractor = cookie_params.ExtractorMarker(
         alias=alias,
         explode=explode,
     )
-    openapi = OpenAPIParameterMarker(
+    openapi = param_openapi.OpenAPIMarker(
         alias=alias,
         description=description,
         style="form",
@@ -132,8 +131,7 @@ def CookieParam(
         include_in_schema=include_in_schema,
         param_cls=openapi_models.Cookie,
     )
-    return param_dependants.ParameterBinderMarker(
-        in_="cookie",
+    return dependants.BinderMarker(
         extractor_marker=extractor,
         openapi_marker=openapi,
     )
