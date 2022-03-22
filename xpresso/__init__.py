@@ -4,10 +4,12 @@ from starlette.responses import Response
 
 from xpresso.applications import App
 from xpresso.bodies import (
+    BodyUnion,
     File,
     Form,
     FormField,
     FormFile,
+    FromBodyUnion,
     FromFile,
     FromFormData,
     FromFormField,
@@ -56,6 +58,8 @@ __all__ = (
     "App",
     "Router",
     "UploadFile",
+    "FromBodyUnion",
+    "BodyUnion",
     "FromCookie",
     "FromMultipart",
     "FromFormField",

@@ -4,7 +4,7 @@ import typing
 import xpresso.binders.dependants as dependants
 import xpresso.openapi.models as openapi_models
 from xpresso._utils.typing import Annotated, Literal
-from xpresso.binders._binders import file_body, form_body, json_body
+from xpresso.binders._binders import file_body, form_body, json_body, union
 
 Example = typing.Union[openapi_models.Example, typing.Any]
 
@@ -154,6 +154,20 @@ def Multipart(
     )
 
 
+def BodyUnion(
+    *,
+    description: typing.Optional[str] = None,
+) -> dependants.BinderMarker:
+    extractor_marker = union.ExtractorMarker()
+    openapi_marker = union.BodyOpenAPIMarker(
+        description=description,
+    )
+    return dependants.BinderMarker(
+        extractor_marker=extractor_marker,
+        openapi_marker=openapi_marker,
+    )
+
+
 # Convenience type aliases
 _T = typing.TypeVar("_T")
 FromJson = Annotated[_T, Json()]
@@ -162,3 +176,4 @@ FromFormField = Annotated[_T, FormField()]
 FromFormFile = Annotated[_T, FormFile()]
 FromFormData = Annotated[_T, Form()]
 FromMultipart = Annotated[_T, Multipart()]
+FromBodyUnion = Annotated[_T, BodyUnion()]
