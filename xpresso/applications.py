@@ -356,12 +356,16 @@ def _build_middleware_stack(
 def _wrap_lifespan_as_async_generator(
     lifespan: typing.Callable[..., typing.AsyncContextManager[None]]
 ) -> typing.Callable[..., typing.AsyncIterator[None]]:
+    # wrap true context managers in an async generator
+    # so that the dependency injection system recognizes it
     async def gen(
         *args: typing.Any, **kwargs: typing.Any
     ) -> typing.AsyncIterator[None]:
         async with lifespan(*args, **kwargs):
             yield
 
+    # this is so that the dependency injection system
+    # still picks up parameters from the function signature
     sig = inspect.signature(gen)
     sig = sig.replace(parameters=list(inspect.signature(lifespan).parameters.values()))
     setattr(gen, "__signature__", sig)
