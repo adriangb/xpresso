@@ -87,6 +87,10 @@ class Extractor(typing.NamedTuple):
                 if error.status_code >= 500:
                     raise error
                 errors.append(error)
+        # check if any of the extractors accepted the media type
+        for err in errors:
+            if err.status_code != 415:
+                raise err
         status_codes = [e.status_code for e in errors]
         # we want to return as much info as we can to the client
         # but it is possible for extractors to fail with different reasons/status codes

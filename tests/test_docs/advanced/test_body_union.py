@@ -123,3 +123,17 @@ def test_post_json():
     response = client.post("/items/", json={"name": "hammer", "price": 1.0})
     assert response.status_code == 200
     assert response.json() == {"hammer": 1.0}
+
+
+def test_post_unsupported_media_type():
+    response = client.post("/items/", headers={"Content-Type": "text/plain"})
+    assert response.status_code == 415
+    assert response.json() == {
+        "detail": '[{"loc": ["body", "headers", "content-type"], "msg": "Media type text/plain is not supported", "type": "value_error"}, {"loc": ["body", "headers", "content-type"], "msg": "Media type text/plain is not supported", "type": "value_error"}]'
+    }
+
+
+def test_post_invalid_json():
+    response = client.post("/items/", json={})
+    assert response.status_code == 422
+    assert response.json() == {'detail': [{'loc': ['body', 'name'], 'msg': 'field required', 'type': 'value_error.missing'}, {'loc': ['body', 'price'], 'msg': 'field required', 'type': 'value_error.missing'}]}
