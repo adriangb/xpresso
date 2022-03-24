@@ -1,6 +1,7 @@
 import inspect
 import typing
 
+from di.api.dependencies import CacheKey
 from di.dependant import Dependant, Marker
 
 from xpresso._utils.typing import Protocol
@@ -24,6 +25,10 @@ class Binder(Dependant[typing.Any]):
         super().__init__(call=extractor.extract, scope="connection")
         self.openapi = openapi
         self.extractor = extractor
+
+    @property
+    def cache_key(self) -> CacheKey:
+        return self.extractor
 
 
 class BinderMarker(Marker):
