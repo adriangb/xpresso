@@ -128,12 +128,16 @@ def test_post_json():
 def test_post_unsupported_media_type():
     response = client.post("/items/", headers={"Content-Type": "text/plain"})
     assert response.status_code == 415
-    assert response.json() == {
-        "detail": '[{"loc": ["body", "headers", "content-type"], "msg": "Media type text/plain is not supported", "type": "value_error"}, {"loc": ["body", "headers", "content-type"], "msg": "Media type text/plain is not supported", "type": "value_error"}]'
-    }
+    assert response.json() == {'detail': [{'loc': ['headers', 'content-type'], 'msg': 'Media type text/plain is not supported', 'type': 'value_error'}]}
 
 
 def test_post_invalid_json():
-    response = client.post("/items/", json={})
+    response = client.post("/items/", json={"name": "hammer"})
     assert response.status_code == 422
-    assert response.json() == {'detail': [{'loc': ['body', 'name'], 'msg': 'field required', 'type': 'value_error.missing'}, {'loc': ['body', 'price'], 'msg': 'field required', 'type': 'value_error.missing'}]}
+    assert response.json() == {'detail': [{'loc': ['body', 'price'], 'msg': 'field required', 'type': 'value_error.missing'}]}
+
+
+def test_post_invalid_form():
+    response = client.post("/items/", data={"name": "hammer"})
+    assert response.status_code == 422
+    assert response.json() == {'detail': [{'loc': ['body', 'price'], 'msg': 'field required', 'type': 'value_error.missing'}]}

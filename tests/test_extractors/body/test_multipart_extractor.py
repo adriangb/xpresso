@@ -257,7 +257,7 @@ def test_dissallow_mismatched_media_type():
     assert resp.json() == {
         "detail": [
             {
-                "loc": ["body", "headers", "content-type"],
+                "loc": ["headers", "content-type"],
                 "msg": "Media type application/x-www-form-urlencoded is not supported",
                 "type": "value_error",
             }

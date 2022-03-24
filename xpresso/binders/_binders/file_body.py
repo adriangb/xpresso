@@ -95,7 +95,7 @@ class Extractor(typing.NamedTuple):
     async def extract(self, connection: HTTPConnection) -> typing.Any:
         assert isinstance(connection, Request)
         media_type = connection.headers.get("content-type", None)
-        self.media_type_validator.validate(media_type, loc=("body",))
+        self.media_type_validator.validate(media_type)
         return await self.consumer(connection)
 
 

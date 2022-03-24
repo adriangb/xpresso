@@ -12,7 +12,7 @@ class Item(BaseModel):
 
 
 async def create_receipt(
-    item: FromBodyUnion[Union[FromJson[Item], FromFormData[Item]]]
+    item: FromBodyUnion[Union[FromFormData[Item], FromJson[Item]]]
 ) -> Dict[str, float]:
     return {item.name: item.price + (item.tax or 0)}
 

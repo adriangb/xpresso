@@ -59,9 +59,7 @@ class Extractor(typing.NamedTuple):
     async def extract(self, connection: HTTPConnection) -> typing.Any:
         assert isinstance(connection, Request)
         loc = ("body",)
-        self.media_type_validator.validate(
-            connection.headers.get("content-type", None), loc=loc
-        )
+        self.media_type_validator.validate(connection.headers.get("content-type", None))
         data_from_stream: bytes
         if self.consume:
             data_from_stream = bytearray()

@@ -23,7 +23,6 @@ class MediaTypeValidator:
     def validate(
         self,
         media_type: typing.Optional[str],
-        loc: typing.Tuple[typing.Union[int, str], ...],
     ) -> None:
         if self.accepted is None:
             return
@@ -32,7 +31,7 @@ class MediaTypeValidator:
                 errors=[
                     ErrorWrapper(
                         ValueError("Media type missing in content-type header"),
-                        loc=tuple((*loc, "headers", "content-type")),
+                        loc=("headers", "content-type"),
                     )
                 ],
                 status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
@@ -45,7 +44,7 @@ class MediaTypeValidator:
             errors=[
                 ErrorWrapper(
                     ValueError(f"Media type {media_type} is not supported"),
-                    loc=tuple((*loc, "headers", "content-type")),
+                    loc=("headers", "content-type"),
                 )
             ],
             status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,

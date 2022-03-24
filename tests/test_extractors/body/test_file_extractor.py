@@ -118,7 +118,7 @@ def test_content_type_validation(
         assert resp.json() == {
             "detail": [
                 {
-                    "loc": ["body", "headers", "content-type"],
+                    "loc": ["headers", "content-type"],
                     "msg": err,
                     "type": "value_error",
                 }

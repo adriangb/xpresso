@@ -1,5 +1,4 @@
 import inspect
-import json
 import typing
 
 import xpresso.openapi.models as openapi_models
@@ -79,37 +78,21 @@ class Extractor(typing.NamedTuple):
 
     async def extract(self, connection: HTTPConnection) -> typing.Any:
         assert isinstance(connection, Request)
-        errors: typing.List[typing.Union[HTTPException, RequestValidationError]] = []
+        errors: "typing.List[typing.Union[HTTPException, RequestValidationError]]" = []
         for provider in self.providers:
             try:
                 return await provider.extract(connection)
             except (HTTPException, RequestValidationError) as error:
-                if error.status_code >= 500:
-                    raise error
                 errors.append(error)
-        # check if any of the extractors accepted the media type
-        for err in errors:
-            if err.status_code != 415:
-                raise err
-        status_codes = [e.status_code for e in errors]
-        # we want to return as much info as we can to the client
-        # but it is possible for extractors to fail with different reasons/status codes
-        # for example, we might have a union of bodies where the first one fails because the
-        # media type does not match (a 415 most likely) but the second one fails because the
-        # deserialized JSON schema did not validate (a 422 most likely)
-        # so if they all fail with the same status code, we return that status code to the client
-        # otherwise, the best we can do is a generic 400 bad request
-        if len(set(status_codes)) == 1:
-            status_code = next(iter(status_codes))
-        else:
-            status_code = 400  # generic bad request
-        detail: typing.List[typing.Any] = []
-        for err in errors:
-            if isinstance(err, RequestValidationError):
-                detail.extend(err.errors())
-            else:
-                detail.append(err.detail)
-        raise HTTPException(status_code=status_code, detail=json.dumps(detail))
+        # if any body accepted the request but didn't pass validation, return the error from that one
+        val_err = next((e for e in errors if e.status_code == 422), None)
+        if val_err is not None:
+            raise val_err
+        # otherwise, jsut raise the first error we found
+        # this is somewhat arbitrary, but there really is no good way to "merge"
+        # all of the errors without making it confusing to the client
+        # and leaking implementation details
+        raise next(iter(errors))
 
 
 class ExtractorMarker(typing.NamedTuple):
