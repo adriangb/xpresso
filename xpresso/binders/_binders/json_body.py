@@ -56,9 +56,22 @@ class Extractor(typing.NamedTuple):
     media_type_validator: MediaTypeValidator
     consume: bool
 
+    def __hash__(self) -> int:
+        return hash("body")
+
+    def __eq__(self, __o: object) -> bool:
+        return isinstance(__o, Extractor) and __o.field.type_ == self.field.type_
+
     async def extract(self, connection: HTTPConnection) -> typing.Any:
         assert isinstance(connection, Request)
+        media_type = connection.headers.get("content-type", None)
         loc = ("body",)
+        if media_type is None and connection.headers.get("content-length", "0") == "0":
+            return validate_body_field(
+                None,
+                field=self.field,
+                loc=loc,
+            )
         self.media_type_validator.validate(connection.headers.get("content-type", None))
         data_from_stream: bytes
         if self.consume:
@@ -67,12 +80,6 @@ class Extractor(typing.NamedTuple):
                 data_from_stream.extend(chunk)
         else:
             data_from_stream = await connection.body()
-        if len(data_from_stream) == 0:
-            return validate_body_field(
-                None,
-                field=self.field,
-                loc=loc,
-            )
         return validate_body_field(
             Some(_decode(self.decoder, data_from_stream)),
             field=self.field,
@@ -112,11 +119,13 @@ class OpenAPI(typing.NamedTuple):
         if not self.include_in_schema:
             return OpenAPIMetadata()
         schemas: typing.Dict[str, typing.Any] = {}
+        schema = openapi_schema_from_pydantic_field(self.field, model_name_map, schemas)
+        if not schemas:
+            # not a named model, remove the meaningless title
+            schema = openapi_models.Schema(**{**schema.dict(), "title": None})
         content = {
             "application/json": openapi_models.MediaType(
-                schema=openapi_schema_from_pydantic_field(  # type: ignore
-                    self.field, model_name_map, schemas
-                ),
+                schema=schema,  # type: ignore[arg-type]
                 examples=self.examples,
             )
         }
