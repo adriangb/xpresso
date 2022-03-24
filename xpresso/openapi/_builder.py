@@ -81,20 +81,6 @@ def get_model_name_map(unique_models: Set[type]) -> Dict[type, str]:
     return get_model_name_map_pydantic({model for model in unique_models if hasattr(model, "__name__")})  # type: ignore[arg-type]
 
 
-def get_parameters(
-    deps: List[binder_dependants.Binder],
-    model_name_map: ModelNameMap,
-) -> Optional[List[models.ConcreteParameter]]:
-    parameters: List[models.ConcreteParameter] = []
-    for dependant in deps:
-        parameters.extend(
-            dependant.openapi.get_openapi(model_name_map).parameters or ()
-        )
-    if parameters:
-        return list(sorted(parameters, key=lambda param: param.name))
-    return None
-
-
 def get_schema(
     type_: type, model_name_map: ModelNameMap, schemas: Dict[str, Any]
 ) -> models.Schema:
