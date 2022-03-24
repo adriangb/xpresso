@@ -1,4 +1,3 @@
-import json
 import sys
 import typing
 
@@ -12,18 +11,7 @@ from pydantic import BaseModel
 from starlette.responses import Response
 from starlette.testclient import TestClient
 
-from xpresso import (
-    ExtractField,
-    ExtractRepeatedField,
-    Form,
-    FormEncodedField,
-    FormField,
-    FromFormData,
-    FromFormField,
-    FromJson,
-    Path,
-    RepeatedFormField,
-)
+from xpresso import Form, FormField, FromFormData, FromFormField, Path
 from xpresso.applications import App
 
 Data = typing.List[typing.Tuple[str, str]]
@@ -41,71 +29,6 @@ class ScalarModel(BaseModel):
 
 class JsonModel(BaseModel):
     inner: ScalarModel
-
-
-def test_json_from_form_field() -> None:
-
-    scalar_model_payload = {"a": 1, "b": "2"}
-    json_model_payload = {"inner": scalar_model_payload}
-
-    class FormDataModel(BaseModel):
-        json_field: ExtractField[FromJson[JsonModel]]
-
-    async def test(body: FromFormData[FormDataModel]) -> Response:
-        assert body.json_field.dict() == json_model_payload
-        return Response()
-
-    app = App([Path("/", post=test)])
-
-    data: Data = [("json_field", json.dumps(json_model_payload))]
-
-    with TestClient(app) as client:
-        resp = client.post("/", data=data)
-    assert resp.status_code == 200, resp.text
-
-
-def test_json_list_not_repeated() -> None:
-    class FormDataModel(BaseModel):
-        json_field: ExtractField[FromJson[typing.List[int]]]
-
-    async def test(body: FromFormData[FormDataModel]) -> Response:
-        assert body.json_field == [1, 2]
-        return Response()
-
-    app = App([Path("/", post=test)])
-
-    data: Data = [("json_field", "[1,2]")]
-
-    with TestClient(app) as client:
-        resp = client.post("/", data=data)
-    assert resp.status_code == 200, resp.text
-
-
-def test_array_of_json_from_repeated_form_field() -> None:
-
-    scalar_model_payload = {"a": 1, "b": "2"}
-    json_model_payload = {"inner": scalar_model_payload}
-
-    class FormDataModel(BaseModel):
-        json_field: ExtractRepeatedField[FromJson[typing.List[JsonModel]]]
-
-    async def test(body: FromFormData[FormDataModel]) -> Response:
-        assert [body.json_field[0].dict(), body.json_field[1].dict()] == [
-            json_model_payload,
-            json_model_payload,
-        ]
-        return Response()
-
-    app = App([Path("/", post=test)])
-
-    data: Data = [
-        ("json_field", json.dumps(json_model_payload)),
-        ("json_field", json.dumps(json_model_payload)),
-    ]
-
-    with TestClient(app) as client:
-        resp = client.post("/", data=data)
-    assert resp.status_code == 200, resp.text
 
 
 def test_form_field_object() -> None:
@@ -133,7 +56,7 @@ def test_form_field_deep_object() -> None:
     scalar_model_payload = {"a": 1, "b": "2"}
 
     class FormDataModel(BaseModel):
-        form_deep_object: Annotated[ScalarModel, FormEncodedField(style="deepObject")]
+        form_deep_object: Annotated[ScalarModel, FormField(style="deepObject")]
 
     async def test(body: FromFormData[FormDataModel]) -> Response:
         assert body.form_deep_object.dict() == scalar_model_payload
@@ -144,75 +67,6 @@ def test_form_field_deep_object() -> None:
     data: Data = [
         ("form_deep_object[a]", "1"),
         ("form_deep_object[b]", "2"),
-    ]
-
-    with TestClient(app) as client:
-        resp = client.post("/", data=data)
-    assert resp.status_code == 200, resp.text
-
-
-def test_json_from_form_field_with_alias() -> None:
-
-    scalar_model_payload = {"a": 1, "b": "2"}
-    json_model_payload = {"inner": scalar_model_payload}
-
-    class FormDataModel(BaseModel):
-        json_field: Annotated[FromJson[JsonModel], FormField(alias="readlFieldName")]
-
-    async def test(body: FromFormData[FormDataModel]) -> Response:
-        assert body.json_field.dict() == json_model_payload
-        return Response()
-
-    app = App([Path("/", post=test)])
-
-    data: Data = [("readlFieldName", json.dumps(json_model_payload))]
-
-    with TestClient(app) as client:
-        resp = client.post("/", data=data)
-    assert resp.status_code == 200, resp.text
-
-
-def test_json_list_not_repeated_with_alias() -> None:
-    class FormDataModel(BaseModel):
-        json_field: Annotated[
-            FromJson[typing.List[int]], FormField(alias="realFieldName")
-        ]
-
-    async def test(body: FromFormData[FormDataModel]) -> Response:
-        assert body.json_field == [1, 2]
-        return Response()
-
-    app = App([Path("/", post=test)])
-
-    data: Data = [("realFieldName", "[1,2]")]
-
-    with TestClient(app) as client:
-        resp = client.post("/", data=data)
-    assert resp.status_code == 200, resp.text
-
-
-def test_array_of_json_from_repeated_form_field_with_alias() -> None:
-
-    scalar_model_payload = {"a": 1, "b": "2"}
-    json_model_payload = {"inner": scalar_model_payload}
-
-    class FormDataModel(BaseModel):
-        json_field: Annotated[
-            FromJson[typing.List[JsonModel]], RepeatedFormField(alias="realFieldName")
-        ]
-
-    async def test(body: FromFormData[FormDataModel]) -> Response:
-        assert [body.json_field[0].dict(), body.json_field[1].dict()] == [
-            json_model_payload,
-            json_model_payload,
-        ]
-        return Response()
-
-    app = App([Path("/", post=test)])
-
-    data: Data = [
-        ("realFieldName", json.dumps(json_model_payload)),
-        ("realFieldName", json.dumps(json_model_payload)),
     ]
 
     with TestClient(app) as client:
@@ -244,7 +98,7 @@ def test_dissallow_mismatched_media_type():
     assert resp.json() == {
         "detail": [
             {
-                "loc": ["body", "headers", "content-type"],
+                "loc": ["headers", "content-type"],
                 "msg": "Media type multipart/form-data is not supported",
                 "type": "value_error",
             }

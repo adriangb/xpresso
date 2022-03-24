@@ -10,7 +10,7 @@ from starlette.responses import Response as Response  # noqa: F401
 from starlette.responses import StreamingResponse as StreamingResponse  # noqa: F401
 
 from xpresso._utils.asgi import XpressoHTTPExtension
-from xpresso._utils.compat import Literal
+from xpresso._utils.typing import Literal
 from xpresso.exceptions import XpressoError
 from xpresso.openapi.models import Example, ResponseHeader
 from xpresso.requests import Request

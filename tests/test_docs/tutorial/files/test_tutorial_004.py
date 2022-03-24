@@ -19,7 +19,7 @@ openapi_schema: Dict[str, Any] = {
                         "description": "OK",
                         "content": {
                             "application/json": {
-                                "schema": {"title": "Response", "type": "integer"}
+                                "schema": {"type": "integer"}
                             }
                         },
                     },
@@ -91,7 +91,7 @@ def test_openapi_schema():
             {
                 "detail": [
                     {
-                        "loc": ["body", "headers", "content-type"],
+                        "loc": ["headers", "content-type"],
                         "msg": "Media type text/plain is not supported",
                         "type": "value_error",
                     }

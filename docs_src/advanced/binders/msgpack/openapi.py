@@ -3,53 +3,36 @@ import typing
 
 from xpresso.binders.api import (
     ModelNameMap,
-    Schemas,
-    SupportsOpenAPIBody,
+    OpenAPIMetadata,
+    SupportsOpenAPI,
 )
 from xpresso.openapi import models
 
 
-class OpenAPIBodyMsgPack:
-    include_in_schema: bool = True
-    media_type = "application/x-msgpack"
-
+class OpenAPI:
     def get_models(self) -> typing.List[type]:
         return []
 
-    def get_openapi_media_type(
-        self, model_name_map: ModelNameMap, schemas: Schemas
-    ) -> models.MediaType:
-        return models.MediaType(
-            schema=self.get_field_schema(model_name_map, schemas)
+    def get_openapi(
+        self, model_name_map: ModelNameMap
+    ) -> OpenAPIMetadata:
+        return OpenAPIMetadata(
+            body=models.RequestBody(
+                content={
+                    "application/x-msgpack": models.MediaType(
+                        schema=models.Schema(  # type: ignore[arg-type]
+                            type="string",
+                            format="binary",
+                        )
+                    )
+                },
+                required=True,
+            )
         )
 
-    def get_field_schema(
-        self, model_name_map: ModelNameMap, schemas: Schemas
-    ) -> models.Schema:
-        return models.Schema(
-            type="string",
-            format="binary",
-        )
 
-    def get_openapi_body(
-        self, model_name_map: ModelNameMap, schemas: Schemas
-    ) -> models.RequestBody:
-        return models.RequestBody(
-            content={
-                self.media_type: self.get_openapi_media_type(
-                    model_name_map, schemas
-                )
-            }
-        )
-
-    def get_field_encoding(
-        self, model_name_map: ModelNameMap, schemas: Schemas
-    ) -> models.Encoding:
-        return models.Encoding(contentType=self.media_type)
-
-
-class OpenAPIBodyMarkerMsgPack:
+class OpenAPIMarker:
     def register_parameter(
         self, param: inspect.Parameter
-    ) -> SupportsOpenAPIBody:
-        return OpenAPIBodyMsgPack()
+    ) -> SupportsOpenAPI:
+        return OpenAPI()

@@ -341,51 +341,9 @@ def test_include_in_schema() -> None:
                         "200": {
                             "description": "OK",
                             "content": {"application/json": {}},
-                        },
-                        "422": {
-                            "description": "Validation Error",
-                            "content": {
-                                "application/json": {
-                                    "schema": {
-                                        "$ref": "#/components/schemas/HTTPValidationError"
-                                    }
-                                }
-                            },
-                        },
-                    },
-                    "requestBody": {"content": {}},
-                }
-            }
-        },
-        "components": {
-            "schemas": {
-                "ValidationError": {
-                    "title": "ValidationError",
-                    "required": ["loc", "msg", "type"],
-                    "type": "object",
-                    "properties": {
-                        "loc": {
-                            "title": "Location",
-                            "type": "array",
-                            "items": {
-                                "oneOf": [{"type": "string"}, {"type": "integer"}]
-                            },
-                        },
-                        "msg": {"title": "Message", "type": "string"},
-                        "type": {"title": "Error Type", "type": "string"},
-                    },
-                },
-                "HTTPValidationError": {
-                    "title": "HTTPValidationError",
-                    "type": "object",
-                    "properties": {
-                        "detail": {
-                            "title": "Detail",
-                            "type": "array",
-                            "items": {"$ref": "#/components/schemas/ValidationError"},
                         }
-                    },
-                },
+                    }
+                }
             }
         },
     }

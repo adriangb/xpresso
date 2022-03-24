@@ -1,20 +1,18 @@
 from typing import Any, TypeVar
 
-from xpresso.binders.dependants import BodyBinderMarker
+from xpresso.binders.dependants import BinderMarker
 from xpresso.typing import Annotated
 
-from .extractor import MsgPackBodyExtractorMarker
-from .openapi import OpenAPIBodyMarkerMsgPack
+from .extractor import ExtractorMarker
+from .openapi import OpenAPIMarker
 
 T = TypeVar("T")
 
 
 def MsgPack() -> Any:
-    return BodyBinderMarker(
-        extractor_marker=MsgPackBodyExtractorMarker(),
-        field_extractor_marker=None,
-        openapi_marker=OpenAPIBodyMarkerMsgPack(),
-        openapi_field_marker=None,
+    return BinderMarker(
+        extractor_marker=ExtractorMarker(),
+        openapi_marker=OpenAPIMarker(),
     )
 
 

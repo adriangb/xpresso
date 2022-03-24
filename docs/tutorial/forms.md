@@ -1,26 +1,21 @@
 # Forms
 
-To extract forms in Xpresso, you start by declaring a data structure to unpack the form into.
-The fields of the datastructure correspond to the fields of the form data.
-The datastructure can be almost anything, including dataclasses, pydantic models and regular Python classes.
+To extract forms in Xpresso, you start by declaring a Pydantic model to unpack the form into.
+The fields of the model correspond to the fields of the form data.
 
 ```python
---8<-- "docs_src/tutorial/form_data.py"
+--8<-- "docs_src/tutorial/forms/tutorial_001.py"
 ```
 
-This request extracts a `application/x-www-form-urlencoded` request into a `FormDataModel` object.
-
-!!! note "Note"
-    Form fields (`FromFormField`) are extracted from the form directly, but things like JSON or files need to be yanked out of a specific field before they are parsed/extracted.
-    So for non form-native fields (anything except `FromFormField`) you need to wrap it in `ExtractField`.
+This request extracts a `application/x-www-form-urlencoded` request into a `FormModel` object.
 
 ## Form serialization
 
 Xpresso fully supports the [OpenAPI parameter serialization] standard.
-You can customize how extraction ocurrs using the `style` and `explode` keyword arguments to `FormField()`:
+You can customize deserialization using the `style` and `explode` keyword arguments to `FormField()`:
 
 ```python
---8<-- "docs_src/tutorial/form_field_custom_style.py"
+--8<-- "docs_src/tutorial/forms/tutorial_002.py"
 ```
 
 ## Multipart requests
@@ -30,15 +25,12 @@ You can't upload mixed files and data in an `application/x-www-form-urlencoded` 
 Multipart requests even support multiple files:
 
 ```python
---8<-- "docs_src/tutorial/multipart.py"
+--8<-- "docs_src/tutorial/forms/tutorial_003.py"
 ```
 
-!!! note "Note"
+!!! tip "Tip"
     Fields in a `application/x-www-form-urlencoded` or `multipart/form-data` request can be repeated.
     This just means that a field of the same name appears more than once in the request.
     Often this is used to upload multiple files, such as in the example above.
-    To declare repeated fields we need to do two things:
-    1. Use `ExtractRepeatedField` instead of `ExtractField`.
-    1. Make sure our type is actually a List/Tuple/Set (any sequence will do).
 
 [openapi parameter serialization]: https://swagger.io/docs/specification/serialization/

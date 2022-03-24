@@ -39,6 +39,7 @@ def test_operation_comparison() -> None:
     assert Operation(endpoint_1) != Operation(endpoint_2)
 
 
+@pytest.mark.skip
 def test_multiple_bodies_are_not_allowed() -> None:
     async def endpoint(
         body1: FromFile[bytes],

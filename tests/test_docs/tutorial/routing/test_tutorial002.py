@@ -18,7 +18,6 @@ def test_openapi() -> None:
                             "content": {
                                 "application/json": {
                                     "schema": {
-                                        "title": "Response",
                                         "type": "object",
                                         "additionalProperties": {
                                             "$ref": "#/components/schemas/Item"

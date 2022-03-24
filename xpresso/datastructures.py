@@ -8,6 +8,11 @@ class UploadFile(StarletteUploadFile):
     def __get_validators__(cls: Type["UploadFile"]) -> Iterable[Callable[..., Any]]:
         return iter(())
 
+    async def read(self, size: int = -1) -> bytes:
+        # this is just to fix the return type annotation
+        # which in pratice is always byte
+        return await super().read(size)  # type: ignore
+
 
 class BinaryStream(AsyncIterator[bytes]):
     def __init__(self, stream: AsyncIterator[bytes]) -> None:

@@ -1,14 +1,10 @@
+import json
 import typing
-from json import loads as json_loads
 
-import xpresso.binders._body.discriminated as discriminated
-import xpresso.binders._body.files as files
-import xpresso.binders._body.forms as forms
-import xpresso.binders._body.json as json
-import xpresso.binders.dependants as param_dependants
+import xpresso.binders.dependants as dependants
 import xpresso.openapi.models as openapi_models
-from xpresso._utils.compat import Annotated, Literal
-from xpresso.binders._body.form_field import FormFieldMarker
+from xpresso._utils.typing import Annotated, Literal
+from xpresso.binders._binders import file_body, form_body, json_body, union
 
 Example = typing.Union[openapi_models.Example, typing.Any]
 
@@ -17,28 +13,24 @@ def Json(
     *,
     examples: typing.Optional[typing.Dict[str, Example]] = None,
     description: typing.Optional[str] = None,
-    decoder: json.SupportsJsonDecoder = json_loads,
+    decoder: json_body.SupportsJsonDecoder = json.loads,
     enforce_media_type: bool = True,
     consume: bool = True,
     include_in_schema: bool = True,
-) -> param_dependants.BodyBinderMarker:
-    body_extractor_marker = json.BodyExtractorMarker(
+) -> dependants.BinderMarker:
+    body_extractor_marker = json_body.ExtractorMarker(
         decoder=decoder,
         enforce_media_type=enforce_media_type,
         consume=consume,
     )
-    field_extractor_marker = json.FieldExtractorMarker(decoder=decoder)
-    body_openapi_marker = json.BodyOpenAPIMarker(
+    body_openapi_marker = json_body.OpenAPIMarker(
         description=description,
         examples=examples,
         include_in_schema=include_in_schema,
     )
-    openapi_field_marker = json.FieldOpenAPIMarker()
-    return param_dependants.BodyBinderMarker(
+    return dependants.BinderMarker(
         extractor_marker=body_extractor_marker,
-        field_extractor_marker=field_extractor_marker,
         openapi_marker=body_openapi_marker,
-        openapi_field_marker=openapi_field_marker,
     )
 
 
@@ -51,51 +43,20 @@ def File(
     format: Literal["binary", "base64"] = "binary",
     consume: bool = True,
     include_in_schema: bool = True,
-) -> param_dependants.BodyBinderMarker:
-    body_extractor = files.BodyExtractorMarker(
+) -> dependants.BinderMarker:
+    extractor_marker = file_body.ExtractorMarker(
         media_type=media_type,
         enforce_media_type=enforce_media_type,
         consume=consume,
     )
-    field_extractor_marker = files.FieldExtractorMarker()
-    openapi_body_marker = files.BodyOpenAPIMarker(
+    openapi_marker = file_body.OpenAPIMarker(
         description=description,
         examples=examples,
         media_type=media_type,
         format=format,
         include_in_schema=include_in_schema,
     )
-    openapi_field_marker = files.FieldOpenAPIMarker(
-        media_type=media_type,
-        format=format,
-    )
-    return param_dependants.BodyBinderMarker(
-        extractor_marker=body_extractor,
-        field_extractor_marker=field_extractor_marker,
-        openapi_marker=openapi_body_marker,
-        openapi_field_marker=openapi_field_marker,
-    )
-
-
-def FormEncodedField(
-    *,
-    alias: typing.Optional[str] = None,
-    style: openapi_models.FormDataStyles = "form",
-    explode: bool = True,
-    include_in_schema: bool = True,
-) -> FormFieldMarker:
-    extractor_marker = forms.FormEncodedFieldExtractorMarker(
-        alias=alias,
-        style=style,
-        explode=explode,
-    )
-    openapi_marker = forms.FormEncodedOpenAPIMarker(
-        alias=alias,
-        style=style,
-        explode=explode,
-        include_in_schema=include_in_schema,
-    )
-    return FormFieldMarker(
+    return dependants.BinderMarker(
         extractor_marker=extractor_marker,
         openapi_marker=openapi_marker,
     )
@@ -104,34 +65,46 @@ def FormEncodedField(
 def FormField(
     *,
     alias: typing.Optional[str] = None,
+    style: openapi_models.FormDataStyles = "form",
+    explode: bool = True,
     include_in_schema: bool = True,
-) -> FormFieldMarker:
-    extractor = forms.FieldExtractorMarker(alias=alias, repeated=False)
-    openapi = forms.FieldOpenAPIMarker(
+) -> form_body.FormFieldMarker:
+    extractor_marker = form_body.FormFieldExtractorMarker(
         alias=alias,
+        style=style,
+        explode=explode,
+    )
+    openapi_marker = form_body.FormFieldOpenAPIMarker(
+        alias=alias,
+        style=style,
+        explode=explode,
         include_in_schema=include_in_schema,
-        repeated=False,
     )
-    return FormFieldMarker(
-        extractor_marker=extractor,
-        openapi_marker=openapi,
+    return form_body.FormFieldMarker(
+        extractor_marker=extractor_marker,
+        openapi_marker=openapi_marker,
     )
 
 
-def RepeatedFormField(
+def FormFile(
     *,
     alias: typing.Optional[str] = None,
+    media_type: typing.Optional[str] = None,
+    format: Literal["binary", "base64"] = "binary",
     include_in_schema: bool = True,
-) -> FormFieldMarker:
-    extractor = forms.FieldExtractorMarker(alias=alias, repeated=True)
-    openapi = forms.FieldOpenAPIMarker(
+) -> form_body.FormFieldMarker:
+    extractor_marker = form_body.FormFileExtractorMarker(
         alias=alias,
-        include_in_schema=include_in_schema,
-        repeated=True,
     )
-    return FormFieldMarker(
-        extractor_marker=extractor,
-        openapi_marker=openapi,
+    openapi_marker = form_body.FormFileOpenAPIMarker(
+        alias=alias,
+        format=format,
+        include_in_schema=include_in_schema,
+        media_type=media_type,
+    )
+    return form_body.FormFieldMarker(
+        extractor_marker=extractor_marker,
+        openapi_marker=openapi_marker,
     )
 
 
@@ -141,22 +114,20 @@ def Form(
     examples: typing.Optional[typing.Dict[str, Example]] = None,
     description: typing.Optional[str] = None,
     include_in_schema: bool = True,
-) -> param_dependants.BodyBinderMarker:
-    body_extractor_marker = forms.BodyExtractorMarker(
+) -> dependants.BinderMarker:
+    extractor_marker = form_body.ExtractorMarker(
         media_type="application/x-www-form-urlencoded",
         enforce_media_type=enforce_media_type,
     )
-    body_openapi_marker = forms.BodyOpenAPIMarker(
+    openapi_marker = form_body.OpenAPIMarker(
         description=description,
         examples=examples,
         media_type="application/x-www-form-urlencoded",
         include_in_schema=include_in_schema,
     )
-    return param_dependants.BodyBinderMarker(
-        extractor_marker=body_extractor_marker,
-        field_extractor_marker=None,
-        openapi_marker=body_openapi_marker,
-        openapi_field_marker=None,
+    return dependants.BinderMarker(
+        extractor_marker=extractor_marker,
+        openapi_marker=openapi_marker,
     )
 
 
@@ -166,38 +137,34 @@ def Multipart(
     examples: typing.Optional[typing.Dict[str, Example]] = None,
     description: typing.Optional[str] = None,
     include_in_schema: bool = True,
-) -> param_dependants.BodyBinderMarker:
-    body_extractor_marker = forms.BodyExtractorMarker(
+) -> dependants.BinderMarker:
+    extractor_marker = form_body.ExtractorMarker(
         media_type="multipart/form-data",
         enforce_media_type=enforce_media_type,
     )
-    body_openapi_marker = forms.BodyOpenAPIMarker(
+    openapi_marker = form_body.OpenAPIMarker(
         description=description,
         examples=examples,
         media_type="multipart/form-data",
         include_in_schema=include_in_schema,
     )
-    return param_dependants.BodyBinderMarker(
-        extractor_marker=body_extractor_marker,
-        field_extractor_marker=None,
-        openapi_marker=body_openapi_marker,
-        openapi_field_marker=None,
+    return dependants.BinderMarker(
+        extractor_marker=extractor_marker,
+        openapi_marker=openapi_marker,
     )
 
 
-def ContentTypeDiscriminatedBody(
+def BodyUnion(
     *,
     description: typing.Optional[str] = None,
-) -> param_dependants.BodyBinderMarker:
-    extractor = discriminated.BodyExtractorMarker()
-    openapi = discriminated.BodyOpenAPIMarker(
+) -> dependants.BinderMarker:
+    extractor_marker = union.ExtractorMarker()
+    openapi_marker = union.BodyOpenAPIMarker(
         description=description,
     )
-    return param_dependants.BodyBinderMarker(
-        extractor_marker=extractor,
-        field_extractor_marker=None,
-        openapi_marker=openapi,
-        openapi_field_marker=None,
+    return dependants.BinderMarker(
+        extractor_marker=extractor_marker,
+        openapi_marker=openapi_marker,
     )
 
 
@@ -205,9 +172,8 @@ def ContentTypeDiscriminatedBody(
 _T = typing.TypeVar("_T")
 FromJson = Annotated[_T, Json()]
 FromFile = Annotated[_T, File()]
-FromFormField = Annotated[_T, FormEncodedField()]
-ExtractField = Annotated[_T, FormField()]
-ExtractRepeatedField = Annotated[_T, RepeatedFormField()]
+FromFormField = Annotated[_T, FormField()]
+FromFormFile = Annotated[_T, FormFile()]
 FromFormData = Annotated[_T, Form()]
 FromMultipart = Annotated[_T, Multipart()]
-ByContentType = Annotated[_T, ContentTypeDiscriminatedBody()]
+FromBodyUnion = Annotated[_T, BodyUnion()]

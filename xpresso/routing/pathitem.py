@@ -5,7 +5,7 @@ import starlette.types
 from di.api.dependencies import DependantBase
 from di.api.providers import DependencyProvider as Endpoint
 
-import xpresso.binders.dependants as param_dependants
+import xpresso.binders.dependants as dependants
 import xpresso.openapi.models as openapi_models
 from xpresso.dependencies.models import Depends
 from xpresso.responses import ResponseSpec, ResponseStatusCode
@@ -50,9 +50,7 @@ class Path(starlette.routing.Route):
         summary: typing.Optional[str] = None,
         description: typing.Optional[str] = None,
         servers: typing.Optional[typing.Sequence[openapi_models.Server]] = None,
-        parameters: typing.Optional[
-            typing.Sequence[param_dependants.ParameterBinderMarker]
-        ] = None,
+        parameters: typing.Optional[typing.Sequence[dependants.BinderMarker]] = None,
         responses: typing.Optional[
             typing.Mapping[ResponseStatusCode, ResponseSpec]
         ] = None,

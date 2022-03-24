@@ -61,9 +61,7 @@ def test_openapi() -> None:
                         "200": {
                             "description": "OK",
                             "content": {
-                                "application/json": {
-                                    "schema": {"title": "Response", "type": "integer"}
-                                }
+                                "application/json": {"schema": {"type": "integer"}}
                             },
                         },
                         "422": {
@@ -95,9 +93,7 @@ def test_openapi() -> None:
                         "200": {
                             "description": "OK",
                             "content": {
-                                "application/json": {
-                                    "schema": {"title": "Response", "type": "integer"}
-                                }
+                                "application/json": {"schema": {"type": "integer"}}
                             },
                         },
                         "422": {
@@ -127,9 +123,7 @@ def test_openapi() -> None:
                         "200": {
                             "description": "OK",
                             "content": {
-                                "application/json": {
-                                    "schema": {"title": "Response", "type": "integer"}
-                                }
+                                "application/json": {"schema": {"type": "integer"}}
                             },
                         },
                         "422": {

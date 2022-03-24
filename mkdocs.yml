@@ -61,6 +61,7 @@ nav:
       - Dependency Overrides: "advanced/dependencies/overrides.md"
     - Binders: advanced/binders.md
     - Proxies and URL paths: advanced/proxies-root-path.md
+    - Body Unions: advanced/body-union.md
   - Contributing: "contributing.md"
 
 markdown_extensions:

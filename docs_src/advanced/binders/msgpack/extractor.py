@@ -11,11 +11,11 @@ import msgpack  # type: ignore[import]
 from pydantic import BaseModel
 
 from xpresso import Request
-from xpresso.binders.api import SupportsBodyExtractor
+from xpresso.binders.api import SupportsExtractor
 from xpresso.requests import HTTPConnection
 
 
-class MsgPackBodyExtractor(NamedTuple):
+class Extractor(NamedTuple):
     model: Type[BaseModel]
 
     async def extract(self, connection: HTTPConnection) -> Any:
@@ -28,10 +28,10 @@ class MsgPackBodyExtractor(NamedTuple):
         return self.model.parse_obj(deserialized_obj)
 
 
-class MsgPackBodyExtractorMarker:
+class ExtractorMarker:
     def register_parameter(
         self, param: inspect.Parameter
-    ) -> SupportsBodyExtractor:
+    ) -> SupportsExtractor:
         # get the first paramater to Annotated, which should be our actual type
         model = next(iter(get_args(param.annotation)))
         if not issubclass(model, BaseModel):
@@ -41,4 +41,4 @@ class MsgPackBodyExtractorMarker:
             raise TypeError(
                 "MessagePack model must be a Pydantic model"
             )
-        return MsgPackBodyExtractor(model)
+        return Extractor(model)
