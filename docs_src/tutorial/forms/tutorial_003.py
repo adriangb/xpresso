@@ -1,9 +1,8 @@
 from typing import List
 
-from fastapi import UploadFile
 from pydantic import BaseModel
 
-from xpresso import App, FromFormFile, FromMultipart, Path
+from xpresso import App, FromFormFile, FromMultipart, Path, UploadFile
 
 
 class UploadForm(BaseModel):
