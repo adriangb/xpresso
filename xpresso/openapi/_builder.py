@@ -220,7 +220,9 @@ def get_operation(
                 )
             )
             request_body = models.RequestBody(
-                content=request_body_content, required=oai.body.required
+                content=request_body_content,
+                required=oai.body.required,
+                description=oai.body.description,
             )
     # sort so that generated openapi is deterministic
     params = list(sorted(params, key=lambda param: param.name))

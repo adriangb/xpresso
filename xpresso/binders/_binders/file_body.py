@@ -1,7 +1,7 @@
 import inspect
 import typing
 
-from starlette.datastructures import UploadFile as StarletteUploadFile
+from pydantic.fields import ModelField
 from starlette.requests import HTTPConnection, Request
 
 from xpresso._utils.pydantic_utils import model_field_from_param
@@ -10,6 +10,7 @@ from xpresso.binders._binders.media_type_validator import MediaTypeValidator
 from xpresso.binders._binders.media_type_validator import (
     get_validator as get_media_type_validator,
 )
+from xpresso.binders._binders.pydantic_validators import validate_body_field
 from xpresso.binders.api import (
     ModelNameMap,
     OpenAPIMetadata,
@@ -19,23 +20,24 @@ from xpresso.binders.api import (
 from xpresso.datastructures import BinaryStream, UploadFile
 from xpresso.openapi import models as openapi_models
 from xpresso.openapi._utils import parse_examples
+from xpresso.typing import Some
 
 
-async def consume_request_into_bytes(request: Request) -> bytes:
+async def consume_into_bytes(request: Request) -> bytes:
     res = bytearray()
     async for chunk in request.stream():
         res.extend(chunk)
     return res
 
 
-async def read_request_into_bytes(request: Request) -> bytes:
+async def read_into_bytes(request: Request) -> bytes:
     return await request.body()
 
 
-def create_consume_request_into_uploadfile(
+def create_consume_into_uploadfile(
     cls: typing.Type[UploadFile],
 ) -> typing.Callable[[Request], typing.Awaitable[UploadFile]]:
-    async def consume_request_into_uploadfile(request: Request) -> UploadFile:
+    async def consume_into_uploadfile(request: Request) -> UploadFile:
         file = cls(
             filename="body", content_type=request.headers.get("Content-Type", "*/*")
         )
@@ -45,13 +47,13 @@ def create_consume_request_into_uploadfile(
         await file.seek(0)
         return file
 
-    return consume_request_into_uploadfile
+    return consume_into_uploadfile
 
 
-def create_read_request_into_uploadfile(
+def create_read_into_uploadfile(
     cls: typing.Type[UploadFile],
 ) -> typing.Callable[[Request], typing.Awaitable[UploadFile]]:
-    async def read_request_into_uploadfile(request: Request) -> UploadFile:
+    async def read_into_uploadfile(request: Request) -> UploadFile:
         file = cls(
             filename="body", content_type=request.headers.get("Content-Type", "*/*")
         )
@@ -59,32 +61,17 @@ def create_read_request_into_uploadfile(
         await file.seek(0)
         return file
 
-    return read_request_into_uploadfile
+    return read_into_uploadfile
 
 
-async def consume_request_into_stream(request: Request) -> BinaryStream:
+async def consume_into_stream(request: Request) -> BinaryStream:
     return BinaryStream(request.stream())
-
-
-async def read_request_into_stream(request: Request) -> BinaryStream:
-    async def body_iterator() -> typing.AsyncIterator[bytes]:
-        yield await request.body()
-
-    return BinaryStream(body_iterator())
-
-
-async def read_uploadfile_to_bytes(file: StarletteUploadFile) -> bytes:
-    await file.seek(0)
-    return await file.read()  # type: ignore  # UploadFile's type hints are wrong
-
-
-async def read_uploadfile_to_uploadfile(file: StarletteUploadFile) -> UploadFile:
-    return file  # type: ignore  # this is technically wrong, but we can't really work around it
 
 
 class Extractor(typing.NamedTuple):
     media_type_validator: MediaTypeValidator
     consumer: typing.Callable[[Request], typing.Awaitable[typing.Any]]
+    field: ModelField
 
     def __hash__(self) -> int:
         return hash("file")
@@ -95,8 +82,12 @@ class Extractor(typing.NamedTuple):
     async def extract(self, connection: HTTPConnection) -> typing.Any:
         assert isinstance(connection, Request)
         media_type = connection.headers.get("content-type", None)
+        if media_type is None and connection.headers.get("content-length", "0") == "0":
+            return validate_body_field(None, field=self.field, loc=("body",))
         self.media_type_validator.validate(media_type)
-        return await self.consumer(connection)
+        return validate_body_field(
+            Some(await self.consumer(connection)), field=self.field, loc=("body",)
+        )
 
 
 class ExtractorMarker(typing.NamedTuple):
@@ -113,25 +104,28 @@ class ExtractorMarker(typing.NamedTuple):
         field = model_field_from_param(param)
         if field.type_ is bytes:
             if self.consume:
-                consumer = consume_request_into_bytes
+                consumer = consume_into_bytes
             else:
-                consumer = read_request_into_bytes
+                consumer = read_into_bytes
         elif inspect.isclass(field.type_) and issubclass(field.type_, UploadFile):
             if self.consume:
-                consumer = create_consume_request_into_uploadfile(field.type_)
+                consumer = create_consume_into_uploadfile(field.type_)
             else:
-                consumer = create_read_request_into_uploadfile(field.type_)
+                consumer = create_read_into_uploadfile(field.type_)
         elif field.type_ is BinaryStream:
             # a stream
             if self.consume:
-                consumer = consume_request_into_stream
+                consumer = consume_into_stream
             else:
-                consumer = read_request_into_stream
+                raise ValueError("consume=False is not supported for BinaryStream")
         else:
-            raise TypeError
+            raise TypeError(
+                f"Target type {field.type_.__name__} is not recognized, you must use `bytes`, `xpresso.UploadFile` or `xpresso.BinaryStream`"
+            )
         return Extractor(
             media_type_validator=media_type_validator,
             consumer=consumer,
+            field=field,
         )
 
 
@@ -165,6 +159,7 @@ class OpenAPI(typing.NamedTuple):
                         examples=self.examples,
                     )
                 },
+                description=self.description,
                 required=self.required,
             )
         )
