@@ -1,33 +1,33 @@
-import sys
+"""Tests for forms and form encoded form fields
+
+The actual parsing of url encoded form fields is shared with query parameters
+and is extensively tested there, and thus not repeated here.
+"""
 import typing
 
-if sys.version_info < (3, 9):
-    from typing_extensions import Annotated
-else:
-    from typing import Annotated
-
+import pytest
 from pydantic import BaseModel
+from starlette.responses import Response
 from starlette.testclient import TestClient
 
-from xpresso import (
-    App,
-    FormFile,
-    FromFormFile,
-    FromMultipart,
-    Multipart,
-    Path,
-    UploadFile,
-)
+from xpresso import FormField, FromFormData, FromFormField, Path
+from xpresso.applications import App
+from xpresso.typing import Annotated
 
 
-def test_file() -> None:
-    class FormDataModel(BaseModel):
-        file: FromFormFile[UploadFile]
+def test_form_field() -> None:
+    class FormModel(BaseModel):
+        field: FromFormField[int]
 
-    async def endpoint(body: FromMultipart[FormDataModel]) -> None:
-        ...
+    async def endpoint(form: FromFormData[FormModel]) -> Response:
+        assert form.field == 2
+        return Response()
 
     app = App([Path("/", post=endpoint)])
+    client = TestClient(app)
+
+    resp = client.post("/", data={"field": "2"})
+    assert resp.status_code == 200, resp.content
 
     expected_openapi: typing.Dict[str, typing.Any] = {
         "openapi": "3.0.3",
@@ -53,104 +53,19 @@ def test_file() -> None:
                     },
                     "requestBody": {
                         "content": {
-                            "multipart/form-data": {
+                            "application/x-www-form-urlencoded": {
                                 "schema": {
-                                    "required": ["file"],
+                                    "required": ["field"],
                                     "type": "object",
                                     "properties": {
-                                        "file": {"type": "string", "format": "binary"}
-                                    },
-                                },
-                                "encoding": {"file": {}},
-                            }
-                        },
-                        "required": True,
-                    },
-                }
-            }
-        },
-        "components": {
-            "schemas": {
-                "ValidationError": {
-                    "title": "ValidationError",
-                    "required": ["loc", "msg", "type"],
-                    "type": "object",
-                    "properties": {
-                        "loc": {
-                            "title": "Location",
-                            "type": "array",
-                            "items": {
-                                "oneOf": [{"type": "string"}, {"type": "integer"}]
-                            },
-                        },
-                        "msg": {"title": "Message", "type": "string"},
-                        "type": {"title": "Error Type", "type": "string"},
-                    },
-                },
-                "HTTPValidationError": {
-                    "title": "HTTPValidationError",
-                    "type": "object",
-                    "properties": {
-                        "detail": {
-                            "title": "Detail",
-                            "type": "array",
-                            "items": {"$ref": "#/components/schemas/ValidationError"},
-                        }
-                    },
-                },
-            }
-        },
-    }
-
-    with TestClient(app) as client:
-        resp = client.get("/openapi.json")
-    assert resp.status_code == 200, resp.text
-    assert resp.json() == expected_openapi
-
-
-def test_file_media_type() -> None:
-    class FormDataModel(BaseModel):
-        file: Annotated[bytes, FormFile(media_type="application/json")]
-
-    async def endpoint(body: FromMultipart[FormDataModel]) -> None:
-        ...
-
-    app = App([Path("/", post=endpoint)])
-
-    expected_openapi: typing.Dict[str, typing.Any] = {
-        "openapi": "3.0.3",
-        "info": {"title": "API", "version": "0.1.0"},
-        "paths": {
-            "/": {
-                "post": {
-                    "responses": {
-                        "200": {
-                            "description": "OK",
-                            "content": {"application/json": {}},
-                        },
-                        "422": {
-                            "description": "Validation Error",
-                            "content": {
-                                "application/json": {
-                                    "schema": {
-                                        "$ref": "#/components/schemas/HTTPValidationError"
-                                    }
-                                }
-                            },
-                        },
-                    },
-                    "requestBody": {
-                        "content": {
-                            "multipart/form-data": {
-                                "schema": {
-                                    "required": ["file"],
-                                    "type": "object",
-                                    "properties": {
-                                        "file": {"type": "string", "format": "binary"}
+                                        "field": {
+                                            "title": "Field",
+                                            "type": "integer",
+                                        }
                                     },
                                 },
                                 "encoding": {
-                                    "file": {"contentType": "application/json"}
+                                    "field": {"style": "form", "explode": True}
                                 },
                             }
                         },
@@ -191,23 +106,24 @@ def test_file_media_type() -> None:
             }
         },
     }
-
-    with TestClient(app) as client:
-        resp = client.get("/openapi.json")
+    resp = client.get("/openapi.json")
     assert resp.status_code == 200, resp.text
     assert resp.json() == expected_openapi
 
 
-def test_include_in_schema() -> None:
-    class FormDataModel(BaseModel):
-        field: str
+def test_form_field_alias() -> None:
+    class FormModel(BaseModel):
+        field: Annotated[int, FormField(alias="realFieldName")]
 
-    async def test(
-        body: Annotated[FormDataModel, Multipart(include_in_schema=False)]
-    ) -> None:
-        ...
+    async def endpoint(form: FromFormData[FormModel]) -> Response:
+        assert form.field == 2
+        return Response()
 
-    app = App([Path("/", post=test)])
+    app = App([Path("/", post=endpoint)])
+    client = TestClient(app)
+
+    resp = client.post("/", data={"realFieldName": "2"})
+    assert resp.status_code == 200, resp.content
 
     expected_openapi: typing.Dict[str, typing.Any] = {
         "openapi": "3.0.3",
@@ -219,14 +135,128 @@ def test_include_in_schema() -> None:
                         "200": {
                             "description": "OK",
                             "content": {"application/json": {}},
-                        }
-                    }
+                        },
+                        "422": {
+                            "description": "Validation Error",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "$ref": "#/components/schemas/HTTPValidationError"
+                                    }
+                                }
+                            },
+                        },
+                    },
+                    "requestBody": {
+                        "content": {
+                            "application/x-www-form-urlencoded": {
+                                "schema": {
+                                    "required": ["realFieldName"],
+                                    "type": "object",
+                                    "properties": {
+                                        "realFieldName": {
+                                            "title": "Realfieldname",
+                                            "type": "integer",
+                                        }
+                                    },
+                                },
+                                "encoding": {
+                                    "realFieldName": {"style": "form", "explode": True}
+                                },
+                            }
+                        },
+                        "required": True,
+                    },
                 }
             }
         },
+        "components": {
+            "schemas": {
+                "ValidationError": {
+                    "title": "ValidationError",
+                    "required": ["loc", "msg", "type"],
+                    "type": "object",
+                    "properties": {
+                        "loc": {
+                            "title": "Location",
+                            "type": "array",
+                            "items": {
+                                "oneOf": [{"type": "string"}, {"type": "integer"}]
+                            },
+                        },
+                        "msg": {"title": "Message", "type": "string"},
+                        "type": {"title": "Error Type", "type": "string"},
+                    },
+                },
+                "HTTPValidationError": {
+                    "title": "HTTPValidationError",
+                    "type": "object",
+                    "properties": {
+                        "detail": {
+                            "title": "Detail",
+                            "type": "array",
+                            "items": {"$ref": "#/components/schemas/ValidationError"},
+                        }
+                    },
+                },
+            }
+        },
     }
-
-    with TestClient(app) as client:
-        resp = client.get("/openapi.json")
+    resp = client.get("/openapi.json")
     assert resp.status_code == 200, resp.text
     assert resp.json() == expected_openapi
+
+
+def test_invalid_serialization() -> None:
+    class FormModel(BaseModel):
+        field: Annotated[typing.List[int], FormField(explode=False)]
+
+    async def endpoint(form: FromFormData[FormModel]) -> Response:
+        raise AssertionError("Should not be called")  # pragma: no cover
+
+    app = App([Path("/", post=endpoint)])
+    client = TestClient(app)
+
+    # use explode=True encoding when explode=False was expected
+    resp = client.post("/", data=[("field", "1"), ("field", "2")])
+    assert resp.status_code == 422, resp.content
+    assert resp.json() == {
+        "detail": [
+            {
+                "loc": ["body", "field"],
+                "msg": "Data is not a valid URL encoded form",
+                "type": "type_error",
+            }
+        ]
+    }
+
+
+@pytest.mark.parametrize(
+    "data,status_code,json_response",
+    [
+        ({"field": "123"}, 200, {"field": "123"}),
+        (None, 200, None),
+    ],
+)
+def test_optional_form(
+    data: typing.Optional[typing.Iterable[typing.Tuple[str, str]]],
+    status_code: int,
+    json_response: typing.Dict[str, typing.Any],
+) -> None:
+    class FormModel(BaseModel):
+        field: str
+
+    async def test(
+        body: FromFormData[typing.Optional[FormModel]] = None,
+    ) -> typing.Any:
+        return body
+
+    app = App([Path("/", post=test)])
+    client = TestClient(app)
+
+    resp = client.post(
+        "/",
+        data=data,
+    )
+    assert resp.status_code == status_code, resp.text
+    assert resp.json() == json_response

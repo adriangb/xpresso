@@ -7,9 +7,6 @@ from starlette.requests import HTTPConnection, Request
 from xpresso._utils.pydantic_utils import model_field_from_param
 from xpresso._utils.typing import Literal
 from xpresso.binders._binders.media_type_validator import MediaTypeValidator
-from xpresso.binders._binders.media_type_validator import (
-    get_validator as get_media_type_validator,
-)
 from xpresso.binders._binders.pydantic_validators import validate_body_field
 from xpresso.binders.api import (
     ModelNameMap,
@@ -97,9 +94,9 @@ class ExtractorMarker(typing.NamedTuple):
 
     def register_parameter(self, param: inspect.Parameter) -> SupportsExtractor:
         if self.media_type and self.enforce_media_type:
-            media_type_validator = get_media_type_validator(self.media_type)
+            media_type_validator = MediaTypeValidator(self.media_type)
         else:
-            media_type_validator = get_media_type_validator(None)
+            media_type_validator = MediaTypeValidator(None)
         consumer: typing.Callable[[Request], typing.Any]
         field = model_field_from_param(param)
         if field.type_ is bytes:

@@ -11,9 +11,6 @@ from xpresso._utils.pydantic_utils import model_field_from_param
 from xpresso._utils.schemas import openapi_schema_from_pydantic_field
 from xpresso._utils.typing import Protocol
 from xpresso.binders._binders.media_type_validator import MediaTypeValidator
-from xpresso.binders._binders.media_type_validator import (
-    get_validator as get_media_type_validator,
-)
 from xpresso.binders._binders.pydantic_validators import validate_body_field
 from xpresso.binders.api import (
     ModelNameMap,
@@ -94,9 +91,9 @@ class ExtractorMarker(typing.NamedTuple):
 
     def register_parameter(self, param: inspect.Parameter) -> SupportsExtractor:
         if self.enforce_media_type:
-            media_type_validator = get_media_type_validator("application/json")
+            media_type_validator = MediaTypeValidator("application/json")
         else:
-            media_type_validator = get_media_type_validator(None)
+            media_type_validator = MediaTypeValidator(None)
         return Extractor(
             field=model_field_from_param(param),
             decoder=self.decoder,

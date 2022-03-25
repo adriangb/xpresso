@@ -1,5 +1,4 @@
 import fnmatch
-import functools
 import re
 import typing
 
@@ -49,8 +48,3 @@ class MediaTypeValidator:
             ],
             status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
         )
-
-
-@functools.lru_cache(maxsize=1024)
-def get_validator(media_type: typing.Optional[str]) -> MediaTypeValidator:
-    return MediaTypeValidator(media_type)

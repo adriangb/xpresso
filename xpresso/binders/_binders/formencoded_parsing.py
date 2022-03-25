@@ -2,10 +2,9 @@
 """
 import functools
 import re
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 from pydantic.fields import ModelField
-from starlette.datastructures import UploadFile
 
 from xpresso._utils.pydantic_utils import is_mapping_like, is_sequence_like
 from xpresso._utils.typing import Protocol
@@ -17,26 +16,16 @@ class InvalidSerialization(ValueError):
     pass
 
 
-class UnexpectedFileReceived(TypeError):
-    pass
-
-
-def get_matches(
-    params: Iterable[Tuple[str, Union[str, UploadFile]]], name: str
-) -> List[Optional[str]]:
+def get_matches(params: Iterable[Tuple[str, str]], name: str) -> List[Optional[str]]:
     matches: List[Optional[str]] = []
     for k, v in params:
         if k == name:
-            if not isinstance(v, str):
-                raise UnexpectedFileReceived(
-                    "Expected a string form field but received a file"
-                )
             matches.append(v or None)  # convert "" (from param=&other=123) to None
     return matches
 
 
 def collect_form_sequence(
-    params: Iterable[Tuple[str, Union[str, UploadFile]]],
+    params: Iterable[Tuple[str, str]],
     name: str,
     explode: bool,
     delimiter: str,
@@ -60,13 +49,13 @@ def collect_form_sequence(
 
 
 def collect_object(
-    params: Iterable[Tuple[str, Union[str, UploadFile]]],
+    params: Iterable[Tuple[str, str]],
     name: str,
     explode: bool,
 ) -> Optional[Some]:
     if explode:
         # free form params, let validation filter them out
-        return Some({k: v for k, v in params if isinstance(v, str)})
+        return Some(dict(params))
     else:
         matches = get_matches(params, name)
         if not matches:
@@ -79,11 +68,9 @@ def collect_object(
         return Some(dict(grouped(match.split(","))))  # type: ignore[arg-type]
 
 
-def collect_deep_object(
-    params: Iterable[Tuple[str, Union[str, UploadFile]]], name: str
-) -> Optional[Some]:
+def collect_deep_object(params: Iterable[Tuple[str, str]], name: str) -> Optional[Some]:
     # deepObject does not support repeated fields so we can put our fields in dict
-    param_dict: Dict[str, str] = {k: v for k, v in params if isinstance(v, str)}
+    param_dict: Dict[str, str] = dict(params)
     if not param_dict:
         return None
     res: Dict[str, Any] = {}
@@ -97,15 +84,11 @@ def collect_deep_object(
     return Some(res or None)
 
 
-def collect_scalar(
-    params: Iterable[Tuple[str, Union[str, UploadFile]]], name: str
-) -> Optional[Some]:
+def collect_scalar(params: Iterable[Tuple[str, str]], name: str) -> Optional[Some]:
     params_mapping = dict(params)
     if name not in params_mapping:
         return None
     v = params_mapping[name]
-    if not isinstance(v, str):
-        raise UnexpectedFileReceived("Expected a string form field but received a file")
     return Some(v or None)
 
 
@@ -118,7 +101,7 @@ delimiters = {
 
 class Extractor(Protocol):
     def __call__(
-        self, *, name: str, params: Iterable[Tuple[str, Union[str, UploadFile]]]
+        self, *, name: str, params: Iterable[Tuple[str, str]]
     ) -> Optional[Some]:
         ...
 

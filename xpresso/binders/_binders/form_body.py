@@ -10,17 +10,13 @@ from starlette.requests import HTTPConnection, Request
 import xpresso.openapi.models as openapi_models
 from xpresso._utils.pydantic_utils import is_sequence_like, model_field_from_param
 from xpresso._utils.schemas import openapi_schema_from_pydantic_field
-from xpresso._utils.typing import get_args
+from xpresso._utils.typing import get_args, get_type_hints
 from xpresso.binders._binders.formencoded_parsing import Extractor as FormDataExtractor
 from xpresso.binders._binders.formencoded_parsing import (
     InvalidSerialization,
-    UnexpectedFileReceived,
     get_extractor,
 )
 from xpresso.binders._binders.media_type_validator import MediaTypeValidator
-from xpresso.binders._binders.media_type_validator import (
-    get_validator as get_media_type_validator,
-)
 from xpresso.binders._binders.pydantic_validators import validate_body_field
 from xpresso.binders.api import (
     ModelNameMap,
@@ -40,8 +36,9 @@ class FormFieldExtractor(typing.NamedTuple):
     extractor: FormDataExtractor
 
     async def extract(self, form: FormData) -> typing.Optional[Some]:
+        params = [(k, v) for k, v in form.multi_items() if isinstance(v, str)]  # type: ignore
         try:
-            return self.extractor(name=self.field_name, params=form.multi_items())
+            return self.extractor(name=self.field_name, params=params)
         except InvalidSerialization as e:
             raise RequestValidationError(
                 [
@@ -51,15 +48,6 @@ class FormFieldExtractor(typing.NamedTuple):
                     )
                 ]
             ) from e
-        except UnexpectedFileReceived as exc:
-            raise RequestValidationError(
-                [
-                    ErrorWrapper(
-                        exc=exc,
-                        loc=tuple(("body", self.field_name)),
-                    )
-                ]
-            ) from exc
 
 
 class FormFieldExtractorMarker(typing.NamedTuple):
@@ -85,7 +73,6 @@ class FormFieldOpenAPIMetadata(typing.NamedTuple):
 
 class FormFieldOpenAPI(typing.NamedTuple):
     field_name: str
-    include_in_schema: bool
     style: str
     explode: bool
     field: ModelField
@@ -113,7 +100,6 @@ class FormFieldOpenAPIMarker(typing.NamedTuple):
     alias: typing.Optional[str]
     style: str
     explode: bool
-    include_in_schema: bool
 
     def register_parameter(self, param: inspect.Parameter) -> FormFieldOpenAPI:
         field = model_field_from_param(param, alias=self.alias)
@@ -122,11 +108,10 @@ class FormFieldOpenAPIMarker(typing.NamedTuple):
             style=self.style,
             explode=self.explode,
             field=field,
-            include_in_schema=self.include_in_schema,
         )
 
 
-def assert_field_is_not_string(
+def ensure_field_is_a_file(
     field: typing.Union[str, UploadFile], field_name: str
 ) -> UploadFile:
     if isinstance(field, str):
@@ -154,12 +139,12 @@ class FormFileExtractor(typing.NamedTuple):
             files: "typing.List[typing.Union[bytes, UploadFile]]" = []
             for field_name, field_value in form.multi_items():
                 if field_name == self.field_name:
-                    file = assert_field_is_not_string(field_value, field_name)
+                    file = ensure_field_is_a_file(field_value, field_name)
                     files.append(await self.consumer(file))
             return Some(files)
         if self.field_name not in form:
             return None
-        file = assert_field_is_not_string(form[self.field_name], self.field_name)
+        file = ensure_field_is_a_file(form[self.field_name], self.field_name)
         return Some(await self.consumer(file))
 
 
@@ -190,11 +175,10 @@ class FormFileExtractorMarker(typing.NamedTuple):
                 repeated=repeated,
             )
         else:
-            raise TypeError
+            raise TypeError(f"Unknown file type {field.type_.__name__}")
 
 
 class FormFileOpenAPI(typing.NamedTuple):
-    include_in_schema: bool
     media_type: typing.Optional[str]
     format: str
     nullable: bool
@@ -222,11 +206,9 @@ class FormFileOpenAPIMarker(typing.NamedTuple):
     media_type: typing.Optional[str]
     format: str
     alias: typing.Optional[str]
-    include_in_schema: bool
 
     def register_parameter(self, param: inspect.Parameter) -> FormFileOpenAPI:
         return FormFileOpenAPI(
-            include_in_schema=self.include_in_schema,
             field_name=self.alias or param.name,
             media_type=self.media_type,
             format=self.format,
@@ -241,11 +223,11 @@ class FormFieldMarker(typing.NamedTuple):
 
 
 class Extractor(typing.NamedTuple):
-    media_type_validator: MediaTypeValidator
     field: ModelField
     field_extractors: typing.Mapping[
         str, typing.Union[FormFileExtractor, FormFieldExtractor]
     ]
+    media_type_validator: MediaTypeValidator
 
     def __hash__(self) -> int:
         return hash("form")
@@ -255,37 +237,27 @@ class Extractor(typing.NamedTuple):
 
     async def extract(self, connection: HTTPConnection) -> typing.Any:
         assert isinstance(connection, Request)
-        media_type = connection.headers.get("content-type", None)
-        self.media_type_validator.validate(media_type)
+        content_type = connection.headers.get("content-type", None)
         if (
-            connection.headers.get("Content-Length", None) == "0"
-            and self.field.required is not True
+            content_type is None
+            and connection.headers.get("content-length", "0") == "0"
         ):
-            # this is the only way to know the body is empty
-            return validate_body_field(
-                None,
-                field=self.field,
-                loc=("body",),
-            )
-        return validate_body_field(
-            Some(await self._extract(await connection.form(), loc=("body",))),
-            field=self.field,
-            loc=("body",),
-        )
-
-    async def _extract(
-        self, form: FormData, loc: typing.Iterable[typing.Union[str, int]]
-    ) -> typing.Any:
+            return validate_body_field(None, field=self.field, loc=("body",))
+        self.media_type_validator.validate(content_type)
+        form = await connection.form()
         res: typing.Dict[str, typing.Any] = {}
         for param_name, extractor in self.field_extractors.items():
             extracted = await extractor.extract(form)
             if isinstance(extracted, Some):
                 res[param_name] = extracted.value
-        return res
+        return validate_body_field(
+            Some(res),
+            field=self.field,
+            loc=("body",),
+        )
 
 
 class ExtractorMarker(typing.NamedTuple):
-    enforce_media_type: bool
     media_type: str
 
     def register_parameter(self, param: inspect.Parameter) -> SupportsExtractor:
@@ -294,11 +266,14 @@ class ExtractorMarker(typing.NamedTuple):
             str, typing.Union[FormFileExtractor, FormFieldExtractor]
         ] = {}
         # use pydantic to get rid of outer annotated, optional, etc.
-        # use pydantic to get rid of outer annotated, optional, etc.
         model = form_data_field.type_
+        # workaround https://github.com/samuelcolvin/pydantic/pull/3413
+        # by using get_type_hints
+        type_hints = get_type_hints(model, include_extras=True)
         for field_param in inspect.signature(model).parameters.values():
+            field_param = field_param.replace(annotation=type_hints[field_param.name])
             for m in get_args(field_param.annotation):
-                if isinstance(m, FormFieldMarker):
+                if isinstance(m, (FormFieldMarker)):
                     field_extractor = m.extractor_marker.register_parameter(field_param)
                     break
             else:
@@ -306,12 +281,8 @@ class ExtractorMarker(typing.NamedTuple):
                     alias=None, style="form", explode=False
                 ).register_parameter(field_param)
             field_extractors[field_param.name] = field_extractor
-        if self.enforce_media_type and self.media_type:
-            media_type_validator = get_media_type_validator(self.media_type)
-        else:
-            media_type_validator = get_media_type_validator(None)
         return Extractor(
-            media_type_validator=media_type_validator,
+            media_type_validator=MediaTypeValidator(self.media_type),
             field_extractors=field_extractors,
             field=form_data_field,
         )
@@ -402,14 +373,13 @@ class OpenAPIMarker(typing.NamedTuple):
                     break
             else:
                 field_openapi = FormFieldOpenAPIMarker(
-                    alias=None, style="form", explode=True, include_in_schema=True
+                    alias=None, style="form", explode=True
                 ).register_parameter(field_param)
             field_name = field_openapi.field_name
-            if field_openapi.include_in_schema:
-                field_openapi_providers[field_name] = field_openapi
-                field = model_field_from_param(field_param)
-                if field.required is not False:
-                    required_fields.append(field_name)
+            field_openapi_providers[field_name] = field_openapi
+            field = model_field_from_param(field_param)
+            if field.required is not False:
+                required_fields.append(field_name)
         examples = parse_examples(self.examples) if self.examples else None
         return OpenAPI(
             field_openapi_providers=field_openapi_providers,
