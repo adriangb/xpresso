@@ -1,17 +1,12 @@
-import sys
 from typing import Any, Dict, List, Optional
-
-if sys.version_info < (3, 9):
-    from typing_extensions import Annotated
-else:
-    from typing import Annotated
 
 import pytest
 from pydantic import BaseModel
 
-from xpresso import App, Path, QueryParam, Response
+from xpresso import App, Depends, FromQuery, Operation, Path, QueryParam, Response
 from xpresso.openapi.models import QueryParamStyles
 from xpresso.testclient import TestClient
+from xpresso.typing import Annotated
 
 missing_error = {
     "detail": [
@@ -1382,3 +1377,182 @@ def test_deepObject_not_explode_is_not_allowed() -> None:
     ):
         with TestClient(app):
             pass  # pragma: no cover
+
+
+def test_parameter_is_used_in_multiple_locations() -> None:
+    async def dep(param: FromQuery[str]) -> None:
+        ...
+
+    async def endpoint(param: FromQuery[str]) -> None:
+        ...
+
+    app = App([Path("/", get=Operation(endpoint, dependencies=[Depends(dep)]))])
+
+    client = TestClient(app)
+
+    resp = client.get("/", params={"param": "foo"})
+    assert resp.status_code == 200, resp.content
+
+    expected_openapi: Dict[str, Any] = {
+        "openapi": "3.0.3",
+        "info": {"title": "API", "version": "0.1.0"},
+        "paths": {
+            "/": {
+                "get": {
+                    "responses": {
+                        "200": {
+                            "description": "OK",
+                            "content": {"application/json": {}},
+                        },
+                        "422": {
+                            "description": "Validation Error",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "$ref": "#/components/schemas/HTTPValidationError"
+                                    }
+                                }
+                            },
+                        },
+                    },
+                    "parameters": [
+                        {
+                            "required": True,
+                            "style": "form",
+                            "explode": True,
+                            "schema": {"title": "Param", "type": "string"},
+                            "name": "param",
+                            "in": "query",
+                        }
+                    ],
+                }
+            }
+        },
+        "components": {
+            "schemas": {
+                "ValidationError": {
+                    "title": "ValidationError",
+                    "required": ["loc", "msg", "type"],
+                    "type": "object",
+                    "properties": {
+                        "loc": {
+                            "title": "Location",
+                            "type": "array",
+                            "items": {
+                                "oneOf": [{"type": "string"}, {"type": "integer"}]
+                            },
+                        },
+                        "msg": {"title": "Message", "type": "string"},
+                        "type": {"title": "Error Type", "type": "string"},
+                    },
+                },
+                "HTTPValidationError": {
+                    "title": "HTTPValidationError",
+                    "type": "object",
+                    "properties": {
+                        "detail": {
+                            "title": "Detail",
+                            "type": "array",
+                            "items": {"$ref": "#/components/schemas/ValidationError"},
+                        }
+                    },
+                },
+            }
+        },
+    }
+
+    resp = client.get("/openapi.json")
+    assert resp.status_code == 200, resp.content
+    assert resp.json() == expected_openapi
+
+
+def test_multiple_parameters() -> None:
+    async def endpoint(param1: FromQuery[str], param2: FromQuery[str]) -> None:
+        ...
+
+    app = App([Path("/", get=Operation(endpoint))])
+
+    client = TestClient(app)
+
+    resp = client.get("/", params={"param1": "foo", "param2": "bar"})
+    assert resp.status_code == 200, resp.content
+
+    expected_openapi: Dict[str, Any] = {
+        "openapi": "3.0.3",
+        "info": {"title": "API", "version": "0.1.0"},
+        "paths": {
+            "/": {
+                "get": {
+                    "responses": {
+                        "200": {
+                            "description": "OK",
+                            "content": {"application/json": {}},
+                        },
+                        "422": {
+                            "description": "Validation Error",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "$ref": "#/components/schemas/HTTPValidationError"
+                                    }
+                                }
+                            },
+                        },
+                    },
+                    "parameters": [
+                        {
+                            "required": True,
+                            "style": "form",
+                            "explode": True,
+                            "schema": {"title": "Param1", "type": "string"},
+                            "name": "param1",
+                            "in": "query",
+                        },
+                        {
+                            "required": True,
+                            "style": "form",
+                            "explode": True,
+                            "schema": {"title": "Param2", "type": "string"},
+                            "name": "param2",
+                            "in": "query",
+                        },
+                    ],
+                }
+            }
+        },
+        "components": {
+            "schemas": {
+                "ValidationError": {
+                    "title": "ValidationError",
+                    "required": ["loc", "msg", "type"],
+                    "type": "object",
+                    "properties": {
+                        "loc": {
+                            "title": "Location",
+                            "type": "array",
+                            "items": {
+                                "oneOf": [{"type": "string"}, {"type": "integer"}]
+                            },
+                        },
+                        "msg": {"title": "Message", "type": "string"},
+                        "type": {"title": "Error Type", "type": "string"},
+                    },
+                },
+                "HTTPValidationError": {
+                    "title": "HTTPValidationError",
+                    "type": "object",
+                    "properties": {
+                        "detail": {
+                            "title": "Detail",
+                            "type": "array",
+                            "items": {"$ref": "#/components/schemas/ValidationError"},
+                        }
+                    },
+                },
+            }
+        },
+    }
+
+    resp = client.get("/openapi.json")
+    assert resp.status_code == 200, resp.content
+    assert resp.json() == expected_openapi
