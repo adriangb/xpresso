@@ -3,8 +3,7 @@ from typing import Any, Dict, Optional
 
 from starlette.responses import HTMLResponse
 
-from xpresso.encoders.api import Encoder
-from xpresso.encoders.json import JsonableEncoder
+from xpresso.encoders import Encoder, JsonableEncoder
 
 
 def get_swagger_ui_html(

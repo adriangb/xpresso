@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from di.dependant import Marker
 
 from xpresso import App, Depends, Path
-from xpresso.dependencies.models import Injectable
+from xpresso.dependencies import Injectable
 from xpresso.testclient import TestClient
 from xpresso.typing import Annotated
 

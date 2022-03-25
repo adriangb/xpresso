@@ -4,7 +4,7 @@ from starlette.exceptions import HTTPException
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 
-from xpresso.encoders.json import JsonableEncoder
+from xpresso.encoders import JsonableEncoder
 from xpresso.exceptions import RequestValidationError
 
 ExcType = TypeVar("ExcType", bound=Exception, contravariant=True)

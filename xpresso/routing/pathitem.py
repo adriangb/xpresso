@@ -7,7 +7,7 @@ from di.api.providers import DependencyProvider as Endpoint
 
 import xpresso.binders.dependants as dependants
 import xpresso.openapi.models as openapi_models
-from xpresso.dependencies.models import Depends
+from xpresso.dependencies import Depends
 from xpresso.responses import ResponseSpec, ResponseStatusCode
 from xpresso.routing.operation import Operation
 

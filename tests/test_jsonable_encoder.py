@@ -12,7 +12,7 @@ else:
 import pytest
 from pydantic import BaseModel, Field, create_model
 
-from xpresso.encoders.json import JsonableEncoder
+from xpresso.encoders import JsonableEncoder
 
 SetIntStr = Set[Union[int, str]]
 DictIntStrAny = Dict[Union[int, str], Any]

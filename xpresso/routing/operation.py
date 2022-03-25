@@ -16,9 +16,8 @@ from starlette.types import ASGIApp, Receive, Scope, Send
 import xpresso.openapi.models as openapi_models
 from xpresso._utils.asgi import XpressoHTTPExtension
 from xpresso._utils.endpoint_dependant import Endpoint, EndpointDependant
-from xpresso.dependencies.models import Depends, Scopes
-from xpresso.encoders.api import Encoder
-from xpresso.encoders.json import JsonableEncoder
+from xpresso.dependencies import Depends, Scopes
+from xpresso.encoders import Encoder, JsonableEncoder
 from xpresso.responses import ResponseSpec, ResponseStatusCode, TypeUnset
 
 

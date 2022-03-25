@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from xpresso import App, Path
-from xpresso.dependencies.models import Injectable, Singleton
+from xpresso.dependencies import Injectable, Singleton
 from xpresso.testclient import TestClient
 
 

@@ -1,6 +1,6 @@
 from typing import Any, Mapping, Union
 
-from xpresso.encoders.json import JsonableEncoder
+from xpresso.encoders import JsonableEncoder
 from xpresso.openapi import models as openapi_models
 from xpresso.responses import ResponseSpec
 

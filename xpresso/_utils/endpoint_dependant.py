@@ -5,7 +5,7 @@ import typing
 from di.api.providers import CallableProvider, CoroutineProvider
 from di.dependant import Dependant
 
-from xpresso.dependencies.models import Depends
+from xpresso.dependencies import Depends
 
 Endpoint = typing.Union[CallableProvider[typing.Any], CoroutineProvider[typing.Any]]
 

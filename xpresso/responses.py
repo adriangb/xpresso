@@ -11,7 +11,6 @@ from starlette.responses import StreamingResponse as StreamingResponse  # noqa: 
 
 from xpresso._utils.asgi import XpressoHTTPExtension
 from xpresso._utils.typing import Literal
-from xpresso.exceptions import XpressoError
 from xpresso.openapi.models import Example, ResponseHeader
 from xpresso.requests import Request
 
@@ -29,7 +28,7 @@ def get_response(request: Request) -> Response:
 def set_response(request: Request, response: Response) -> None:
     xpresso_extension: "XpressoHTTPExtension" = request.scope["extensions"]["xpresso"]  # type: ignore  # for Pylance
     if xpresso_extension.response_sent:
-        raise XpressoError(
+        raise RuntimeError(
             'set_response() can only be used from "endpoint" scoped dependendencies'
         )
     xpresso_extension.response = response

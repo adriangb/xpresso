@@ -14,7 +14,7 @@ from di.executors import AsyncExecutor, ConcurrentAsyncExecutor
 
 from xpresso._utils.asgi import XpressoWebSocketExtension
 from xpresso._utils.endpoint_dependant import Endpoint, EndpointDependant
-from xpresso.dependencies.models import Depends, Scopes
+from xpresso.dependencies import Depends, Scopes
 
 
 class _WebSocketRoute:

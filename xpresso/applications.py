@@ -20,7 +20,7 @@ from starlette.websockets import WebSocket
 from xpresso._utils.asgi import XpressoHTTPExtension, XpressoWebSocketExtension
 from xpresso._utils.overrides import DependencyOverrideManager
 from xpresso._utils.routing import visit_routes
-from xpresso.dependencies.models import Depends, Scopes
+from xpresso.dependencies import Depends, Scopes
 from xpresso.exception_handlers import (
     ExcHandler,
     http_exception_handler,

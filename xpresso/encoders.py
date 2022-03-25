@@ -20,8 +20,14 @@ from typing import (
 from pydantic import BaseModel
 from pydantic.json import ENCODERS_BY_TYPE
 
-from xpresso.encoders.api import Encoder
+from xpresso._utils.typing import Protocol
 from xpresso.typing import Some
+
+
+class Encoder(Protocol):
+    def __call__(self, obj: Any) -> Any:
+        ...
+
 
 _SetIntStr = Set[Union[int, str]]
 _DictIntStrAny = Dict[Union[int, str], Any]

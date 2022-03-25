@@ -20,7 +20,7 @@ from xpresso.bodies import (
     Multipart,
 )
 from xpresso.datastructures import BinaryStream, UploadFile
-from xpresso.dependencies.models import Depends
+from xpresso.dependencies import Depends
 from xpresso.exception_handlers import ExcHandler
 from xpresso.parameters import (
     CookieParam,

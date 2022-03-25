@@ -7,7 +7,7 @@ from starlette.routing import Router as StarletteRouter
 from starlette.types import Receive, Scope, Send
 
 from xpresso._utils.typing import Protocol
-from xpresso.dependencies.models import Depends
+from xpresso.dependencies import Depends
 from xpresso.responses import ResponseSpec, ResponseStatusCode
 
 
