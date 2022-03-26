@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional
 import pytest
 from pydantic import BaseModel
 
-from xpresso import App, Depends, FromHeader, HeaderParam, Operation, Path
+from xpresso import App, Depends, FromHeader, HeaderParam, Operation, Path, Response
 from xpresso.testclient import TestClient
 from xpresso.typing import Annotated
 
@@ -591,6 +591,549 @@ def test_multiple_parameters() -> None:
                         }
                     },
                 },
+            }
+        },
+    }
+
+    resp = client.get("/openapi.json")
+    assert resp.status_code == 200, resp.content
+    assert resp.json() == expected_openapi
+
+
+@pytest.mark.parametrize(
+    "explode",
+    [True, False],
+)
+def test_openapi_serialization(
+    explode: bool,
+) -> None:
+    async def endpoint(
+        header: Annotated[int, HeaderParam(explode=explode)]
+    ) -> Response:
+        ...
+
+    app = App([Path("/", get=endpoint)])
+
+    expected_openapi: Dict[str, Any] = {
+        "openapi": "3.0.3",
+        "info": {"title": "API", "version": "0.1.0"},
+        "paths": {
+            "/": {
+                "get": {
+                    "responses": {
+                        "200": {
+                            "description": "OK",
+                            "content": {"application/json": {}},
+                        },
+                        "422": {
+                            "description": "Validation Error",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "$ref": "#/components/schemas/HTTPValidationError"
+                                    }
+                                }
+                            },
+                        },
+                    },
+                    "parameters": [
+                        {
+                            "required": True,
+                            "style": "simple",
+                            "explode": explode,
+                            "schema": {"title": "Header", "type": "integer"},
+                            "name": "header",
+                            "in": "header",
+                        }
+                    ],
+                }
+            }
+        },
+        "components": {
+            "schemas": {
+                "ValidationError": {
+                    "title": "ValidationError",
+                    "required": ["loc", "msg", "type"],
+                    "type": "object",
+                    "properties": {
+                        "loc": {
+                            "title": "Location",
+                            "type": "array",
+                            "items": {
+                                "oneOf": [{"type": "string"}, {"type": "integer"}]
+                            },
+                        },
+                        "msg": {"title": "Message", "type": "string"},
+                        "type": {"title": "Error Type", "type": "string"},
+                    },
+                },
+                "HTTPValidationError": {
+                    "title": "HTTPValidationError",
+                    "type": "object",
+                    "properties": {
+                        "detail": {
+                            "title": "Detail",
+                            "type": "array",
+                            "items": {"$ref": "#/components/schemas/ValidationError"},
+                        }
+                    },
+                },
+            }
+        },
+    }
+
+    with TestClient(app) as client:
+        resp = client.get("/openapi.json")
+    assert resp.status_code == 200, resp.content
+    assert resp.json() == expected_openapi
+
+
+def test_openapi_scalar() -> None:
+    async def endpoint(header: FromHeader[int]) -> Response:
+        ...
+
+    app = App([Path("/", get=endpoint)])
+
+    expected_openapi: Dict[str, Any] = {
+        "openapi": "3.0.3",
+        "info": {"title": "API", "version": "0.1.0"},
+        "paths": {
+            "/": {
+                "get": {
+                    "responses": {
+                        "200": {
+                            "description": "OK",
+                            "content": {"application/json": {}},
+                        },
+                        "422": {
+                            "description": "Validation Error",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "$ref": "#/components/schemas/HTTPValidationError"
+                                    }
+                                }
+                            },
+                        },
+                    },
+                    "parameters": [
+                        {
+                            "required": True,
+                            "style": "simple",
+                            "explode": False,
+                            "schema": {"title": "Header", "type": "integer"},
+                            "name": "header",
+                            "in": "header",
+                        }
+                    ],
+                }
+            }
+        },
+        "components": {
+            "schemas": {
+                "ValidationError": {
+                    "title": "ValidationError",
+                    "required": ["loc", "msg", "type"],
+                    "type": "object",
+                    "properties": {
+                        "loc": {
+                            "title": "Location",
+                            "type": "array",
+                            "items": {
+                                "oneOf": [{"type": "string"}, {"type": "integer"}]
+                            },
+                        },
+                        "msg": {"title": "Message", "type": "string"},
+                        "type": {"title": "Error Type", "type": "string"},
+                    },
+                },
+                "HTTPValidationError": {
+                    "title": "HTTPValidationError",
+                    "type": "object",
+                    "properties": {
+                        "detail": {
+                            "title": "Detail",
+                            "type": "array",
+                            "items": {"$ref": "#/components/schemas/ValidationError"},
+                        }
+                    },
+                },
+            }
+        },
+    }
+
+    with TestClient(app) as client:
+        resp = client.get("/openapi.json")
+    assert resp.status_code == 200, resp.content
+    assert resp.json() == expected_openapi
+
+
+def test_openapi_array() -> None:
+    async def endpoint(header: FromHeader[List[int]]) -> Response:
+        ...
+
+    app = App([Path("/", get=endpoint)])
+
+    expected_openapi: Dict[str, Any] = {
+        "openapi": "3.0.3",
+        "info": {"title": "API", "version": "0.1.0"},
+        "paths": {
+            "/": {
+                "get": {
+                    "responses": {
+                        "200": {
+                            "description": "OK",
+                            "content": {"application/json": {}},
+                        },
+                        "422": {
+                            "description": "Validation Error",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "$ref": "#/components/schemas/HTTPValidationError"
+                                    }
+                                }
+                            },
+                        },
+                    },
+                    "parameters": [
+                        {
+                            "style": "simple",
+                            "explode": False,
+                            "schema": {
+                                "title": "Header",
+                                "type": "array",
+                                "items": {"type": "integer"},
+                            },
+                            "name": "header",
+                            "in": "header",
+                        }
+                    ],
+                }
+            }
+        },
+        "components": {
+            "schemas": {
+                "ValidationError": {
+                    "title": "ValidationError",
+                    "required": ["loc", "msg", "type"],
+                    "type": "object",
+                    "properties": {
+                        "loc": {
+                            "title": "Location",
+                            "type": "array",
+                            "items": {
+                                "oneOf": [{"type": "string"}, {"type": "integer"}]
+                            },
+                        },
+                        "msg": {"title": "Message", "type": "string"},
+                        "type": {"title": "Error Type", "type": "string"},
+                    },
+                },
+                "HTTPValidationError": {
+                    "title": "HTTPValidationError",
+                    "type": "object",
+                    "properties": {
+                        "detail": {
+                            "title": "Detail",
+                            "type": "array",
+                            "items": {"$ref": "#/components/schemas/ValidationError"},
+                        }
+                    },
+                },
+            }
+        },
+    }
+
+    with TestClient(app) as client:
+        resp = client.get("/openapi.json")
+    assert resp.status_code == 200, resp.content
+    assert resp.json() == expected_openapi
+
+
+def test_openapi_object() -> None:
+    class ShallowObject(BaseModel):
+        foo: int
+        bar: str
+
+    async def endpoint(header: FromHeader[ShallowObject]) -> Response:
+        ...
+
+    app = App([Path("/", get=endpoint)])
+
+    expected_openapi: Dict[str, Any] = {
+        "openapi": "3.0.3",
+        "info": {"title": "API", "version": "0.1.0"},
+        "paths": {
+            "/": {
+                "get": {
+                    "responses": {
+                        "200": {
+                            "description": "OK",
+                            "content": {"application/json": {}},
+                        },
+                        "422": {
+                            "description": "Validation Error",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "$ref": "#/components/schemas/HTTPValidationError"
+                                    }
+                                }
+                            },
+                        },
+                    },
+                    "parameters": [
+                        {
+                            "required": True,
+                            "style": "simple",
+                            "explode": False,
+                            "schema": {"$ref": "#/components/schemas/ShallowObject"},
+                            "name": "header",
+                            "in": "header",
+                        }
+                    ],
+                }
+            }
+        },
+        "components": {
+            "schemas": {
+                "ShallowObject": {
+                    "title": "ShallowObject",
+                    "required": ["foo", "bar"],
+                    "type": "object",
+                    "properties": {
+                        "foo": {"title": "Foo", "type": "integer"},
+                        "bar": {"title": "Bar", "type": "string"},
+                    },
+                },
+                "ValidationError": {
+                    "title": "ValidationError",
+                    "required": ["loc", "msg", "type"],
+                    "type": "object",
+                    "properties": {
+                        "loc": {
+                            "title": "Location",
+                            "type": "array",
+                            "items": {
+                                "oneOf": [{"type": "string"}, {"type": "integer"}]
+                            },
+                        },
+                        "msg": {"title": "Message", "type": "string"},
+                        "type": {"title": "Error Type", "type": "string"},
+                    },
+                },
+                "HTTPValidationError": {
+                    "title": "HTTPValidationError",
+                    "type": "object",
+                    "properties": {
+                        "detail": {
+                            "title": "Detail",
+                            "type": "array",
+                            "items": {"$ref": "#/components/schemas/ValidationError"},
+                        }
+                    },
+                },
+            }
+        },
+    }
+
+    with TestClient(app) as client:
+        resp = client.get("/openapi.json")
+    assert resp.status_code == 200, resp.content
+    assert resp.json() == expected_openapi
+
+
+def test_openapi_default() -> None:
+    async def endpoint(header: FromHeader[int] = 2) -> Response:
+        ...
+
+    app = App([Path("/", get=endpoint)])
+
+    expected_openapi: Dict[str, Any] = {
+        "openapi": "3.0.3",
+        "info": {"title": "API", "version": "0.1.0"},
+        "paths": {
+            "/": {
+                "get": {
+                    "responses": {
+                        "200": {
+                            "description": "OK",
+                            "content": {"application/json": {}},
+                        },
+                        "422": {
+                            "description": "Validation Error",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "$ref": "#/components/schemas/HTTPValidationError"
+                                    }
+                                }
+                            },
+                        },
+                    },
+                    "parameters": [
+                        {
+                            "style": "simple",
+                            "explode": False,
+                            "schema": {
+                                "title": "Header",
+                                "type": "integer",
+                                "default": 2,
+                            },
+                            "name": "header",
+                            "in": "header",
+                        }
+                    ],
+                }
+            }
+        },
+        "components": {
+            "schemas": {
+                "ValidationError": {
+                    "title": "ValidationError",
+                    "required": ["loc", "msg", "type"],
+                    "type": "object",
+                    "properties": {
+                        "loc": {
+                            "title": "Location",
+                            "type": "array",
+                            "items": {
+                                "oneOf": [{"type": "string"}, {"type": "integer"}]
+                            },
+                        },
+                        "msg": {"title": "Message", "type": "string"},
+                        "type": {"title": "Error Type", "type": "string"},
+                    },
+                },
+                "HTTPValidationError": {
+                    "title": "HTTPValidationError",
+                    "type": "object",
+                    "properties": {
+                        "detail": {
+                            "title": "Detail",
+                            "type": "array",
+                            "items": {"$ref": "#/components/schemas/ValidationError"},
+                        }
+                    },
+                },
+            }
+        },
+    }
+
+    with TestClient(app) as client:
+        resp = client.get("/openapi.json")
+    assert resp.status_code == 200, resp.content
+    assert resp.json() == expected_openapi
+
+
+def test_openapi_nullable() -> None:
+    async def endpoint(header: FromHeader[Optional[int]]) -> Response:
+        ...
+
+    app = App([Path("/", get=endpoint)])
+
+    expected_openapi: Dict[str, Any] = {
+        "openapi": "3.0.3",
+        "info": {"title": "API", "version": "0.1.0"},
+        "paths": {
+            "/": {
+                "get": {
+                    "responses": {
+                        "200": {
+                            "description": "OK",
+                            "content": {"application/json": {}},
+                        },
+                        "422": {
+                            "description": "Validation Error",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "$ref": "#/components/schemas/HTTPValidationError"
+                                    }
+                                }
+                            },
+                        },
+                    },
+                    "parameters": [
+                        {
+                            "required": True,
+                            "style": "simple",
+                            "explode": False,
+                            "schema": {
+                                "title": "Header",
+                                "type": "integer",
+                                "nullable": True,
+                            },
+                            "name": "header",
+                            "in": "header",
+                        }
+                    ],
+                }
+            }
+        },
+        "components": {
+            "schemas": {
+                "ValidationError": {
+                    "title": "ValidationError",
+                    "required": ["loc", "msg", "type"],
+                    "type": "object",
+                    "properties": {
+                        "loc": {
+                            "title": "Location",
+                            "type": "array",
+                            "items": {
+                                "oneOf": [{"type": "string"}, {"type": "integer"}]
+                            },
+                        },
+                        "msg": {"title": "Message", "type": "string"},
+                        "type": {"title": "Error Type", "type": "string"},
+                    },
+                },
+                "HTTPValidationError": {
+                    "title": "HTTPValidationError",
+                    "type": "object",
+                    "properties": {
+                        "detail": {
+                            "title": "Detail",
+                            "type": "array",
+                            "items": {"$ref": "#/components/schemas/ValidationError"},
+                        }
+                    },
+                },
+            }
+        },
+    }
+
+    with TestClient(app) as client:
+        resp = client.get("/openapi.json")
+    assert resp.status_code == 200, resp.content
+    assert resp.json() == expected_openapi
+
+
+def test_openapi_include_in_schema() -> None:
+    async def endpoint(
+        x_header: Annotated[str, HeaderParam(include_in_schema=False)]
+    ) -> None:
+        ...
+
+    app = App([Path("/", get=endpoint)])
+
+    client = TestClient(app)
+
+    expected_openapi: Dict[str, Any] = {
+        "openapi": "3.0.3",
+        "info": {"title": "API", "version": "0.1.0"},
+        "paths": {
+            "/": {
+                "get": {
+                    "responses": {
+                        "200": {
+                            "description": "OK",
+                            "content": {"application/json": {}},
+                        }
+                    }
+                }
             }
         },
     }
