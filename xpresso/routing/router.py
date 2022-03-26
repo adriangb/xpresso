@@ -7,7 +7,7 @@ from starlette.routing import Router as StarletteRouter
 from starlette.types import Receive, Scope, Send
 
 from xpresso._utils.typing import Protocol
-from xpresso.dependencies import Depends
+from xpresso.dependencies._dependencies import BoundDependsMarker
 from xpresso.responses import ResponseSpec, ResponseStatusCode
 
 
@@ -58,7 +58,7 @@ class Router:
         redirect_slashes: bool = True,
         default: typing.Optional[_ASGIApp] = None,
         dependencies: typing.Optional[
-            typing.Iterable[typing.Union[DependantBase[typing.Any], Depends]]
+            typing.Iterable[typing.Union[DependantBase[typing.Any], BoundDependsMarker]]
         ] = None,
         tags: typing.Optional[typing.List[str]] = None,
         responses: typing.Optional[
@@ -75,7 +75,7 @@ class Router:
             lifespan=lifespan,  # type: ignore[arg-type]
         )
         self.dependencies = tuple(
-            dep if not isinstance(dep, Depends) else dep.as_dependant()
+            dep if isinstance(dep, DependantBase) else dep.as_dependant()
             for dep in dependencies or ()
         )
         self.tags = list(tags or [])

@@ -5,7 +5,7 @@ import typing
 from di.api.providers import CallableProvider, CoroutineProvider
 from di.dependant import Dependant
 
-from xpresso.dependencies import Depends
+from xpresso.dependencies._dependencies import Depends, DependsMarker
 
 Endpoint = typing.Union[CallableProvider[typing.Any], CoroutineProvider[typing.Any]]
 
@@ -24,5 +24,5 @@ class EndpointDependant(Dependant[typing.Any]):
             sync_to_thread=sync_to_thread,
         )
 
-    def get_default_marker(self) -> Depends:
+    def get_default_marker(self) -> DependsMarker[None]:
         return Depends()

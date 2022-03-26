@@ -7,9 +7,6 @@ from di.dependant import Marker
 
 from xpresso._utils.typing import Literal
 
-T = typing.TypeVar("T")
-
-
 Scope = Literal["app", "connection", "endpoint"]
 Scopes: typing.Tuple[Literal["app"], Literal["connection"], Literal["endpoint"]] = (
     "app",
@@ -18,16 +15,60 @@ Scopes: typing.Tuple[Literal["app"], Literal["connection"], Literal["endpoint"]]
 )
 
 
-class Depends(Marker):
-    scope: Scope
+@typing.overload
+def Depends(
+    call: DependencyProvider,
+    *,
+    use_cache: bool = ...,
+    wire: bool = ...,
+    sync_to_thread: bool = ...,
+    scope: Scope = ...,
+) -> "BoundDependsMarker":
+    ...
 
+
+@typing.overload
+def Depends(
+    *,
+    use_cache: bool = ...,
+    wire: bool = ...,
+    sync_to_thread: bool = ...,
+    scope: Scope = ...,
+) -> "DependsMarker[None]":
+    ...
+
+
+def Depends(
+    call: typing.Any = None,
+    *,
+    use_cache: bool = True,
+    wire: bool = True,
+    sync_to_thread: bool = False,
+    scope: Scope = "connection",
+) -> typing.Any:
+    return DependsMarker(
+        call=call,
+        use_cache=use_cache,
+        wire=wire,
+        sync_to_thread=sync_to_thread,
+        scope=scope,
+    )
+
+
+DependencyType = typing.TypeVar(
+    "DependencyType", bound=typing.Optional[DependencyProvider]
+)
+
+
+class DependsMarker(Marker, typing.Generic[DependencyType]):
     def __init__(
         self,
-        call: typing.Optional[DependencyProvider] = None,
-        scope: Scope = "connection",
+        call: typing.Optional[DependencyType] = None,
+        *,
         use_cache: bool = True,
         wire: bool = True,
-        sync_to_thread: bool = False,
+        sync_to_thread: bool = True,
+        scope: Scope = "connection",
     ) -> None:
         super().__init__(
             call=call,
@@ -37,7 +78,7 @@ class Depends(Marker):
             sync_to_thread=sync_to_thread,
         )
 
-    def as_dependant(self) -> Dependant[typing.Any]:
+    def as_dependant(self) -> Dependant[DependencyType]:
         return Dependant(
             call=self.call,
             scope=self.scope,
@@ -46,6 +87,9 @@ class Depends(Marker):
             sync_to_thread=self.sync_to_thread,
             marker=self,
         )
+
+
+BoundDependsMarker = DependsMarker[DependencyProvider]
 
 
 class Injectable(InjectableBase):

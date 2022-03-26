@@ -3,11 +3,12 @@ import typing
 import starlette.routing
 import starlette.types
 from di.api.dependencies import DependantBase
+from di.api.providers import DependencyProvider
 from di.api.providers import DependencyProvider as Endpoint
 
 import xpresso.binders.dependants as dependants
 import xpresso.openapi.models as openapi_models
-from xpresso.dependencies import Depends
+from xpresso.dependencies._dependencies import DependsMarker
 from xpresso.responses import ResponseSpec, ResponseStatusCode
 from xpresso.routing.operation import Operation
 
@@ -42,7 +43,11 @@ class Path(starlette.routing.Route):
         trace: typing.Optional[typing.Union[Operation, Endpoint]] = None,
         redirect_slashes: bool = True,
         dependencies: typing.Optional[
-            typing.Iterable[typing.Union[DependantBase[typing.Any], Depends]]
+            typing.Iterable[
+                typing.Union[
+                    DependantBase[typing.Any], DependsMarker[DependencyProvider]
+                ]
+            ]
         ] = None,
         # OpenAPI metadata
         include_in_schema: bool = True,
@@ -61,7 +66,7 @@ class Path(starlette.routing.Route):
         self.path = path
         self.redirect_slashes = redirect_slashes
         self.dependencies = tuple(
-            dep if not isinstance(dep, Depends) else dep.as_dependant()
+            dep if isinstance(dep, DependantBase) else dep.as_dependant()
             for dep in dependencies or ()
         )
         self.summary = summary

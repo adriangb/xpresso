@@ -20,7 +20,7 @@ from starlette.websockets import WebSocket
 from xpresso._utils.asgi import XpressoHTTPExtension, XpressoWebSocketExtension
 from xpresso._utils.overrides import DependencyOverrideManager
 from xpresso._utils.routing import visit_routes
-from xpresso.dependencies import Depends, Scopes
+from xpresso.dependencies._dependencies import BoundDependsMarker, Scopes
 from xpresso.exception_handlers import (
     ExcHandler,
     http_exception_handler,
@@ -63,7 +63,7 @@ class App:
         *,
         container: typing.Optional[Container] = None,
         dependencies: typing.Optional[
-            typing.Iterable[typing.Union[DependantBase[typing.Any], Depends]]
+            typing.Iterable[typing.Union[DependantBase[typing.Any], BoundDependsMarker]]
         ] = None,
         tags: typing.Optional[typing.List[str]] = None,
         responses: typing.Optional[

@@ -14,7 +14,7 @@ from di.executors import AsyncExecutor, ConcurrentAsyncExecutor
 
 from xpresso._utils.asgi import XpressoWebSocketExtension
 from xpresso._utils.endpoint_dependant import Endpoint, EndpointDependant
-from xpresso.dependencies import Depends, Scopes
+from xpresso.dependencies._dependencies import BoundDependsMarker, Scopes
 
 
 class _WebSocketRoute:
@@ -70,7 +70,7 @@ class WebSocketRoute(starlette.routing.WebSocketRoute):
         *,
         name: typing.Optional[str] = None,
         dependencies: typing.Optional[
-            typing.Iterable[typing.Union[DependantBase[typing.Any], Depends]]
+            typing.Iterable[typing.Union[DependantBase[typing.Any], BoundDependsMarker]]
         ] = None,
         execute_dependencies_concurrently: bool = False,
     ) -> None:
@@ -81,7 +81,7 @@ class WebSocketRoute(starlette.routing.WebSocketRoute):
         )
         self.endpoint = endpoint
         self.dependencies = tuple(
-            dep if not isinstance(dep, Depends) else dep.as_dependant()
+            dep if isinstance(dep, DependantBase) else dep.as_dependant()
             for dep in dependencies or ()
         )
         self.execute_dependencies_concurrently = execute_dependencies_concurrently
@@ -89,16 +89,12 @@ class WebSocketRoute(starlette.routing.WebSocketRoute):
     def solve(
         self,
         container: Container,
-        dependencies: typing.Iterable[typing.Union[DependantBase[typing.Any], Depends]],
+        dependencies: typing.Iterable[DependantBase[typing.Any]],
     ) -> None:
-        deps = [
-            dep if not isinstance(dep, Depends) else dep.as_dependant()
-            for dep in dependencies or ()
-        ]
         self.dependant = container.solve(
             JoinedDependant(
                 EndpointDependant(self.endpoint),
-                siblings=[*deps, *self.dependencies],
+                siblings=[*dependencies, *self.dependencies],
             ),
             scopes=Scopes,
         )

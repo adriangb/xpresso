@@ -3,7 +3,7 @@ from typing import Any
 from di.dependant import Injectable
 from pydantic import BaseSettings
 
-from xpresso.dependencies import Scope
+from xpresso.dependencies._dependencies import Scope
 
 
 class BaseConfig(Injectable, BaseSettings):

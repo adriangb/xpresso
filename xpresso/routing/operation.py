@@ -16,7 +16,7 @@ from starlette.types import ASGIApp, Receive, Scope, Send
 import xpresso.openapi.models as openapi_models
 from xpresso._utils.asgi import XpressoHTTPExtension
 from xpresso._utils.endpoint_dependant import Endpoint, EndpointDependant
-from xpresso.dependencies import Depends, Scopes
+from xpresso.dependencies._dependencies import BoundDependsMarker, Scopes
 from xpresso.encoders import Encoder, JsonableEncoder
 from xpresso.responses import ResponseSpec, ResponseStatusCode, TypeUnset
 
@@ -94,7 +94,7 @@ class Operation(BaseRoute):
         # xpresso params
         name: typing.Optional[str] = None,
         dependencies: typing.Optional[
-            typing.Iterable[typing.Union[DependantBase[typing.Any], Depends]]
+            typing.Iterable[typing.Union[DependantBase[typing.Any], BoundDependsMarker]]
         ] = None,
         execute_dependencies_concurrently: bool = False,
         response_factory: typing.Optional[
@@ -133,7 +133,7 @@ class Operation(BaseRoute):
         self.response_examples = response_examples
         self.response_headers = response_headers
         self.dependencies = tuple(
-            dep if not isinstance(dep, Depends) else dep.as_dependant()
+            dep if isinstance(dep, DependantBase) else dep.as_dependant()
             for dep in dependencies or ()
         )
         self._app: ASGIApp = _not_prepared_app
@@ -157,16 +157,12 @@ class Operation(BaseRoute):
     def prepare(
         self,
         container: Container,
-        dependencies: typing.Iterable[typing.Union[DependantBase[typing.Any], Depends]],
+        dependencies: typing.Iterable[DependantBase[typing.Any]],
     ) -> None:
-        deps = [
-            dep if not isinstance(dep, Depends) else dep.as_dependant()
-            for dep in [*dependencies, *self.dependencies]
-        ]
         self.dependant = container.solve(
             JoinedDependant(
                 EndpointDependant(self.endpoint, sync_to_thread=self._sync_to_thread),
-                siblings=deps,
+                siblings=[*dependencies, *self.dependencies],
             ),
             scopes=Scopes,
         )
