@@ -86,7 +86,7 @@ class WebSocketRoute(starlette.routing.WebSocketRoute):
         )
         self.execute_dependencies_concurrently = execute_dependencies_concurrently
 
-    def solve(
+    def prepare(
         self,
         container: Container,
         dependencies: typing.Iterable[DependantBase[typing.Any]],

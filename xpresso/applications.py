@@ -242,7 +242,7 @@ class App:
                         if dep.scope == "app":
                             lifespan_dependants.append(dep)
             elif isinstance(route.route, WebSocketRoute):
-                route.route.solve(
+                route.route.prepare(
                     dependencies=[
                         *dependencies,
                         *route.route.dependencies,
