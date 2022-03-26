@@ -14,12 +14,7 @@ else:
 if sys.version_info < (3, 8):
     from typing_extensions import Literal as Literal  # noqa: F401
     from typing_extensions import Protocol as Protocol  # noqa: F401
-    from typing_extensions import TypedDict as TypedDict  # noqa: F401
-    from typing_extensions import runtime_checkable as runtime_checkable  # noqa: F401
 else:
 
     from typing import Literal as Literal  # noqa: F401
     from typing import Protocol as Protocol  # noqa: F401
-    from typing import runtime_checkable as runtime_checkable  # noqa: F401
-
-    from typing_extensions import TypedDict as TypedDict  # noqa: F401
