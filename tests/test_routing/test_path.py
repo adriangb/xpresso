@@ -33,3 +33,13 @@ def test_methods(method: str) -> None:
     client = TestClient(app)
     resp = client.request(method=method, url="/")
     assert resp.status_code == 200, resp.content
+
+
+def test_unsupported_method() -> None:
+    async def endpoint() -> None:
+        ...
+
+    app = App([Path("/", get=endpoint)])
+    client = TestClient(app)
+    resp = client.post("/")
+    assert resp.status_code == 405, resp.content
