@@ -72,7 +72,7 @@ class Path(starlette.routing.Route):
         self.responses = dict(responses or {})
 
         operations: typing.Dict[str, Operation] = {}
-        for param, operation in (
+        for operation_or_endpoint, method in (
             (get, "GET"),
             (head, "HEAD"),
             (post, "POST"),
@@ -83,9 +83,11 @@ class Path(starlette.routing.Route):
             (options, "OPTIONS"),
             (trace, "TRACE"),
         ):
-            if param:
-                operations[operation] = (
-                    param if isinstance(param, Operation) else Operation(param)
+            if operation_or_endpoint:
+                operations[method] = (
+                    operation_or_endpoint
+                    if isinstance(operation_or_endpoint, Operation)
+                    else Operation(operation_or_endpoint)
                 )
         self.operations = operations
         super().__init__(  # type: ignore  # for Pylance
