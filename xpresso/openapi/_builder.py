@@ -8,6 +8,7 @@ from pydantic.fields import ModelField
 from pydantic.schema import field_schema, get_flat_models_from_fields
 from pydantic.schema import get_model_name_map as get_model_name_map_pydantic
 from starlette.responses import Response
+from starlette.routing import compile_path
 
 from xpresso._utils.routing import VisitedRoute
 from xpresso._utils.typing import get_args, get_origin, get_type_hints
@@ -355,7 +356,8 @@ def get_paths_items(
                     tags=operation_tags,
                     response_specs=operation_responses,
                 )
-            paths[visited_route.path] = models.PathItem(
+            path = compile_path(visited_route.path)[1]
+            paths[path] = models.PathItem(
                 description=visited_route.route.description,
                 summary=visited_route.route.summary,
                 servers=list(visited_route.route.servers) or None,

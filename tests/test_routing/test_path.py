@@ -1,6 +1,8 @@
+from typing import Any, Dict
+
 import pytest
 
-from xpresso import App, Path, Request
+from xpresso import App, FromPath, Path, Request
 from xpresso.testclient import TestClient
 
 
@@ -43,3 +45,99 @@ def test_unsupported_method() -> None:
     client = TestClient(app)
     resp = client.post("/")
     assert resp.status_code == 405, resp.content
+
+
+@pytest.mark.parametrize("path", ["foo", "https://foo.com/bar", "foo/bar/baz/"])
+def test_catchall_path(path: str) -> None:
+    async def endpoint(catchall: FromPath[str]) -> str:
+        return catchall
+
+    app = App([Path("/{catchall:path}", get=endpoint)])
+    client = TestClient(app)
+
+    resp = client.get(f"/{path}")
+    assert resp.status_code == 200, resp.content
+    assert resp.json() == path
+
+
+def test_path_parameter_converter_is_removed_from_openapi():
+    async def endpoint(catchall: FromPath[str]) -> str:
+        return catchall
+
+    app = App([Path("/api/{catchall:path}", get=endpoint)])
+    client = TestClient(app)
+
+    expected_openapi: Dict[str, Any] = {
+        "openapi": "3.0.3",
+        "info": {"title": "API", "version": "0.1.0"},
+        "paths": {
+            # We MUST remove the {:converter} part from here
+            # since that is not part of the OpenAPI spec
+            "/api/{catchall}": {
+                "get": {
+                    "responses": {
+                        "200": {
+                            "description": "OK",
+                            "content": {
+                                "application/json": {"schema": {"type": "string"}}
+                            },
+                        },
+                        "422": {
+                            "description": "Validation Error",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "$ref": "#/components/schemas/HTTPValidationError"
+                                    }
+                                }
+                            },
+                        },
+                    },
+                    "parameters": [
+                        {
+                            "required": True,
+                            "style": "simple",
+                            "explode": False,
+                            "schema": {"title": "Catchall", "type": "string"},
+                            "name": "catchall",
+                            "in": "path",
+                        }
+                    ],
+                }
+            }
+        },
+        "components": {
+            "schemas": {
+                "ValidationError": {
+                    "title": "ValidationError",
+                    "required": ["loc", "msg", "type"],
+                    "type": "object",
+                    "properties": {
+                        "loc": {
+                            "title": "Location",
+                            "type": "array",
+                            "items": {
+                                "oneOf": [{"type": "string"}, {"type": "integer"}]
+                            },
+                        },
+                        "msg": {"title": "Message", "type": "string"},
+                        "type": {"title": "Error Type", "type": "string"},
+                    },
+                },
+                "HTTPValidationError": {
+                    "title": "HTTPValidationError",
+                    "type": "object",
+                    "properties": {
+                        "detail": {
+                            "title": "Detail",
+                            "type": "array",
+                            "items": {"$ref": "#/components/schemas/ValidationError"},
+                        }
+                    },
+                },
+            }
+        },
+    }
+    resp = client.get("/openapi.json")
+    assert resp.status_code == 200, resp.content
+    assert resp.json() == expected_openapi
