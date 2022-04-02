@@ -119,7 +119,11 @@ def test_pydantic() -> None:
     assert resp.json() == expected_openapi
 
 
-def test_builtin() -> None:
+def test_builtin(
+    compare_or_create_expected_openapi: typing.Callable[
+        [typing.Dict[str, typing.Any]], None
+    ]
+) -> None:
     async def endpoint(model: FromJson[typing.List[int]]) -> Response:
         assert model == [1, 2]
         return Response()
@@ -130,78 +134,9 @@ def test_builtin() -> None:
     resp = client.post("/", json=[1, 2])
     assert resp.status_code == 200, resp.text
 
-    expected_openapi: typing.Dict[str, typing.Any] = {
-        "openapi": "3.0.3",
-        "info": {"title": "API", "version": "0.1.0"},
-        "paths": {
-            "/": {
-                "post": {
-                    "responses": {
-                        "200": {
-                            "description": "OK",
-                            "content": {"application/json": {}},
-                        },
-                        "422": {
-                            "description": "Validation Error",
-                            "content": {
-                                "application/json": {
-                                    "schema": {
-                                        "$ref": "#/components/schemas/HTTPValidationError"
-                                    }
-                                }
-                            },
-                        },
-                    },
-                    "requestBody": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {"type": "integer"},
-                                }
-                            }
-                        },
-                        "required": True,
-                    },
-                }
-            }
-        },
-        "components": {
-            "schemas": {
-                "ValidationError": {
-                    "title": "ValidationError",
-                    "required": ["loc", "msg", "type"],
-                    "type": "object",
-                    "properties": {
-                        "loc": {
-                            "title": "Location",
-                            "type": "array",
-                            "items": {
-                                "oneOf": [{"type": "string"}, {"type": "integer"}]
-                            },
-                        },
-                        "msg": {"title": "Message", "type": "string"},
-                        "type": {"title": "Error Type", "type": "string"},
-                    },
-                },
-                "HTTPValidationError": {
-                    "title": "HTTPValidationError",
-                    "type": "object",
-                    "properties": {
-                        "detail": {
-                            "title": "Detail",
-                            "type": "array",
-                            "items": {"$ref": "#/components/schemas/ValidationError"},
-                        }
-                    },
-                },
-            }
-        },
-    }
-
     resp = client.get("/openapi.json")
     assert resp.status_code == 200, resp.text
-    assert resp.json() == expected_openapi
+    compare_or_create_expected_openapi(resp.json())
 
 
 def test_non_nullable_not_required() -> None:
