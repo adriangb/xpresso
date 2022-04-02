@@ -175,6 +175,8 @@ class App:
         receive: starlette.types.Receive,
         send: starlette.types.Send,
     ) -> None:
+        if "app" not in scope:
+            scope["app"] = self
         if self._root_path:
             prefix = scope.get("root_path", None)
             if prefix:
