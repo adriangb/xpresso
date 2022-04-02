@@ -263,7 +263,6 @@ class App:
             visitor=visit_routes(
                 app_type=App, router=self.router, nodes=[self, self.router], path=""
             ),
-            container=self.container,
             version=self._openapi_version,
             info=self._openapi_info,
             servers=servers,

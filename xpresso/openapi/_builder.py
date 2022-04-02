@@ -2,7 +2,6 @@ import inspect
 from http import HTTPStatus
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Set, Tuple, Union
 
-from di.container import Container
 from pydantic import BaseConfig
 from pydantic.fields import ModelField
 from pydantic.schema import field_schema, get_flat_models_from_fields
@@ -194,7 +193,8 @@ def get_operation(
         "description": route.description,
         "deprecated": route.deprecated,
         "servers": route.servers or None,
-        "external_docs": route.external_docs,
+        "externalDocs": route.external_docs,
+        "operationId": route.operation_id,
     }
     docstring = getattr(route.endpoint, "__doc__", None)
     if docstring and not data["description"]:
@@ -407,7 +407,6 @@ def get_flat_models(routes: Routes) -> Set[type]:
 
 def generate_openapi(
     visitor: Iterable[VisitedRoute[Any]],
-    container: Container,
     version: str,
     info: models.Info,
     servers: Optional[Iterable[models.Server]],
