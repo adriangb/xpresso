@@ -12,7 +12,7 @@ from starlette.exceptions import HTTPException
 from starlette.middleware import Middleware
 from starlette.middleware.errors import ServerErrorMiddleware
 from starlette.requests import HTTPConnection, Request
-from starlette.responses import HTMLResponse, JSONResponse
+from starlette.responses import HTMLResponse, Response
 from starlette.routing import BaseRoute
 from starlette.routing import Route as StarletteRoute
 from starlette.websockets import WebSocket
@@ -48,7 +48,7 @@ class App:
         "_openapi_info",
         "_openapi_servers",
         "_openapi_version",
-        "_openapi",
+        "_openapi_content",
         "_root_path",
         "_root_path_in_servers",
         "_setup_run",
@@ -165,7 +165,7 @@ class App:
             description=description,
         )
         self._openapi_servers = servers or []
-        self._openapi: "typing.Optional[typing.Dict[str, typing.Any]]" = None
+        self._openapi_content: "typing.Optional[bytes]" = None
         self._root_path_in_servers = root_path_in_servers
         self._root_path = root_path
 
@@ -277,21 +277,25 @@ class App:
         if openapi_url:
             openapi_url = openapi_url
 
-            async def openapi(req: Request) -> JSONResponse:
+            async def openapi(req: Request) -> Response:
                 # get the root_path from the request and not just App._root_path
                 # so that we can use the value set by the ASGI server
                 # since ASGI servers also let you configure this
                 root_path: str = req.scope.get("root_path", "").rstrip("/")  # type: ignore
-                if self._openapi is None:
+                if self._openapi_content is None:
                     servers = list(self._openapi_servers)
                     if self._root_path_in_servers and root_path:
                         server_urls = {s.url for s in servers}
                         if root_path not in server_urls:
                             servers.insert(0, openapi_models.Server(url=root_path))
-                    self._openapi = self.get_openapi(servers=servers).dict(
-                        exclude_none=True, by_alias=True
+                    self._openapi_content = (
+                        self.get_openapi(servers=servers)
+                        .json(exclude_none=True, by_alias=True, sort_keys=True)
+                        .encode()
                     )
-                return JSONResponse(self._openapi)
+                return Response(
+                    self._openapi_content, media_type="application/json; charset=utf-8"
+                )
 
             routes.append(
                 StarletteRoute(
