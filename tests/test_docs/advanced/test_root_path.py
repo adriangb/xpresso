@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Callable, Dict
 
 from docs_src.advanced.root_path import app
 from xpresso.testclient import TestClient
@@ -28,10 +28,12 @@ openapi_schema: Dict[str, Any] = {
 }
 
 
-def test_openapi():
+def test_openapi(get_or_create_expected_openapi: Callable[[Dict[str, Any]], Dict[str, Any]]):
     response = client.get("/openapi.json")
     assert response.status_code == 200
-    assert response.json() == openapi_schema
+    received_openapi = response.json()
+    expected_openapi = get_or_create_expected_openapi(response.json())
+    assert expected_openapi == received_openapi
 
 
 def test_main():
