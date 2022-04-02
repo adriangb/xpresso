@@ -33,6 +33,8 @@ def compare_or_create_expected_openapi(
                             expected_openapi, indent=2, sort_keys=True
                         ).splitlines(),
                         json.dumps(openapi, indent=2, sort_keys=True).splitlines(),
+                        fromfile=str(expected_openapi_path),
+                        tofile="actual openapi.json",
                     )
                 )
                 raise AssertionError(f"openapi changed:\n{diff}")
