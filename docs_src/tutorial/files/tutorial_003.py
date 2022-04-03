@@ -1,7 +1,11 @@
-from xpresso import App, BinaryStream, FromFile, Path
+from typing import AsyncIterator
+
+from xpresso import App, FromFile, Path
 
 
-async def count_bytes_in_file(data: FromFile[BinaryStream]) -> int:
+async def count_bytes_in_file(
+    data: FromFile[AsyncIterator[bytes]],
+) -> int:
     size = 0
     async for chunk in data:
         size += len(chunk)

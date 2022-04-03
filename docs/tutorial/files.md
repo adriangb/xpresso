@@ -27,14 +27,11 @@ This can be convenient if you know the files are not large.
 
 ## As a stream
 
-If you want to read the bytes without buffering to disk or memory, use `xpresso.BinaryStream` as the type:
+If you want to read the bytes without buffering to disk or memory, use `AsyncIterator[bytes]` as the type:
 
 ```python
 --8<-- "docs_src/tutorial/files/tutorial_003.py"
 ```
-
-!!! note "Implementation detail"
-    `xpresso.BinaryStream` is just a thin wrapper around `typing.AsyncIterator[bytes]`, but you must use `xpresso.BinaryStream` instead of `typing.AsyncIterator[bytes]` directly, otherwise Xpresso won't know how to build the argument.
 
 ## Setting the expected content-type
 

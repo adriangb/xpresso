@@ -152,7 +152,7 @@ class FormFileExtractorMarker(typing.NamedTuple):
     alias: typing.Optional[str]
 
     def register_parameter(self, param: inspect.Parameter) -> FormFileExtractor:
-        field = model_field_from_param(param)
+        field = model_field_from_param(param, arbitrary_types_allowed=True)
         repeated = is_sequence_like(field)
         if field.type_ is bytes:
 
@@ -208,12 +208,13 @@ class FormFileOpenAPIMarker(typing.NamedTuple):
     alias: typing.Optional[str]
 
     def register_parameter(self, param: inspect.Parameter) -> FormFileOpenAPI:
+        field = model_field_from_param(param, arbitrary_types_allowed=True)
         return FormFileOpenAPI(
             field_name=self.alias or param.name,
             media_type=self.media_type,
             format=self.format,
-            nullable=model_field_from_param(param).allow_none,
-            repeated=is_sequence_like(model_field_from_param(param)),
+            nullable=field.allow_none,
+            repeated=is_sequence_like(field),
         )
 
 
@@ -377,8 +378,12 @@ class OpenAPIMarker(typing.NamedTuple):
                 ).register_parameter(field_param)
             field_name = field_openapi.field_name
             field_openapi_providers[field_name] = field_openapi
-            field = model_field_from_param(field_param)
-            if field.required is not False:
+            if (
+                model_field_from_param(
+                    field_param, arbitrary_types_allowed=True
+                ).required
+                is not False
+            ):
                 required_fields.append(field_name)
         examples = parse_examples(self.examples) if self.examples else None
         return OpenAPI(

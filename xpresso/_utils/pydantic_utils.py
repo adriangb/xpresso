@@ -19,14 +19,25 @@ T = typing.TypeVar("T")
 
 
 def model_field_from_param(
-    param: inspect.Parameter, alias: typing.Optional[str] = None
+    param: inspect.Parameter,
+    alias: typing.Optional[str] = None,
+    arbitrary_types_allowed: bool = False,
 ) -> ModelField:
+
+    Config = BaseConfig
+    if arbitrary_types_allowed:
+
+        class _Config(BaseConfig):
+            arbitrary_types_allowed = True
+
+        Config = _Config
+
     return ModelField.infer(
         name=alias or param.name,
         value=param.default if param.default is not param.empty else ...,
         annotation=param.annotation,
         class_validators={},
-        config=BaseConfig,
+        config=Config,
     )
 
 

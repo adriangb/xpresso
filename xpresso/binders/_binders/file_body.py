@@ -1,7 +1,10 @@
+import collections.abc
+import enum
 import inspect
 import typing
 
 from pydantic.fields import ModelField
+from starlette.datastructures import UploadFile
 from starlette.requests import HTTPConnection, Request
 
 from xpresso._utils.pydantic_utils import model_field_from_param
@@ -14,10 +17,27 @@ from xpresso.binders.api import (
     SupportsExtractor,
     SupportsOpenAPI,
 )
-from xpresso.datastructures import BinaryStream, UploadFile
 from xpresso.openapi import models as openapi_models
 from xpresso.openapi._utils import parse_examples
-from xpresso.typing import Some
+
+
+class FileType(enum.Enum):
+    bytes = enum.auto()
+    uploadfile = enum.auto()
+    stream = enum.auto()
+
+
+STREAM_TYPES = (typing.AsyncIterator, typing.AsyncGenerator, typing.AsyncIterable, collections.abc.AsyncGenerator, collections.abc.AsyncIterable, collections.abc.AsyncIterator)  # type: ignore
+
+
+def get_file_type(field: ModelField) -> FileType:
+    if field.type_ is bytes:
+        return FileType.bytes
+    if inspect.isclass(field.type_) and issubclass(field.type_, UploadFile):
+        return FileType.uploadfile
+    if field.type_ in STREAM_TYPES:  # type: ignore
+        return FileType.stream
+    raise TypeError(f"Target type {field.type_.__name__} is not recognized")
 
 
 async def consume_into_bytes(request: Request) -> bytes:
@@ -61,8 +81,8 @@ def create_read_into_uploadfile(
     return read_into_uploadfile
 
 
-async def consume_into_stream(request: Request) -> BinaryStream:
-    return BinaryStream(request.stream())
+async def consume_into_stream(request: Request) -> typing.AsyncIterator[bytes]:
+    return request.stream()
 
 
 class Extractor(typing.NamedTuple):
@@ -82,9 +102,7 @@ class Extractor(typing.NamedTuple):
         if media_type is None and connection.headers.get("content-length", "0") == "0":
             return validate_body_field(None, field=self.field, loc=("body",))
         self.media_type_validator.validate(media_type)
-        return validate_body_field(
-            Some(await self.consumer(connection)), field=self.field, loc=("body",)
-        )
+        return await self.consumer(connection)
 
 
 class ExtractorMarker(typing.NamedTuple):
@@ -98,27 +116,23 @@ class ExtractorMarker(typing.NamedTuple):
         else:
             media_type_validator = MediaTypeValidator(None)
         consumer: typing.Callable[[Request], typing.Any]
-        field = model_field_from_param(param)
-        if field.type_ is bytes:
+        field = model_field_from_param(param, arbitrary_types_allowed=True)
+        file_type = get_file_type(field)
+        if file_type is FileType.bytes:
             if self.consume:
                 consumer = consume_into_bytes
             else:
                 consumer = read_into_bytes
-        elif inspect.isclass(field.type_) and issubclass(field.type_, UploadFile):
+        elif file_type is FileType.uploadfile:
             if self.consume:
                 consumer = create_consume_into_uploadfile(field.type_)
             else:
                 consumer = create_read_into_uploadfile(field.type_)
-        elif field.type_ is BinaryStream:
-            # a stream
+        else:  # stream
             if self.consume:
                 consumer = consume_into_stream
             else:
-                raise ValueError("consume=False is not supported for BinaryStream")
-        else:
-            raise TypeError(
-                f"Target type {field.type_.__name__} is not recognized, you must use `bytes`, `xpresso.UploadFile` or `xpresso.BinaryStream`"
-            )
+                raise ValueError("consume=False is not supported for streams")
         return Extractor(
             media_type_validator=media_type_validator,
             consumer=consumer,
@@ -172,7 +186,7 @@ class OpenAPIMarker(typing.NamedTuple):
     include_in_schema: bool
 
     def register_parameter(self, param: inspect.Parameter) -> SupportsOpenAPI:
-        field = model_field_from_param(param)
+        field = model_field_from_param(param, arbitrary_types_allowed=True)
         examples = parse_examples(self.examples) if self.examples else None
         required = field.required is not False
         return OpenAPI(

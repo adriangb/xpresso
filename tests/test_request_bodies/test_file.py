@@ -1,10 +1,10 @@
-from typing import Any, Dict, Optional
+from typing import Any, AsyncIterator, Dict, Optional
 
 import pytest
 from starlette.responses import Response
 from starlette.testclient import TestClient
 
-from xpresso import App, BinaryStream, File, Path, UploadFile
+from xpresso import App, File, Path, UploadFile
 from xpresso.bodies import FromFile
 from xpresso.typing import Annotated
 
@@ -36,7 +36,7 @@ def test_extract_into_uploadfile(consume: bool):
 
 
 def test_extract_into_stream():
-    async def endpoint(file: FromFile[BinaryStream]) -> Response:
+    async def endpoint(file: FromFile[AsyncIterator[bytes]]) -> Response:
         data = bytearray()
         async for chunk in file:
             data.extend(chunk)
@@ -51,14 +51,14 @@ def test_extract_into_stream():
 
 
 def test_read_into_stream():
-    async def endpoint(file: Annotated[BinaryStream, File(consume=False)]) -> Response:
+    async def endpoint(
+        file: Annotated[AsyncIterator[bytes], File(consume=False)]
+    ) -> Response:
         ...
 
     app = App([Path("/", post=endpoint)])
 
-    with pytest.raises(
-        ValueError, match="consume=False is not supported for BinaryStream"
-    ):
+    with pytest.raises(ValueError, match="consume=False is not supported for streams"):
         with TestClient(app):
             pass
 
@@ -123,7 +123,9 @@ def test_extract_into_uploadfile_empty_file(
 def test_extract_into_stream_empty_file(
     data: Optional[bytes],
 ):
-    async def endpoint(file: FromFile[Optional[BinaryStream]] = None) -> Response:
+    async def endpoint(
+        file: FromFile[Optional[AsyncIterator[bytes]]] = None,
+    ) -> Response:
         assert file is None
         return Response()
 
