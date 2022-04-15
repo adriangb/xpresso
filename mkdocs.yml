@@ -59,6 +59,7 @@ nav:
       - Caching: "advanced/dependencies/caching.md"
       - Accessing Responses: "advanced/dependencies/responses.md"
       - Dependency Overrides: "advanced/dependencies/overrides.md"
+      - Composition Root: "advanced/dependencies/composition-root.md"
     - Binders: advanced/binders.md
     - Proxies and URL paths: advanced/proxies-root-path.md
     - Body Unions: advanced/body-union.md
