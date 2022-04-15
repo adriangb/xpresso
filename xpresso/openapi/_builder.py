@@ -196,7 +196,7 @@ def get_operation(
         "externalDocs": route.external_docs,
         "operationId": route.operation_id,
     }
-    docstring = inspect.cleandoc(getattr(route.endpoint, "__doc__", ""))
+    docstring = inspect.cleandoc(getattr(route.endpoint, "__doc__", None) or "") or None
     if docstring and not data["description"]:
         data["description"] = docstring
     route_dependant = route.dependant
