@@ -7,7 +7,7 @@ from pydantic.fields import ModelField
 from pydantic.schema import field_schema, get_flat_models_from_fields
 from pydantic.schema import get_model_name_map as get_model_name_map_pydantic
 from starlette.responses import Response
-from starlette.routing import compile_path
+from starlette.routing import compile_path  # type: ignore[import]
 
 from xpresso._utils.routing import VisitedRoute
 from xpresso._utils.typing import get_args, get_origin, get_type_hints
@@ -196,7 +196,7 @@ def get_operation(
         "externalDocs": route.external_docs,
         "operationId": route.operation_id,
     }
-    docstring = getattr(route.endpoint, "__doc__", None)
+    docstring = inspect.cleandoc(getattr(route.endpoint, "__doc__", ""))
     if docstring and not data["description"]:
         data["description"] = docstring
     route_dependant = route.dependant
