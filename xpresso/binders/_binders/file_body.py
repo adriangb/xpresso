@@ -85,6 +85,19 @@ async def consume_into_stream(request: Request) -> typing.AsyncIterator[bytes]:
     return request.stream()
 
 
+def has_body(conn: HTTPConnection) -> bool:
+    if (
+        "transfer-encoding" in conn.headers
+        and conn.headers["transfer-encoding"] == "chunked"
+    ):
+        # when transfer encoding is chunked, the content length header is omitted
+        return True
+    content_length = conn.headers.get("content-length", None)
+    if content_length is not None and content_length != "0":
+        return True
+    return False
+
+
 class Extractor(typing.NamedTuple):
     media_type_validator: MediaTypeValidator
     consumer: typing.Callable[[Request], typing.Awaitable[typing.Any]]
@@ -98,9 +111,9 @@ class Extractor(typing.NamedTuple):
 
     async def extract(self, connection: HTTPConnection) -> typing.Any:
         assert isinstance(connection, Request)
-        media_type = connection.headers.get("content-type", None)
-        if media_type is None and connection.headers.get("content-length", "0") == "0":
+        if not has_body(connection):
             return validate_body_field(None, field=self.field, loc=("body",))
+        media_type = connection.headers.get("content-type", None)
         self.media_type_validator.validate(media_type)
         return await self.consumer(connection)
 

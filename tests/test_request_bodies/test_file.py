@@ -1,4 +1,4 @@
-from typing import Any, AsyncIterator, Dict, Optional
+from typing import Any, AsyncIterator, Dict, Generator, Optional
 
 import pytest
 from starlette.responses import Response
@@ -37,16 +37,22 @@ def test_extract_into_uploadfile(consume: bool):
 
 def test_extract_into_stream():
     async def endpoint(file: FromFile[AsyncIterator[bytes]]) -> Response:
-        data = bytearray()
+        expected_chunks = [b"d", b"ata", b""]
         async for chunk in file:
-            data.extend(chunk)
-        assert data == b"data"
+            assert chunk == expected_chunks.pop(0)
+        assert not expected_chunks, expected_chunks
         return Response()
 
     app = App([Path("/", post=endpoint)])
 
+    def stream() -> Generator[bytes, None, None]:
+        yield b"d"
+        yield b"ata"
+
     client = TestClient(app)
-    resp = client.post("/", data=b"data")
+    # note: TestClient / requests does not have the right type annotation here
+    # but see https://docs.python-requests.org/en/latest/user/advanced/#chunk-encoded-requests
+    resp = client.post("/", data=stream())  # type: ignore
     assert resp.status_code == 200, resp.content
 
 
