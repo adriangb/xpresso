@@ -16,7 +16,7 @@ from xpresso.binders.api import SupportsExtractor
 from xpresso.exceptions import RequestValidationError, WebSocketValidationError
 
 ERRORS = {
-    "webscoket": WebSocketValidationError,
+    "websocket": WebSocketValidationError,
     "http": RequestValidationError,
 }
 
