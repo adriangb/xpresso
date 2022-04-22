@@ -171,7 +171,9 @@ class OpenAPI(typing.NamedTuple):
         operation.requestBody = operation.requestBody or openapi_models.RequestBody(
             content={}
         )
-        if not isinstance(operation.requestBody, openapi_models.RequestBody):
+        if not isinstance(
+            operation.requestBody, openapi_models.RequestBody
+        ):  # pragma: no cover
             raise ValueError(
                 "Expected request body to be a RequestBody object, found a reference"
             )
