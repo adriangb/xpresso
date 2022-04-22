@@ -85,10 +85,10 @@ class Extractor(typing.NamedTuple):
             except (HTTPException, RequestValidationError) as error:
                 errors.append(error)
         # if any body accepted the request but didn't pass validation, return the error from that one
-        val_err = next((e for e in errors if e.status_code == 422), None)
-        if val_err is not None:
-            raise val_err
-        # otherwise, jsut raise the first error we found
+        for err in errors:
+            if err.status_code == 422:
+                raise err
+        # otherwise, just raise the first error we found
         # this is somewhat arbitrary, but there really is no good way to "merge"
         # all of the errors without making it confusing to the client
         # and leaking implementation details
