@@ -25,32 +25,36 @@ ModelNameMap = Dict[type, str]
 Routes = Mapping[str, Tuple[Path, Mapping[str, Operation]]]
 
 
-validation_error_definition = {
-    "title": "ValidationError",
-    "type": "object",
-    "properties": {
-        "loc": {
-            "title": "Location",
-            "type": "array",
-            "items": {"oneOf": [{"type": "string"}, {"type": "integer"}]},
+validation_error_schema = models.Schema.parse_obj(
+    {
+        "title": "ValidationError",
+        "type": "object",
+        "properties": {
+            "loc": {
+                "title": "Location",
+                "type": "array",
+                "items": {"oneOf": [{"type": "string"}, {"type": "integer"}]},
+            },
+            "msg": {"title": "Message", "type": "string"},
+            "type": {"title": "Error Type", "type": "string"},
         },
-        "msg": {"title": "Message", "type": "string"},
-        "type": {"title": "Error Type", "type": "string"},
-    },
-    "required": ["loc", "msg", "type"],
-}
+        "required": ["loc", "msg", "type"],
+    }
+)
 
-validation_error_response_definition = {
-    "title": "HTTPValidationError",
-    "type": "object",
-    "properties": {
-        "detail": {
-            "title": "Detail",
-            "type": "array",
-            "items": {"$ref": f"{REF_PREFIX}ValidationError"},
-        }
-    },
-}
+validation_error_response_schema = models.Schema.parse_obj(
+    {
+        "title": "HTTPValidationError",
+        "type": "object",
+        "properties": {
+            "detail": {
+                "title": "Detail",
+                "type": "array",
+                "items": {"$ref": f"{REF_PREFIX}ValidationError"},
+            }
+        },
+    }
+)
 
 validation_error_response = models.Response(
     description="Validation Error",
@@ -183,7 +187,7 @@ def is_response(tp: type) -> bool:
 def get_operation(
     route: Operation,
     model_name_map: ModelNameMap,
-    components: Dict[str, Any],
+    components: models.Components,
     tags: List[str],
     response_specs: Dict[str, ResponseSpec],
 ) -> models.Operation:
@@ -200,36 +204,7 @@ def get_operation(
     if docstring and not data["description"]:
         data["description"] = docstring
     route_dependant = route.dependant
-    openapis = [
-        dep.openapi.get_openapi(model_name_map)
-        for dep in route_dependant.get_flat_subdependants()
-        if isinstance(dep, binder_dependants.Binder)
-    ]
-    schemas = {
-        name: schema for oai in openapis for name, schema in (oai.schemas or {}).items()
-    }
-    params = [param for oai in openapis for param in oai.parameters or ()]
-    request_body: Optional[models.RequestBody] = None
-    for oai in openapis:
-        if oai.body:
-            if request_body:
-                raise ValueError("Only 1 top level body is allowed")
-            # sort so that generated openapi is deterministic
-            request_body_content = dict(
-                sorted(
-                    [(k, v) for k, v in oai.body.content.items()], key=lambda kv: kv[0]
-                )
-            )
-            request_body = models.RequestBody(
-                content=request_body_content,
-                required=oai.body.required,
-                description=oai.body.description,
-            )
-    # sort so that generated openapi is deterministic
-    params = list(sorted(params, key=lambda param: param.name))
-    data["parameters"] = params or None
-    data["requestBody"] = request_body
-    # merge in the default response spec
+    # collect responses
     response_model = route.response_model
     if response_model is TypeUnset:
         sig_return = inspect.signature(route.endpoint).return_annotation
@@ -279,27 +254,40 @@ def get_operation(
             content=default_content,
             headers=route.response_headers,
         )
+    components.schemas = components.schemas or {}
     data["responses"] = get_responses(
         response_specs=response_specs,
         model_name_map=model_name_map,
-        schemas=schemas,
+        schemas=components.schemas,
     )
-    if schemas:
-        components["schemas"] = {**components.get("schemas", {}), **schemas}
-    if ((data.get("parameters", None) or data.get("requestBody", None))) and all(
-        status not in data["responses"] for status in ("422", "4XX", "default")
-    ):
-        data["responses"]["422"] = validation_error_response
 
-        if "ValidationError" not in schemas:
-            components["schemas"] = components.get("schemas", None) or {}
-            components["schemas"].update(
+    operation = models.Operation.parse_obj(data)
+    for dep in route_dependant.dag:
+        if isinstance(dep, binder_dependants.Binder):
+            dep.openapi.modify_operation_schema(model_name_map, operation, components)
+
+    can_fail_validation = operation.parameters or operation.requestBody
+    has_validation_error = {"422", "4XX", "default"}.intersection(
+        (operation.responses or {}).keys()
+    ) != set()
+    if can_fail_validation and not has_validation_error:
+        operation.responses = operation.responses or {}
+        operation.responses["422"] = validation_error_response
+        if "ValidationError" not in components.schemas:
+            components.schemas.update(
                 {
-                    "ValidationError": validation_error_definition,
-                    "HTTPValidationError": validation_error_response_definition,
+                    "ValidationError": validation_error_schema,
+                    "HTTPValidationError": validation_error_response_schema,
                 }
             )
-    return models.Operation(**data)
+
+    # sort array fields so that we get deterministic results
+    # mappings get sorted by key using json.dumps() later
+    if isinstance(operation.parameters, list):
+        operation.parameters = list(sorted(operation.parameters, key=lambda p: p.name))  # type: ignore
+
+    components.schemas = components.schemas or None
+    return operation
 
 
 def merge_node_openapi_metadata(
@@ -322,7 +310,7 @@ def merge_node_openapi_metadata(
 def get_paths_items(
     visitor: Iterable[VisitedRoute[Any]],
     model_name_map: ModelNameMap,
-    components: Dict[str, Any],
+    components: models.Components,
 ) -> Dict[str, models.PathItem]:
     paths: "Dict[str, models.PathItem]" = {}
     for visited_route in visitor:
@@ -415,12 +403,12 @@ def generate_openapi(
     routes = filter_routes(visitor)
     flat_models = get_flat_models(routes)
     model_name_map = get_model_name_map(flat_models)
-    components: Dict[str, Any] = {}
+    components = models.Components()
     paths = get_paths_items(visitor, model_name_map, components)
     return models.OpenAPI(
         openapi=version,
         info=info,
         paths=paths,  # type: ignore[arg-type]
-        components=models.Components(**components) if components else None,
+        components=components if components.dict(exclude_none=True) else None,
         servers=list(servers) if servers else None,
     )

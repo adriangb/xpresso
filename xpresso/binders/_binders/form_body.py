@@ -18,12 +18,7 @@ from xpresso.binders._binders.formencoded_parsing import (
 )
 from xpresso.binders._binders.media_type_validator import MediaTypeValidator
 from xpresso.binders._binders.pydantic_validators import validate_body_field
-from xpresso.binders.api import (
-    ModelNameMap,
-    OpenAPIMetadata,
-    SupportsExtractor,
-    SupportsOpenAPI,
-)
+from xpresso.binders.api import ModelNameMap, SupportsExtractor, SupportsOpenAPI
 from xpresso.exceptions import RequestValidationError
 from xpresso.openapi._utils import parse_examples
 from xpresso.typing import Some
@@ -308,12 +303,24 @@ class OpenAPI(typing.NamedTuple):
             for model in provider.get_models()
         ]
 
-    def get_openapi(
+    def modify_operation_schema(
         self,
         model_name_map: ModelNameMap,
-    ) -> OpenAPIMetadata:
+        operation: openapi_models.Operation,
+        components: openapi_models.Components,
+    ) -> None:
         if not self.include_in_schema:
-            return OpenAPIMetadata()
+            return
+        operation.requestBody = operation.requestBody or openapi_models.RequestBody(
+            content={}
+        )
+        if not isinstance(
+            operation.requestBody, openapi_models.RequestBody
+        ):  # pragma: no cover
+            raise ValueError(
+                "Expected request body to be a RequestBody object, found a reference"
+            )
+
         schemas: typing.Dict[str, typing.Any] = {}
         providers_openapis = {
             field_name: field_openapi.get_field_openapi(
@@ -336,18 +343,18 @@ class OpenAPI(typing.NamedTuple):
             required=self.required_fields or None,
             nullable=self.nullable or None,
         )
-        media_type = openapi_models.MediaType(
+        operation.requestBody.content[self.media_type] = openapi_models.MediaType(
             schema=schema,  # type: ignore
             examples=self.examples,
             encoding=encodings or None,
         )
-        return OpenAPIMetadata(
-            body=openapi_models.RequestBody(
-                content={self.media_type: media_type},
-                required=self.required,
-            ),
-            schemas=schemas,
+        operation.requestBody.required = operation.requestBody.required or self.required
+        operation.requestBody.description = (
+            operation.requestBody.description or self.description
         )
+        if schemas:
+            components.schemas = components.schemas or {}
+            components.schemas.update(schemas)
 
 
 class OpenAPIMarker(typing.NamedTuple):
