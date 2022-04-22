@@ -96,13 +96,18 @@ class App:
 
         @contextlib.asynccontextmanager
         async def lifespan_ctx(*_: typing.Any) -> typing.AsyncIterator[None]:
+            # first run setup to find all routes, their lifespans and callbacks to solve them
             lifespans, prepare_cbs = self._setup()
             self._setup_run = True
             placeholder = Dependant(lambda: None, scope="app")
-            dep: DependantBase[typing.Any]
+            dep: "DependantBase[typing.Any]"
+            executor = AsyncExecutor()
             async with self._container_state.enter_scope(
                 "app"
             ) as self._container_state:
+                # now solve and execute all lifespans
+                # lifespans can get a reference to the container and create/replace binds
+                # so it is important that we execute them before solving the endpoints
                 if lifespan is not None:
                     dep = Dependant(
                         _wrap_lifespan_as_async_generator(lifespan), scope="app"
@@ -120,8 +125,15 @@ class App:
                 )
                 try:
                     await self.container.execute_async(
-                        solved, executor=AsyncExecutor(), state=self._container_state
+                        solved, executor=executor, state=self._container_state
                     )
+                    # now we can solve the endpoints
+                    # we accumulate any endpoint dependencies that are part of the "app"
+                    # scope and execute them immediately so that their setup and teardown
+                    # run in the same task
+                    # (the server will create separate tasks for the lifespan and endpoint,
+                    # if we run app scoped dependencies lazily the setup would run in a different
+                    # scope than the teardown)
                     lifespan_deps: "typing.List[DependantBase[typing.Any]]" = []
                     for cb in prepare_cbs:
                         prepared = cb()
@@ -136,12 +148,12 @@ class App:
                             ),
                             scopes=Scopes,
                         ),
-                        AsyncExecutor(),
+                        executor,
                         state=self._container_state,
                     )
                     yield
                 finally:
-                    # make this cm reentrant for testing purposes
+                    # make this context manager reentrant for testing purposes
                     self._setup_run = False
                     self._container_state = ContainerState()
 
