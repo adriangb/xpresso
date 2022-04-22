@@ -11,12 +11,7 @@ from xpresso._utils.pydantic_utils import model_field_from_param
 from xpresso._utils.typing import Literal
 from xpresso.binders._binders.media_type_validator import MediaTypeValidator
 from xpresso.binders._binders.pydantic_validators import validate_body_field
-from xpresso.binders.api import (
-    ModelNameMap,
-    OpenAPIMetadata,
-    SupportsExtractor,
-    SupportsOpenAPI,
-)
+from xpresso.binders.api import ModelNameMap, SupportsExtractor, SupportsOpenAPI
 from xpresso.openapi import models as openapi_models
 from xpresso.openapi._utils import parse_examples
 
@@ -165,27 +160,32 @@ class OpenAPI(typing.NamedTuple):
     def get_models(self) -> typing.List[type]:
         return []
 
-    def get_openapi(
+    def modify_operation_schema(
         self,
         model_name_map: ModelNameMap,
-    ) -> OpenAPIMetadata:
+        operation: openapi_models.Operation,
+        components: openapi_models.Components,
+    ) -> None:
         if not self.include_in_schema:
-            return OpenAPIMetadata()
-        return OpenAPIMetadata(
-            body=openapi_models.RequestBody(
-                content={
-                    self.media_type: openapi_models.MediaType(
-                        schema=openapi_models.Schema(  # type: ignore
-                            type="string",
-                            format=self.format,
-                            nullable=self.nullable or None,
-                        ),
-                        examples=self.examples,
-                    )
-                },
-                description=self.description,
-                required=self.required,
+            return
+        operation.requestBody = operation.requestBody or openapi_models.RequestBody(
+            content={}
+        )
+        if not isinstance(operation.requestBody, openapi_models.RequestBody):
+            raise ValueError(
+                "Expected request body to be a RequestBody object, found a reference"
             )
+        operation.requestBody.content[self.media_type] = openapi_models.MediaType(
+            schema=openapi_models.Schema(  # type: ignore
+                type="string",
+                format=self.format,
+                nullable=self.nullable or None,
+            ),
+            examples=self.examples,
+        )
+        operation.requestBody.required = operation.requestBody.required or self.required
+        operation.requestBody.description = (
+            operation.requestBody.description or self.description
         )
 
 

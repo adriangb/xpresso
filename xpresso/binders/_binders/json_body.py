@@ -12,12 +12,7 @@ from xpresso._utils.schemas import openapi_schema_from_pydantic_field
 from xpresso._utils.typing import Protocol
 from xpresso.binders._binders.media_type_validator import MediaTypeValidator
 from xpresso.binders._binders.pydantic_validators import validate_body_field
-from xpresso.binders.api import (
-    ModelNameMap,
-    OpenAPIMetadata,
-    SupportsExtractor,
-    SupportsOpenAPI,
-)
+from xpresso.binders.api import ModelNameMap, SupportsExtractor, SupportsOpenAPI
 from xpresso.exceptions import RequestValidationError
 from xpresso.openapi import models as openapi_models
 from xpresso.openapi._utils import parse_examples
@@ -112,22 +107,38 @@ class OpenAPI(typing.NamedTuple):
     def get_models(self) -> typing.List[type]:
         return list(get_flat_models_from_field(self.field, set()))
 
-    def get_openapi(self, model_name_map: ModelNameMap) -> OpenAPIMetadata:
+    def modify_operation_schema(
+        self,
+        model_name_map: ModelNameMap,
+        operation: openapi_models.Operation,
+        components: openapi_models.Components,
+    ) -> None:
         if not self.include_in_schema:
-            return OpenAPIMetadata()
+            return
+        operation.requestBody = operation.requestBody or openapi_models.RequestBody(
+            content={}
+        )
+        if not isinstance(operation.requestBody, openapi_models.RequestBody):
+            raise ValueError(
+                "Expected request body to be a RequestBody object, found a reference"
+            )
+
         schemas: typing.Dict[str, typing.Any] = {}
         schema = openapi_schema_from_pydantic_field(self.field, model_name_map, schemas)
         if not schemas:
             # not a named model, remove the meaningless title
             schema = openapi_models.Schema(**{**schema.dict(), "title": None})
-        content = {
-            "application/json": openapi_models.MediaType(
-                schema=schema,  # type: ignore[arg-type]
-                examples=self.examples,
-            )
-        }
-        body = openapi_models.RequestBody(required=self.required, content=content)
-        return OpenAPIMetadata(body=body, schemas=schemas)
+        operation.requestBody.content["application/json"] = openapi_models.MediaType(
+            schema=schema,  # type: ignore[arg-type]
+            examples=self.examples,
+        )
+        operation.requestBody.required = operation.requestBody.required or self.required
+        operation.requestBody.description = (
+            operation.requestBody.description or self.description
+        )
+        if schemas:
+            components.schemas = components.schemas or {}
+            components.schemas.update(schemas)
 
 
 class OpenAPIMarker(typing.NamedTuple):

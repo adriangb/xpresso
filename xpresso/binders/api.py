@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, NamedTuple, Optional, Union
+from typing import Any, Awaitable, Dict, List, Union
 
 from starlette.requests import HTTPConnection
 
@@ -7,26 +7,29 @@ from xpresso._utils.typing import Protocol
 
 
 class SupportsExtractor(Protocol):
-    def extract(self, connection: HTTPConnection) -> Any:
-        raise NotImplementedError
+    def extract(self, connection: HTTPConnection) -> Union[Awaitable[Any], Any]:
+        """Extract data from an incoming connection.
+
+        The `connection` parameter will always be either a Request object or a WebSocket object,
+        which are both subclasses of HTTPConnection.
+        If you just need access to headers, query params, or any other metadata present in HTTPConnection
+        then you can use the parameter directly.
+        Otherwise, you can do `isinstance(connection, Request)` before accessing `Request.stream()` and such.
+        """
+        ...
+
+    # __hash__ and __eq__ are required so that the dependency injection system can cache extracted values
+    # (for example allowing the user to get multiple references to a request body without parsing twice)
 
     def __hash__(self) -> int:
-        raise NotImplementedError
+        ...
 
     def __eq__(self, __o: object) -> bool:
-        raise NotImplementedError
+        ...
 
 
 Model = type
 ModelNameMap = Dict[Model, str]
-
-
-class OpenAPIMetadata(NamedTuple):
-    parameters: Optional[List[openapi_models.ConcreteParameter]] = None
-    body: Optional[openapi_models.RequestBody] = None
-    schemas: Optional[
-        Dict[str, Union[openapi_models.Schema, openapi_models.Reference]]
-    ] = None
 
 
 class SupportsOpenAPI(Protocol):
@@ -42,8 +45,20 @@ class SupportsOpenAPI(Protocol):
         """
         ...
 
-    def get_openapi(
+    def modify_operation_schema(
         self,
         model_name_map: ModelNameMap,
-    ) -> OpenAPIMetadata:
+        operation: openapi_models.Operation,
+        components: openapi_models.Components,
+    ) -> None:
+        """Callback to modify the OpenAPI schema.
+
+        Implementers should modify the operation and components as they see fit,
+        but take care to not needlessly add keys or try to access keys which may not exist.
+
+        When determining what string name to use to represent a model/schema (for example to add it to components/schemas)
+        you MUST use the model_name_map parameter to find the name assigned for each type.
+        For example:
+        >>> components.schemas[model_name_map[MyModel]] = MyModel.get_schema()
+        """
         ...

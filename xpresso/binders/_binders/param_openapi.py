@@ -6,7 +6,7 @@ from pydantic.schema import get_flat_models_from_field
 
 from xpresso._utils.pydantic_utils import is_sequence_like, model_field_from_param
 from xpresso._utils.schemas import openapi_schema_from_pydantic_field
-from xpresso.binders.api import ModelNameMap, OpenAPIMetadata, SupportsOpenAPI
+from xpresso.binders.api import ModelNameMap, SupportsOpenAPI
 from xpresso.openapi import models as openapi_models
 from xpresso.openapi._utils import parse_examples
 
@@ -26,28 +26,34 @@ class OpenAPI(typing.NamedTuple):
     field: ModelField
     param_cls: typing.Type[openapi_models.ConcreteParameter]
 
-    def get_openapi(self, model_name_map: ModelNameMap) -> OpenAPIMetadata:
+    def modify_operation_schema(
+        self,
+        model_name_map: ModelNameMap,
+        operation: openapi_models.Operation,
+        components: openapi_models.Components,
+    ) -> None:
         if not self.include_in_schema:
-            return OpenAPIMetadata()
+            return
         schemas: typing.Dict[str, typing.Any] = {}
         schema = openapi_schema_from_pydantic_field(  # type: ignore[arg-type]
             self.field, model_name_map, schemas
         )
-        return OpenAPIMetadata(
-            parameters=[
-                self.param_cls(
-                    description=self.description or self.field.field_info.description,
-                    required=None if self.required is False else True,
-                    deprecated=self.deprecated,
-                    style=self.style,
-                    explode=self.explode,
-                    schema=schema,  # type: ignore[arg-type]
-                    examples=self.examples,
-                    name=self.name,
-                )
-            ],
-            schemas=schemas,
+        operation.parameters = operation.parameters or []
+        operation.parameters.append(
+            self.param_cls(
+                description=self.description or self.field.field_info.description,
+                required=None if self.required is False else True,
+                deprecated=self.deprecated,
+                style=self.style,
+                explode=self.explode,
+                schema=schema,  # type: ignore[arg-type]
+                examples=self.examples,
+                name=self.name,
+            )
         )
+        if schemas:
+            components.schemas = components.schemas or {}
+            components.schemas.update(schemas)
 
     def get_models(self) -> typing.List[type]:
         return list(get_flat_models_from_field(self.field, known_models=set()))
