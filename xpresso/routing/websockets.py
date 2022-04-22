@@ -90,7 +90,7 @@ class WebSocketRoute(starlette.routing.WebSocketRoute):
         self,
         container: Container,
         dependencies: typing.Iterable[DependantBase[typing.Any]],
-    ) -> None:
+    ) -> SolvedDependant[typing.Any]:
         self.dependant = container.solve(
             JoinedDependant(
                 EndpointDependant(self.endpoint),
@@ -108,3 +108,4 @@ class WebSocketRoute(starlette.routing.WebSocketRoute):
             executor=executor,
             container=container,
         )
+        return self.dependant

@@ -10,7 +10,7 @@ from di.executors import AsyncExecutor, ConcurrentAsyncExecutor
 from starlette.datastructures import URLPath
 from starlette.requests import HTTPConnection, Request
 from starlette.responses import JSONResponse, Response
-from starlette.routing import BaseRoute, NoMatchFound, get_name
+from starlette.routing import BaseRoute, NoMatchFound, get_name  # type: ignore
 from starlette.types import ASGIApp, Receive, Scope, Send
 
 import xpresso.openapi.models as openapi_models
@@ -158,7 +158,7 @@ class Operation(BaseRoute):
         self,
         container: Container,
         dependencies: typing.Iterable[DependantBase[typing.Any]],
-    ) -> None:
+    ) -> SolvedDependant[typing.Any]:
         self.dependant = container.solve(
             JoinedDependant(
                 EndpointDependant(self.endpoint, sync_to_thread=self._sync_to_thread),
@@ -178,6 +178,7 @@ class Operation(BaseRoute):
             response_encoder=self._response_encoder,
             response_factory=self._response_factory,
         )
+        return self.dependant
 
     def url_path_for(self, name: str, **path_params: str) -> URLPath:
         if path_params:
