@@ -1,9 +1,11 @@
 import contextlib
+import functools
 import inspect
 import typing
 
 import starlette.types
 from di.api.dependencies import DependantBase
+from di.api.solved import SolvedDependant
 from di.container import Container, ContainerState, bind_by_type
 from di.dependant import Dependant, JoinedDependant
 from di.executors import AsyncExecutor
@@ -94,9 +96,10 @@ class App:
 
         @contextlib.asynccontextmanager
         async def lifespan_ctx(*_: typing.Any) -> typing.AsyncIterator[None]:
-            lifespans, lifespan_deps = self._setup()
+            lifespans, prepare_cbs = self._setup()
             self._setup_run = True
-            original_container = self.container
+            placeholder = Dependant(lambda: None, scope="app")
+            dep: DependantBase[typing.Any]
             async with self._container_state.enter_scope(
                 "app"
             ) as self._container_state:
@@ -105,20 +108,12 @@ class App:
                         _wrap_lifespan_as_async_generator(lifespan), scope="app"
                     )
                 else:
-
-                    async def null_lifespan() -> typing.AsyncIterator[None]:
-                        yield
-
-                    dep = Dependant(null_lifespan, scope="app")
+                    dep = placeholder
                 solved = self.container.solve(
                     JoinedDependant(
                         dep,
                         siblings=[
-                            *(
-                                Dependant(lifespan, scope="app")
-                                for lifespan in lifespans
-                            ),
-                            *lifespan_deps,
+                            Dependant(lifespan, scope="app") for lifespan in lifespans
                         ],
                     ),
                     scopes=Scopes,
@@ -127,10 +122,26 @@ class App:
                     await self.container.execute_async(
                         solved, executor=AsyncExecutor(), state=self._container_state
                     )
+                    lifespan_deps: "typing.List[DependantBase[typing.Any]]" = []
+                    for cb in prepare_cbs:
+                        prepared = cb()
+                        lifespan_deps.extend(
+                            d for d in prepared.dag if d.scope == "app"
+                        )
+                    await self.container.execute_async(
+                        self.container.solve(
+                            JoinedDependant(
+                                placeholder,
+                                siblings=lifespan_deps,
+                            ),
+                            scopes=Scopes,
+                        ),
+                        AsyncExecutor(),
+                        state=self._container_state,
+                    )
                     yield
                 finally:
                     # make this cm reentrant for testing purposes
-                    self.container = original_container
                     self._setup_run = False
                     self._container_state = ContainerState()
 
@@ -189,7 +200,9 @@ class App:
             return
         # http or websocket
         if not self._setup_run:
-            self._setup()
+            *_, prepare_callbacks = self._setup()
+            for cb in prepare_callbacks:
+                cb()
         if "extensions" not in scope:
             scope["extensions"] = extensions = {}
         else:
@@ -210,11 +223,13 @@ class App:
         self,
     ) -> typing.Tuple[
         typing.List[typing.Callable[..., typing.AsyncIterator[None]]],
-        typing.List[DependantBase[typing.Any]],
+        typing.List[typing.Callable[[], SolvedDependant[typing.Any]]],
     ]:
-        lifespans: typing.List[typing.Callable[..., typing.AsyncIterator[None]]] = []
-        lifespan_dependants: typing.List[DependantBase[typing.Any]] = []
-        seen_routers: typing.Set[typing.Any] = set()
+        lifespans: "typing.List[typing.Callable[..., typing.AsyncIterator[None]]]" = []
+        seen_routers: "typing.Set[typing.Any]" = set()
+        prepare_cbs: "typing.List[typing.Callable[[], SolvedDependant[typing.Any]]]" = (
+            []
+        )
         for route in visit_routes(
             app_type=App, router=self.router, nodes=[self, self.router], path=""
         ):
@@ -232,29 +247,29 @@ class App:
                         )
             if isinstance(route.route, Path):
                 for operation in route.route.operations.values():
-                    operation.prepare(
+                    prepare_cbs.append(
+                        functools.partial(
+                            operation.prepare,
+                            dependencies=[
+                                *dependencies,
+                                *route.route.dependencies,
+                                *operation.dependencies,
+                            ],
+                            container=self.container,
+                        )
+                    )
+            elif isinstance(route.route, WebSocketRoute):
+                prepare_cbs.append(
+                    functools.partial(
+                        route.route.prepare,
                         dependencies=[
                             *dependencies,
                             *route.route.dependencies,
-                            *operation.dependencies,
                         ],
                         container=self.container,
                     )
-                    for dep in operation.dependant.get_flat_subdependants():
-                        if dep.scope == "app":
-                            lifespan_dependants.append(dep)
-            elif isinstance(route.route, WebSocketRoute):
-                route.route.prepare(
-                    dependencies=[
-                        *dependencies,
-                        *route.route.dependencies,
-                    ],
-                    container=self.container,
                 )
-                for dep in route.route.dependant.get_flat_subdependants():
-                    if dep.scope == "app":
-                        lifespan_dependants.append(dep)
-        return lifespans, lifespan_dependants
+        return lifespans, prepare_cbs
 
     def get_openapi(
         self, servers: typing.List[openapi_models.Server]

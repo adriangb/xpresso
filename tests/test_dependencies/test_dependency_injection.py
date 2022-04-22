@@ -159,6 +159,29 @@ def test_inject_app() -> None:
     assert resp.status_code == 200
 
 
+def test_bind_from_lifespan() -> None:
+    class Foo:
+        pass
+
+    class Bar(Foo):
+        pass
+
+    @asynccontextmanager
+    async def lifespan(app: App) -> AsyncIterator[None]:
+        with app.dependency_overrides as overrides:
+            overrides[Foo] = Bar
+            yield
+
+    async def endpoint(foo: Foo) -> None:
+        assert isinstance(foo, Bar)
+
+    app = App([Path("/", get=endpoint)], lifespan=lifespan)
+
+    with TestClient(app=app) as client:
+        resp = client.get("/")
+        assert resp.status_code == 200
+
+
 def test_default_scope_for_autowired_deps() -> None:
     """Child dependencies of an "endpoint" scoped dep (often the endpoint itself)
     should have a "connection" scope so that they are compatible with the default scope of Depends().
