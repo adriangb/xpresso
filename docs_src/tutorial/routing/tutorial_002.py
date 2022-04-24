@@ -51,7 +51,7 @@ items = Path(
     ),
     post=Operation(
         create_item,
-        responses={"204": ResponseSpec(description="Success")},
+        responses={204: ResponseSpec(description="Success")},
         servers=[
             Server(url="https://us-east-1.example.com"),
             Server(url="http://127.0.0.1:8000"),
@@ -74,7 +74,7 @@ app = App(
             app=Router(
                 routes=[items],
                 responses={
-                    "404": ResponseSpec(description="Item not found")
+                    404: ResponseSpec(description="Item not found")
                 },
                 tags=["v1"],
             ),
