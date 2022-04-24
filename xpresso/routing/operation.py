@@ -39,15 +39,14 @@ class _OperationApp(typing.NamedTuple):
         send: Send,
     ) -> None:
         xpresso_scope: "XpressoHTTPExtension" = scope["extensions"]["xpresso"]
-        request = xpresso_scope.request = Request(
-            scope=scope, receive=receive, send=send
-        )
+        request = Request(scope=scope, receive=receive, send=send)
         values: "typing.Dict[typing.Any, typing.Any]" = {
             Request: request,
             HTTPConnection: request,
         }
-        async with xpresso_scope.di_container_state.enter_scope(
-            "connection"
+        async with self.container.enter_scope(
+            "connection",
+            xpresso_scope.di_container_state,
         ) as connection_state:
             async with connection_state.enter_scope("endpoint") as endpoint_state:
                 endpoint_return = await self.container.execute_async(

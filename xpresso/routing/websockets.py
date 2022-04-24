@@ -37,17 +37,14 @@ class _WebSocketRoute:
         send: starlette.types.Send,
     ) -> None:
         xpresso_scope: XpressoWebSocketExtension = scope["extensions"]["xpresso"]
-        if xpresso_scope.websocket is None:
-            ws = starlette.websockets.WebSocket(scope=scope, receive=receive, send=send)
-            xpresso_scope.websocket = ws
-        else:
-            ws = xpresso_scope.websocket
+        ws = starlette.websockets.WebSocket(scope=scope, receive=receive, send=send)
         values: typing.Dict[typing.Any, typing.Any] = {
             starlette.websockets.WebSocket: ws,
             starlette.requests.HTTPConnection: ws,
         }
-        async with xpresso_scope.di_container_state.enter_scope(
-            "connection"
+        async with self.container.enter_scope(
+            "connection",
+            state=xpresso_scope.di_container_state,
         ) as conn_state:
             async with self.container.enter_scope(
                 "endpoint", state=conn_state
