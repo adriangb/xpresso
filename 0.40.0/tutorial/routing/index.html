@@ -1031,7 +1031,7 @@ You can add descriptions, tags and detailed response information:</p>
     <span class="p">),</span>
     <span class="n">post</span><span class="o">=</span><span class="n">Operation</span><span class="p">(</span>
         <span class="n">create_item</span><span class="p">,</span>
-        <span class="n">responses</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;204&quot;</span><span class="p">:</span> <span class="n">ResponseSpec</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Success&quot;</span><span class="p">)},</span>
+        <span class="n">responses</span><span class="o">=</span><span class="p">{</span><span class="mi">204</span><span class="p">:</span> <span class="n">ResponseSpec</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Success&quot;</span><span class="p">)},</span>
         <span class="n">servers</span><span class="o">=</span><span class="p">[</span>
             <span class="n">Server</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://us-east-1.example.com&quot;</span><span class="p">),</span>
             <span class="n">Server</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">&quot;http://127.0.0.1:8000&quot;</span><span class="p">),</span>
@@ -1054,7 +1054,7 @@ You can add descriptions, tags and detailed response information:</p>
             <span class="n">app</span><span class="o">=</span><span class="n">Router</span><span class="p">(</span>
                 <span class="n">routes</span><span class="o">=</span><span class="p">[</span><span class="n">items</span><span class="p">],</span>
                 <span class="n">responses</span><span class="o">=</span><span class="p">{</span>
-                    <span class="s2">&quot;404&quot;</span><span class="p">:</span> <span class="n">ResponseSpec</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Item not found&quot;</span><span class="p">)</span>
+                    <span class="mi">404</span><span class="p">:</span> <span class="n">ResponseSpec</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Item not found&quot;</span><span class="p">)</span>
                 <span class="p">},</span>
                 <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;v1&quot;</span><span class="p">],</span>
             <span class="p">),</span>
