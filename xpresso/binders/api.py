@@ -1,4 +1,4 @@
-from typing import Any, Awaitable, Dict, List, Union
+from typing import Any, AsyncIterator, Awaitable, Dict, List, Union
 
 from starlette.requests import HTTPConnection
 
@@ -7,7 +7,9 @@ from xpresso._utils.typing import Protocol
 
 
 class SupportsExtractor(Protocol):
-    def extract(self, connection: HTTPConnection) -> Union[Awaitable[Any], Any]:
+    def extract(
+        self, connection: HTTPConnection
+    ) -> Union[Awaitable[Any], AsyncIterator[Any]]:
         """Extract data from an incoming connection.
 
         The `connection` parameter will always be either a Request object or a WebSocket object,
@@ -15,6 +17,9 @@ class SupportsExtractor(Protocol):
         If you just need access to headers, query params, or any other metadata present in HTTPConnection
         then you can use the parameter directly.
         Otherwise, you can do `isinstance(connection, Request)` before accessing `Request.stream()` and such.
+
+        The return value can be an awaitable or an async iterable (context manager like).
+        The iterator versions will be wrapped with `@contextlib.{async}contextmanager`.
         """
         ...
 

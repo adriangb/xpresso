@@ -231,14 +231,17 @@ class Extractor(typing.NamedTuple):
     def __eq__(self, __o: object) -> bool:
         return isinstance(__o, Extractor)
 
-    async def extract(self, connection: HTTPConnection) -> typing.Any:
+    async def extract(
+        self, connection: HTTPConnection
+    ) -> typing.AsyncIterator[typing.Any]:
         assert isinstance(connection, Request)
         content_type = connection.headers.get("content-type", None)
         if (
             content_type is None
             and connection.headers.get("content-length", "0") == "0"
         ):
-            return validate_body_field(None, field=self.field, loc=("body",))
+            yield validate_body_field(None, field=self.field, loc=("body",))
+            return
         self.media_type_validator.validate(content_type)
         form = await connection.form()
         res: typing.Dict[str, typing.Any] = {}
@@ -246,11 +249,15 @@ class Extractor(typing.NamedTuple):
             extracted = await extractor.extract(form)
             if isinstance(extracted, Some):
                 res[param_name] = extracted.value
-        return validate_body_field(
+        validated_form = validate_body_field(
             Some(res),
             field=self.field,
             loc=("body",),
         )
+        try:
+            yield validated_form
+        finally:
+            await form.close()
 
 
 class ExtractorMarker(typing.NamedTuple):
