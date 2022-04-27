@@ -1,13 +1,22 @@
+import contextlib
 import inspect
 import typing
 
 import xpresso.openapi.models as openapi_models
 from xpresso._utils.pydantic_utils import model_field_from_param
 from xpresso._utils.typing import Annotated, get_args, get_origin
+from xpresso.binders._binders.utils import (
+    Consumer,
+    ConsumerContextManager,
+    wrap_consumer_as_cm,
+)
 from xpresso.binders.api import ModelNameMap, SupportsExtractor, SupportsOpenAPI
 from xpresso.binders.dependants import Binder, BinderMarker
 from xpresso.exceptions import HTTPException, RequestValidationError
 from xpresso.requests import HTTPConnection, Request
+
+RequestConsumer = Consumer[Request]
+RequestConsumerContextManger = ConsumerContextManager[Request]
 
 
 def get_binders_from_union_annotation(param: inspect.Parameter) -> typing.List[Binder]:
@@ -60,15 +69,24 @@ class BodyOpenAPIMarker(typing.NamedTuple):
         )
 
 
-class Extractor(typing.NamedTuple):
-    providers: typing.Tuple[SupportsExtractor, ...]
+SupportsExtractorCM = typing.Callable[
+    [HTTPConnection], typing.AsyncContextManager[typing.Any]
+]
 
-    async def extract(self, connection: HTTPConnection) -> typing.Any:
+
+class Extractor(typing.NamedTuple):
+    extractors: typing.Iterable[SupportsExtractorCM]
+
+    async def extract(
+        self, connection: HTTPConnection
+    ) -> typing.AsyncIterator[typing.Any]:
         assert isinstance(connection, Request)
         errors: "typing.List[typing.Union[HTTPException, RequestValidationError]]" = []
-        for provider in self.providers:
+        for extractor in self.extractors:
             try:
-                return await provider.extract(connection)
+                async with extractor(connection) as res:
+                    yield res
+                return
             except (HTTPException, RequestValidationError) as error:
                 errors.append(error)
         # if any body accepted the request but didn't pass validation, return the error from that one
@@ -81,9 +99,22 @@ class Extractor(typing.NamedTuple):
         # and leaking implementation details
         raise next(iter(errors))
 
+    def __hash__(self) -> int:
+        return id(self)
+
+    def __eq__(self, __o: object) -> bool:
+        return False
+
 
 class ExtractorMarker(typing.NamedTuple):
     def register_parameter(self, param: inspect.Parameter) -> SupportsExtractor:
-        return Extractor(
-            tuple(b.extractor for b in get_binders_from_union_annotation(param))
-        )
+        extractors: typing.List[SupportsExtractorCM] = []
+        for binder in get_binders_from_union_annotation(param):
+            extractor = binder.extractor.extract
+            if inspect.isasyncgenfunction(extractor):
+                extractors.append(
+                    contextlib.asynccontextmanager(extractor)  # type: ignore[arg-type]
+                )
+            else:
+                extractors.append(wrap_consumer_as_cm(extractor))
+        return Extractor(extractors)
