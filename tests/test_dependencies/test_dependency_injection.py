@@ -233,7 +233,7 @@ def test_custom_scope() -> None:
         assert Foo.counter == 1
 
     # within Xpresso
-    async def endpoint(foo: Annotated[Foo, Marker(scope="global")]) -> None:
+    async def endpoint(foo: FooDep) -> None:
         ...
 
     routes = [Path("/", get=endpoint)]
