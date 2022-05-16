@@ -6,7 +6,7 @@ import anyio
 import anyio.abc
 import pytest
 from di.container import Container
-from di.dependant import Dependant
+from di.dependant import Dependant, Marker
 from di.executors import SyncExecutor
 from starlette.responses import Response
 from starlette.testclient import TestClient
@@ -228,12 +228,7 @@ def test_custom_scope() -> None:
         assert Foo.counter == 1
 
     # within Xpresso
-
-    # TODO: Depends()'s static typing rejects "global"
-    # and Dependant() is ignored if used instead (a bug?)
-    # I think users should be able to use Dependant() here in place of Depends()
-    # and Depends() should continue to enforce Xpresso specific scopes
-    async def endpoint(foo: Annotated[Foo, Depends(scope="global")]) -> None:
+    async def endpoint(foo: Annotated[Foo, Marker(scope="global")]) -> None:
         ...
 
     routes = [Path("/", get=endpoint)]
