@@ -6,6 +6,8 @@ import anyio
 import anyio.abc
 import pytest
 from di.container import Container
+from di.dependant import Dependant
+from di.executors import SyncExecutor
 from starlette.responses import Response
 from starlette.testclient import TestClient
 
@@ -198,3 +200,54 @@ def test_default_scope_for_autowired_deps() -> None:
     with TestClient(app=app) as client:
         resp = client.get("/")
     assert resp.status_code == 200
+
+
+def test_custom_scope() -> None:
+    """Users that set up containers outside of Xpresso
+    should be able to use custom scopes
+    """
+
+    class Foo:
+        counter: int = 0
+
+        def __init__(self) -> None:
+            Foo.counter += 1
+
+    container = Container()
+    dep = Dependant(Foo, scope="global")
+
+    # outside of Xpresso system
+    exec = SyncExecutor()
+    solved = container.solve(dep, scopes=["global"])
+    with container.enter_scope("global") as global_state:
+        assert Foo.counter == 0
+        container.execute_sync(solved, exec, state=global_state)
+        assert Foo.counter == 1
+        # Foo is cached in the "global" scope
+        container.execute_sync(solved, exec, state=global_state)
+        assert Foo.counter == 1
+
+    # within Xpresso
+
+    # TODO: Depends()'s static typing rejects "global"
+    # and Dependant() is ignored if used instead (a bug?)
+    # I think users should be able to use Dependant() here in place of Depends()
+    # and Depends() should continue to enforce Xpresso specific scopes
+    async def endpoint(foo: Annotated[Foo, Depends(scope="global")]) -> None:
+        ...
+
+    routes = [Path("/", get=endpoint)]
+    with container.enter_scope("global") as global_state:
+        app = App(
+            routes, custom_dependency_scopes=["global"], container_state=global_state
+        )
+        client = TestClient(app)
+
+        resp = client.get("/")
+        assert resp.status_code == 200
+        assert Foo.counter == 2
+
+        # Foo is cached in the "global" scope
+        resp = client.get("/")
+        assert resp.status_code == 200
+        assert Foo.counter == 2
