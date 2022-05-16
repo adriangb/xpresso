@@ -213,18 +213,23 @@ def test_custom_scope() -> None:
         def __init__(self) -> None:
             Foo.counter += 1
 
+    FooDep = Annotated[Foo, Marker(scope="global")]
+
     container = Container()
-    dep = Dependant(Foo, scope="global")
 
     # outside of Xpresso system
+    def func(foo: FooDep) -> Foo:
+        return foo
+
     exec = SyncExecutor()
-    solved = container.solve(dep, scopes=["global"])
+    solved = container.solve(Dependant(func, scope="global"), scopes=["global"])
     with container.enter_scope("global") as global_state:
         assert Foo.counter == 0
-        container.execute_sync(solved, exec, state=global_state)
+        f1 = container.execute_sync(solved, exec, state=global_state)
         assert Foo.counter == 1
         # Foo is cached in the "global" scope
-        container.execute_sync(solved, exec, state=global_state)
+        f2 = container.execute_sync(solved, exec, state=global_state)
+        assert f2 is f1
         assert Foo.counter == 1
 
     # within Xpresso
