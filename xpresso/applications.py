@@ -5,6 +5,7 @@ import typing
 
 import starlette.types
 from di.api.dependencies import DependantBase
+from di.api.scopes import Scope
 from di.api.solved import SolvedDependant
 from di.container import Container, ContainerState, bind_by_type
 from di.dependant import Dependant, JoinedDependant
@@ -46,6 +47,7 @@ class App:
 
     __slots__ = (
         "_container_state",
+        "_scopes",
         "_debug",
         "_openapi_info",
         "_openapi_servers",
@@ -64,6 +66,8 @@ class App:
         routes: typing.Optional[typing.Sequence[BaseRoute]] = None,
         *,
         container: typing.Optional[Container] = None,
+        container_state: typing.Optional[ContainerState] = None,
+        custom_dependency_scopes: typing.Optional[typing.Sequence[Scope]] = None,
         dependencies: typing.Optional[
             typing.Iterable[typing.Union[DependantBase[typing.Any], BoundDependsMarker]]
         ] = None,
@@ -91,7 +95,12 @@ class App:
         self.container = container or Container()
         _register_framework_dependencies(self.container, app=self)
         self.dependency_overrides = DependencyOverrideManager(self.container)
-        self._container_state: ContainerState = ContainerState()
+        self._container_state: ContainerState = container_state or ContainerState()
+        self._scopes = (
+            Scopes
+            if custom_dependency_scopes is None
+            else (*custom_dependency_scopes, *Scopes)
+        )
         self._setup_run = False
 
         @contextlib.asynccontextmanager
@@ -121,7 +130,7 @@ class App:
                             Dependant(lifespan, scope="app") for lifespan in lifespans
                         ],
                     ),
-                    scopes=Scopes,
+                    scopes=self._scopes,
                 )
                 try:
                     await self.container.execute_async(
@@ -146,7 +155,7 @@ class App:
                                 placeholder,
                                 siblings=lifespan_deps,
                             ),
-                            scopes=Scopes,
+                            scopes=self._scopes,
                         ),
                         executor,
                         state=self._container_state,
@@ -268,6 +277,7 @@ class App:
                                 *operation.dependencies,
                             ],
                             container=self.container,
+                            scopes=self._scopes,
                         )
                     )
             elif isinstance(route.route, WebSocketRoute):
@@ -279,6 +289,7 @@ class App:
                             *route.route.dependencies,
                         ],
                         container=self.container,
+                        scopes=self._scopes,
                     )
                 )
         return lifespans, prepare_cbs

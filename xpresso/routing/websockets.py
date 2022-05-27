@@ -7,6 +7,7 @@ import starlette.types
 import starlette.websockets
 from di.api.dependencies import DependantBase
 from di.api.executor import SupportsAsyncExecutor
+from di.api.scopes import Scope as DependencyScope
 from di.api.solved import SolvedDependant
 from di.container import Container
 from di.dependant import JoinedDependant
@@ -14,7 +15,7 @@ from di.executors import AsyncExecutor, ConcurrentAsyncExecutor
 
 from xpresso._utils.asgi import XpressoWebSocketExtension
 from xpresso._utils.endpoint_dependant import Endpoint, EndpointDependant
-from xpresso.dependencies._dependencies import BoundDependsMarker, Scopes
+from xpresso.dependencies._dependencies import BoundDependsMarker
 
 
 class _WebSocketRoute:
@@ -86,6 +87,7 @@ class WebSocketRoute(starlette.routing.WebSocketRoute):
     def prepare(
         self,
         container: Container,
+        scopes: typing.Sequence[DependencyScope],
         dependencies: typing.Iterable[DependantBase[typing.Any]],
     ) -> SolvedDependant[typing.Any]:
         self.dependant = container.solve(
@@ -93,7 +95,7 @@ class WebSocketRoute(starlette.routing.WebSocketRoute):
                 EndpointDependant(self.endpoint),
                 siblings=[*dependencies, *self.dependencies],
             ),
-            scopes=Scopes,
+            scopes=scopes,
         )
         executor: SupportsAsyncExecutor
         if self.execute_dependencies_concurrently:

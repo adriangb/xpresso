@@ -3,6 +3,7 @@ from functools import partial
 
 from di.api.dependencies import DependantBase
 from di.api.executor import SupportsAsyncExecutor
+from di.api.scopes import Scope as DependencyScope
 from di.api.solved import SolvedDependant
 from di.container import Container
 from di.dependant import JoinedDependant
@@ -16,7 +17,7 @@ from starlette.types import ASGIApp, Receive, Scope, Send
 import xpresso.openapi.models as openapi_models
 from xpresso._utils.asgi import XpressoHTTPExtension
 from xpresso._utils.endpoint_dependant import Endpoint, EndpointDependant
-from xpresso.dependencies._dependencies import BoundDependsMarker, Scopes
+from xpresso.dependencies._dependencies import BoundDependsMarker
 from xpresso.encoders import Encoder, JsonableEncoder
 from xpresso.responses import ResponseSpec, ResponseStatusCode, TypeUnset
 
@@ -156,6 +157,7 @@ class Operation(BaseRoute):
     def prepare(
         self,
         container: Container,
+        scopes: typing.Sequence[DependencyScope],
         dependencies: typing.Iterable[DependantBase[typing.Any]],
     ) -> SolvedDependant[typing.Any]:
         self.dependant = container.solve(
@@ -163,7 +165,7 @@ class Operation(BaseRoute):
                 EndpointDependant(self.endpoint, sync_to_thread=self._sync_to_thread),
                 siblings=[*dependencies, *self.dependencies],
             ),
-            scopes=Scopes,
+            scopes=scopes,
         )
         executor: SupportsAsyncExecutor
         if self._execute_dependencies_concurrently:
