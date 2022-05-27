@@ -376,7 +376,7 @@ def get_flat_models(routes: Routes) -> Set[type]:
     for _, operations in routes.values():
         for operation in operations.values():
             dependant = operation.dependant
-            flat_dependencies = dependant.get_flat_subdependants()
+            flat_dependencies = dependant.dag.keys()
             for dep in flat_dependencies:
                 if isinstance(
                     dep,
