@@ -48,6 +48,9 @@ class ResponseSpec(BaseModel):
     content: Optional[Mapping[str, Union[ResponseModel, type]]] = None
     headers: Optional[Mapping[str, Union[ResponseHeader, str]]] = None
 
+    class Config:
+        arbitrary_types_allowed = True
+
 
 class FileResponseSpec(ResponseSpec):
     content: Optional[Mapping[str, Union[ResponseModel, type]]] = {
