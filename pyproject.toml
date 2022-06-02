@@ -65,7 +65,7 @@ mike = "~1"
 msgpack = "^1.0.3"
 # benchmarks
 fastapi = ">=0.75.0"  # incompatible with the latest starlette
-httpx = "<2"
+httpx = ">=0.23.0"
 asgi-lifespan = "~1"
 gunicorn = "^20.1.0"
 uvicorn = { extras = ["standard"], version = "^0.15.0" }
