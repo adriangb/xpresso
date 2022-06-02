@@ -26,7 +26,9 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install and configure Poetry
-        uses: snok/install-poetry@v1.3.0
+        uses: snok/install-poetry@v1.3.1
+        with:
+          version: 1.1.13
       - name: Lint
         run: make lint
   test:
@@ -91,6 +93,8 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: Install and configure Poetry
         uses: snok/install-poetry@v1.3.1
+        with:
+          version: 1.1.13
       - name: Test
         env:
           STARLETTE: ${{ matrix.starlette-version }}
@@ -137,7 +141,9 @@ jobs:
           ref: main
           path: main
       - name: Install and configure Poetry
-        uses: snok/install-poetry@v1.3.0
+        uses: snok/install-poetry@v1.3.1
+        with:
+          version: 1.1.13
       - name: Check version bump
         run: |
           cd $GITHUB_WORKSPACE/current
@@ -159,7 +165,9 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
       - name: Install and configure Poetry
-        uses: snok/install-poetry@v1.3.0
+        uses: snok/install-poetry@v1.3.1
+        with:
+          version: 1.1.13
       - name: Deploy docs
         run: |
           git config user.name github-actions[bot]
@@ -175,7 +183,9 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
       - name: Install and configure Poetry
-        uses: snok/install-poetry@v1.3.0
+        uses: snok/install-poetry@v1.3.1
+        with:
+          version: 1.1.13
       - name: Release on PyPi
         continue-on-error: true  # allow pushes to main that don't release
         id: pypi
