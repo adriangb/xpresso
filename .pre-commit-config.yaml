@@ -10,12 +10,6 @@ repos:
     - id: check-merge-conflict
   - repo: local
     hooks:
-    - id: lockfile
-      name: check poetry.lock
-      language: system
-      entry: poetry lock --no-update
-      files: ^pyproject.toml|poetry.lock$
-      pass_filenames: false
     - id: isort-source
       name: isort-source
       language: system
