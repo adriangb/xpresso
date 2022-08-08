@@ -5,6 +5,7 @@ import typing
 
 import starlette.types
 from di.api.dependencies import DependantBase
+from di.api.scopes import Scope as DiScope
 from di.api.solved import SolvedDependant
 from di.container import Container, ContainerState, bind_by_type
 from di.dependant import Dependant, JoinedDependant
@@ -102,6 +103,16 @@ class App:
             placeholder = Dependant(lambda: None, scope="app")
             dep: "DependantBase[typing.Any]"
             executor = AsyncExecutor()
+
+            def scope_resolver(
+                dep: DependantBase[typing.Any],
+                sub_dependant_scopes: typing.Sequence[DiScope],
+                solver_scopes: typing.Sequence[DiScope],
+            ) -> DiScope:
+                if dep.scope is None:
+                    return "app"
+                return dep.scope
+
             async with self._container_state.enter_scope(
                 "app"
             ) as self._container_state:
@@ -122,6 +133,7 @@ class App:
                         ],
                     ),
                     scopes=Scopes,
+                    scope_resolver=scope_resolver,
                 )
                 try:
                     await self.container.execute_async(
@@ -140,6 +152,7 @@ class App:
                         lifespan_deps.extend(
                             d for d in prepared.dag if d.scope == "app"
                         )
+
                     await self.container.execute_async(
                         self.container.solve(
                             JoinedDependant(
@@ -147,6 +160,7 @@ class App:
                                 siblings=lifespan_deps,
                             ),
                             scopes=Scopes,
+                            scope_resolver=scope_resolver,
                         ),
                         executor,
                         state=self._container_state,

@@ -419,6 +419,90 @@ def test_parameter_is_used_in_multiple_locations() -> None:
         },
     }
 
+    {
+        "components": {
+            "schemas": {
+                "HTTPValidationError": {
+                    "properties": {
+                        "detail": {
+                            "items": {"$ref": "#/components/schemas/ValidationError"},
+                            "title": "Detail",
+                            "type": "array",
+                        }
+                    },
+                    "title": "HTTPValidationError",
+                    "type": "object",
+                },
+                "ValidationError": {
+                    "properties": {
+                        "loc": {
+                            "items": {
+                                "oneOf": [{"type": "string"}, {"type": "integer"}]
+                            },
+                            "title": "Location",
+                            "type": "array",
+                        },
+                        "msg": {"title": "Message", "type": "string"},
+                        "type": {"title": "Error Type", "type": "string"},
+                    },
+                    "required": ["loc", "msg", "type"],
+                    "title": "ValidationError",
+                    "type": "object",
+                },
+            }
+        },
+        "info": {"title": "API", "version": "0.1.0"},
+        "openapi": "3.0.3",
+        "paths": {
+            "/": {
+                "get": {
+                    "parameters": [
+                        {
+                            "explode": True,
+                            "in": "cookie",
+                            "name": "param",
+                            "required": True,
+                            "schema": {"title": "Param", "type": "string"},
+                            "style": "form",
+                        },
+                        {
+                            "explode": True,
+                            "in": "cookie",
+                            "name": "param",
+                            "required": True,
+                            "schema": {"title": "Param", "type": "string"},
+                            "style": "form",
+                        },
+                        {
+                            "explode": True,
+                            "in": "cookie",
+                            "name": "param",
+                            "required": True,
+                            "schema": {"title": "Param", "type": "string"},
+                            "style": "form",
+                        },
+                    ],
+                    "responses": {
+                        "200": {
+                            "content": {"application/json": {}},
+                            "description": "OK",
+                        },
+                        "422": {
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "$ref": "#/components/schemas/HTTPValidationError"
+                                    }
+                                }
+                            },
+                            "description": "Validation Error",
+                        },
+                    },
+                }
+            }
+        },
+    }
+
     resp = client.get("/openapi.json")
     assert resp.status_code == 200, resp.content
     assert resp.json() == expected_openapi

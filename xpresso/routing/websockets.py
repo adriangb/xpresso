@@ -7,6 +7,7 @@ import starlette.types
 import starlette.websockets
 from di.api.dependencies import DependantBase
 from di.api.executor import SupportsAsyncExecutor
+from di.api.scopes import Scope as DiScope
 from di.api.solved import SolvedDependant
 from di.container import Container
 from di.dependant import JoinedDependant
@@ -88,12 +89,22 @@ class WebSocketRoute(starlette.routing.WebSocketRoute):
         container: Container,
         dependencies: typing.Iterable[DependantBase[typing.Any]],
     ) -> SolvedDependant[typing.Any]:
+        def scope_resolver(
+            dep: DependantBase[typing.Any],
+            sub_dependant_scopes: typing.Sequence[DiScope],
+            solver_scopes: typing.Sequence[DiScope],
+        ) -> DiScope:
+            if dep.scope is None:
+                return "connection"
+            return dep.scope
+
         self.dependant = container.solve(
             JoinedDependant(
                 EndpointDependant(self.endpoint),
                 siblings=[*dependencies, *self.dependencies],
             ),
             scopes=Scopes,
+            scope_resolver=scope_resolver,
         )
         executor: SupportsAsyncExecutor
         if self.execute_dependencies_concurrently:
