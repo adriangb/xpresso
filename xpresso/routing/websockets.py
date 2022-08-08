@@ -14,6 +14,7 @@ from di.executors import AsyncExecutor, ConcurrentAsyncExecutor
 
 from xpresso._utils.asgi import XpressoWebSocketExtension
 from xpresso._utils.endpoint_dependant import Endpoint, EndpointDependant
+from xpresso._utils.scope_resolver import endpoint_scope_resolver
 from xpresso.dependencies._dependencies import BoundDependsMarker, Scopes
 
 
@@ -94,6 +95,7 @@ class WebSocketRoute(starlette.routing.WebSocketRoute):
                 siblings=[*dependencies, *self.dependencies],
             ),
             scopes=Scopes,
+            scope_resolver=endpoint_scope_resolver,
         )
         executor: SupportsAsyncExecutor
         if self.execute_dependencies_concurrently:

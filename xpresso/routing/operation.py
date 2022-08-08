@@ -16,6 +16,7 @@ from starlette.types import ASGIApp, Receive, Scope, Send
 import xpresso.openapi.models as openapi_models
 from xpresso._utils.asgi import XpressoHTTPExtension
 from xpresso._utils.endpoint_dependant import Endpoint, EndpointDependant
+from xpresso._utils.scope_resolver import endpoint_scope_resolver
 from xpresso.dependencies._dependencies import BoundDependsMarker, Scopes
 from xpresso.encoders import Encoder, JsonableEncoder
 from xpresso.responses import ResponseSpec, ResponseStatusCode, TypeUnset
@@ -164,6 +165,7 @@ class Operation(BaseRoute):
                 siblings=[*dependencies, *self.dependencies],
             ),
             scopes=Scopes,
+            scope_resolver=endpoint_scope_resolver,
         )
         executor: SupportsAsyncExecutor
         if self._execute_dependencies_concurrently:

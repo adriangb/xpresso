@@ -22,6 +22,7 @@ from starlette.websockets import WebSocket
 from xpresso._utils.asgi import XpressoHTTPExtension, XpressoWebSocketExtension
 from xpresso._utils.overrides import DependencyOverrideManager
 from xpresso._utils.routing import visit_routes
+from xpresso._utils.scope_resolver import lifespan_scope_resolver
 from xpresso.dependencies._dependencies import BoundDependsMarker, Scopes
 from xpresso.exception_handlers import (
     ExcHandler,
@@ -102,6 +103,7 @@ class App:
             placeholder = Dependant(lambda: None, scope="app")
             dep: "DependantBase[typing.Any]"
             executor = AsyncExecutor()
+
             async with self._container_state.enter_scope(
                 "app"
             ) as self._container_state:
@@ -122,6 +124,7 @@ class App:
                         ],
                     ),
                     scopes=Scopes,
+                    scope_resolver=lifespan_scope_resolver,
                 )
                 try:
                     await self.container.execute_async(
@@ -140,6 +143,7 @@ class App:
                         lifespan_deps.extend(
                             d for d in prepared.dag if d.scope == "app"
                         )
+
                     await self.container.execute_async(
                         self.container.solve(
                             JoinedDependant(
@@ -147,6 +151,7 @@ class App:
                                 siblings=lifespan_deps,
                             ),
                             scopes=Scopes,
+                            scope_resolver=lifespan_scope_resolver,
                         ),
                         executor,
                         state=self._container_state,

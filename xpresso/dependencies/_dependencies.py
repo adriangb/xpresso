@@ -8,7 +8,7 @@ from di.dependant import Marker
 from xpresso._utils.typing import Literal
 
 Scope = Literal["app", "connection", "endpoint"]
-Scopes: typing.Tuple[Literal["app"], Literal["connection"], Literal["endpoint"]] = (
+Scopes = (
     "app",
     "connection",
     "endpoint",
@@ -44,7 +44,7 @@ def Depends(
     use_cache: bool = True,
     wire: bool = True,
     sync_to_thread: bool = False,
-    scope: Scope = "connection",
+    scope: typing.Optional[Scope] = None,
 ) -> typing.Any:
     return DependsMarker(
         call=call,
@@ -68,7 +68,7 @@ class DependsMarker(Marker, typing.Generic[DependencyType]):
         use_cache: bool = True,
         wire: bool = True,
         sync_to_thread: bool = True,
-        scope: Scope = "connection",
+        scope: typing.Optional[Scope] = None,
     ) -> None:
         super().__init__(
             call=call,
@@ -98,7 +98,7 @@ class Injectable(InjectableBase):
     def __init_subclass__(
         cls,
         call: typing.Optional[DependencyProvider] = None,
-        scope: Scope = "connection",
+        scope: typing.Optional[Scope] = None,
         use_cache: bool = True,
         **kwargs: typing.Any,
     ) -> None:
