@@ -28,7 +28,7 @@ As you see more usages of `Annotated` you will get used to it.
 But for now all you need to know is that `param: Annotated[str, HeaderParam()]` is pretty much equivalent to `param: str = Header()` in FastAPI.
 
 One of the main advantages to using `Annotated` is composability: multiple tools/libraries can include metadata together without conflict.
-For example, we can included information for both Xpresso and Pydantic using `param: Annotated[str, Path(), Field(min_length=1)`.
+For example, we can include information for both Xpresso and Pydantic using `param: Annotated[str, Path(), Field(min_length=1)`.
 This is in contrast to FastAPI where `Query()` and friends are actually subclasses of Pydantic's `Field()`, which couples the web framework to Pydantic and adds complexity into `Query()`, `Path()`, etc. that is not really related to them directly.
 To see an example of this in action, head over to the [Path Parameters] section of our documentation.
 
