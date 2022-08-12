@@ -974,7 +974,7 @@ In Xpresso this same declaration would look like <code>param: FromHeader[str]</c
 As you see more usages of <code>Annotated</code> you will get used to it.
 But for now all you need to know is that <code>param: Annotated[str, HeaderParam()]</code> is pretty much equivalent to <code>param: str = Header()</code> in FastAPI.</p>
 <p>One of the main advantages to using <code>Annotated</code> is composability: multiple tools/libraries can include metadata together without conflict.
-For example, we can included information for both Xpresso and Pydantic using <code>param: Annotated[str, Path(), Field(min_length=1)</code>.
+For example, we can include information for both Xpresso and Pydantic using <code>param: Annotated[str, Path(), Field(min_length=1)</code>.
 This is in contrast to FastAPI where <code>Query()</code> and friends are actually subclasses of Pydantic's <code>Field()</code>, which couples the web framework to Pydantic and adds complexity into <code>Query()</code>, <code>Path()</code>, etc. that is not really related to them directly.
 To see an example of this in action, head over to the <a href="../tutorial/path_params/">Path Parameters</a> section of our documentation.</p>
 
