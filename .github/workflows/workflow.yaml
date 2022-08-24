@@ -71,7 +71,7 @@ jobs:
             pydantic-version: "lockfile"
           - python: "3.x"
             os: ubuntu-latest
-            starlette-version: "git+https://github.com/encode/starlette.git"
+            starlette-version: "git+https://github.com/encode/starlette.git@master"
             pydantic-version: "lockfile"
           # test Pydantic
           - python: "3.x"
@@ -81,7 +81,7 @@ jobs:
           - python: "3.x"
             os: ubuntu-latest
             starlette-version: "lockfile"
-            pydantic-version: "git+https://github.com/samuelcolvin/pydantic.git"
+            pydantic-version: "git+https://github.com/samuelcolvin/pydantic.git@main"
     defaults:
       run:
         shell: bash
