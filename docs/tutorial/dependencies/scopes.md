@@ -26,7 +26,7 @@ Everything else can stay the same, this is all we need!
 !!! attention
     In Pytest a `"session"` scoped fixture can't depend on a `"function"` scoped fixture, and in Xpresso an `"app"` scoped fixture can't depend on an `"endpoint"` scoped fixture.
     Unlike Pytest which forces you to hardcode all of the scopes, Xpresso is able to infer scopes from the dependency graph.
-    So in this case it says "oh, I see that `get_client` depends on `HttpBinConfig` and `HttpBinConfig` was not explicitly assigned a scope; I'll give `HttpBinConfig` and `"app"` scope then so that it is compatible with `get_client`.
+    So in this case it says "oh, I see that `get_client` depends on `HttpBinConfig` and `HttpBinConfig` was not explicitly assigned a scope; I'll give `HttpBinConfig` and `"app"` scope then so that it is compatible with `get_client`".
 
 If you run this and navigate to [http://127.0.0.1:8000/echo/url](http://127.0.0.1:8000/echo/url) the response will be the same, but you will probably notice reduced latency if you refresh to make several requests.
 
