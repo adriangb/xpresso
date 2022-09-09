@@ -5,16 +5,11 @@ from xpresso import App, Depends, Path
 from xpresso.typing import Annotated
 
 
-class HttpBinConfigModel(BaseSettings):
+class HttpBinConfig(BaseSettings):
     url: str = "https://httpbin.org"
 
     class Config(BaseSettings.Config):
         env_prefix = "HTTPBIN_"
-
-
-HttpBinConfig = Annotated[
-    HttpBinConfigModel, Depends(lambda: HttpBinConfigModel())
-]
 
 
 def get_client(config: HttpBinConfig) -> httpx.AsyncClient:
