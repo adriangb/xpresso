@@ -31,7 +31,7 @@ Once again, nothing will change from the application user's perspective, but our
 The order of execution here is `get_client() -> echo_headers() -> get_client()` and is roughly equivalent to:
 
 ```python
-async with asynccontextmanager(get_client(HttpBinConfig())) as client:
+async with asynccontextmanager(get_client(HttpBinConfigModel())) as client:
     await echo_headers(client)
 ```
 

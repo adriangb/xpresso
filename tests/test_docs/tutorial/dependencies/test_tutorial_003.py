@@ -1,6 +1,6 @@
 import httpx
 
-from docs_src.tutorial.dependencies.tutorial_003 import HttpBinConfig, app
+from docs_src.tutorial.dependencies.tutorial_003 import HttpBinConfigModel, app
 from xpresso.testclient import TestClient
 
 
@@ -15,14 +15,14 @@ def test_client_config_injection():
     # This dependency becomes the provider for the client
     # It will get auto-wired with the config, so we can use it to assert that the config
     # Was successfully injected
-    def get_client(config: HttpBinConfig) -> httpx.AsyncClient:
+    def get_client(config: HttpBinConfigModel) -> httpx.AsyncClient:
         assert config.url == test_url
         return httpx.AsyncClient(
             transport=httpx.MockTransport(handler), base_url=config.url
         )
 
     with app.dependency_overrides as overrides:
-        overrides[HttpBinConfig] = lambda: HttpBinConfig(url=test_url)
+        overrides[HttpBinConfigModel] = lambda: HttpBinConfigModel(url=test_url)
         overrides[httpx.AsyncClient] = get_client
         client = TestClient(app)
         response = client.get("/echo/url")
