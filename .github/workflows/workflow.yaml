@@ -69,19 +69,23 @@ jobs:
             os: ubuntu-latest
             starlette-version: "starlette==0.17.1"
             pydantic-version: "lockfile"
-          - python: "3.x"
-            os: ubuntu-latest
-            starlette-version: "git+https://github.com/encode/starlette.git@master"
-            pydantic-version: "lockfile"
+          # Disabling due to backwards incompatible changes in TestClient
+          # This does not impact end users but makes it very hard for us
+          # to run tests
+          # - python: "3.x"
+          #   os: ubuntu-latest
+          #   starlette-version: "git+https://github.com/encode/starlette.git@master"
+          #   pydantic-version: "lockfile"
           # test Pydantic
           - python: "3.x"
             os: ubuntu-latest
             starlette-version: "lockfile"
             pydantic-version: "pydantic==1.9.0"
-          - python: "3.x"
-            os: ubuntu-latest
-            starlette-version: "lockfile"
-            pydantic-version: "git+https://github.com/samuelcolvin/pydantic.git@main"
+          # Disabling because of high churn for Pydantic v2
+          # - python: "3.x"
+          #   os: ubuntu-latest
+          #   starlette-version: "lockfile"
+          #   pydantic-version: "git+https://github.com/samuelcolvin/pydantic.git@main"
     defaults:
       run:
         shell: bash
