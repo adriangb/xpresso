@@ -13,6 +13,9 @@ The main difference vs. Starlette is that the lifespan context manager is allowe
     You don't need `app.state` or `request.state` in Xpresso.
     Instead, you can create you own strongly typed mutable or immutable state object and inject it into your lifespan and/or endpoints like in the example above.
 
+!!! tip Tip
+    Lifespan dependencies are automatically assigned the `"app"` scope, you don't need to explicitly set it.
+
 ## Router lifespans
 
 Routers can also have lifespans, and these lifespans will be executed when the top level `App`'s lifespan executes:
