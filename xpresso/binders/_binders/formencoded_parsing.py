@@ -1,5 +1,6 @@
 """Form data deserialization as per https://swagger.io/docs/specification/serialization/#query
 """
+import csv
 import functools
 import re
 from typing import Any, Dict, Iterable, List, Optional, Tuple
@@ -40,12 +41,13 @@ def collect_form_sequence(
     else:
         # We need to split these up manually
         if len(matches) != 1:
-            raise InvalidSerialization("Invalid form serialziation")
+            raise InvalidSerialization("Invalid form serialization")
         match = matches[0]
         if not match:
             # user gave us ?param=&other=abc
             return Some([None])
-        return Some(list(match.split(delimiter)))
+        split = next(iter(csv.reader([match], delimiter=delimiter)))
+        return Some(split)
 
 
 def collect_object(
