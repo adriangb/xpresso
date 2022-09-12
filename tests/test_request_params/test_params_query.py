@@ -57,6 +57,7 @@ array_non_nullable_error = {
         # form, True
         ("form", True, {"param": "apple"}, 200, "apple"),
         ("form", True, {"param": "apple,hammer"}, 200, "apple,hammer"),
+        ("form", True, {"param": '"apple,hammer"'}, 200, '"apple,hammer"'),
         (
             "form",
             True,
@@ -74,6 +75,7 @@ array_non_nullable_error = {
         # form, False
         ("form", False, {"param": "apple"}, 200, "apple"),
         ("form", False, {"param": "apple,hammer"}, 200, "apple,hammer"),
+        ("form", False, {"param": '"apple,hammer"'}, 200, '"apple,hammer"'),
         (
             "form",
             False,
@@ -117,6 +119,7 @@ def test_scalar_string_required_non_nullable(
         # form, True
         ("form", True, {"param": "apple"}, 200, "apple"),
         ("form", True, {"param": "apple,hammer"}, 200, "apple,hammer"),
+        ("form", True, {"param": '"apple,hammer"'}, 200, '"apple,hammer"'),
         ("form", True, {"param": ""}, 200, None),
         (
             "form",
@@ -128,6 +131,7 @@ def test_scalar_string_required_non_nullable(
         # form, False
         ("form", False, {"param": "apple"}, 200, "apple"),
         ("form", False, {"param": "apple,hammer"}, 200, "apple,hammer"),
+        ("form", False, {"param": '"apple,hammer"'}, 200, '"apple,hammer"'),
         ("form", False, {"param": ""}, 200, None),
         (
             "form",
@@ -165,6 +169,7 @@ def test_scalar_string_required_nullable(
         # form, True
         ("form", True, {"param": "apple"}, 200, "apple"),
         ("form", True, {"param": "apple,hammer"}, 200, "apple,hammer"),
+        ("form", True, {"param": '"apple,hammer"'}, 200, '"apple,hammer"'),
         (
             "form",
             True,
@@ -182,6 +187,7 @@ def test_scalar_string_required_nullable(
         # form, False
         ("form", False, {"param": "apple"}, 200, "apple"),
         ("form", False, {"param": "apple,hammer"}, 200, "apple,hammer"),
+        ("form", False, {"param": '"apple,hammer"'}, 200, '"apple,hammer"'),
         (
             "form",
             False,
@@ -225,6 +231,7 @@ def test_scalar_string_optional_non_nullable(
         # form, True
         ("form", True, {"param": "apple"}, 200, "apple"),
         ("form", True, {"param": "apple,hammer"}, 200, "apple,hammer"),
+        ("form", True, {"param": '"apple,hammer"'}, 200, '"apple,hammer"'),
         ("form", True, {"param": ""}, 200, None),
         (
             "form",
@@ -236,6 +243,7 @@ def test_scalar_string_optional_non_nullable(
         # form, False
         ("form", False, {"param": "apple"}, 200, "apple"),
         ("form", False, {"param": "apple,hammer"}, 200, "apple,hammer"),
+        ("form", False, {"param": '"apple,hammer"'}, 200, '"apple,hammer"'),
         ("form", False, {"param": ""}, 200, None),
         (
             "form",
@@ -557,6 +565,7 @@ def test_scalar_integer_optional_nullable(
             ["apple", "hammer"],
         ),
         ("form", True, {"param": "apple,hammer"}, 200, ["apple,hammer"]),
+        ("form", True, {"param": '"apple,hammer"'}, 200, ['"apple,hammer"']),
         ("form", True, {"param": ""}, 422, array_non_nullable_error),
         ("form", True, {}, 200, []),
         # form, False
@@ -569,6 +578,7 @@ def test_scalar_integer_optional_nullable(
             invalid_serialization_error,
         ),
         ("form", False, {"param": "apple,hammer"}, 200, ["apple", "hammer"]),
+        ("form", False, {"param": '"apple,hammer"'}, 200, ["apple,hammer"]),
         ("form", False, {"param": ""}, 422, array_non_nullable_error),
         ("form", False, {}, 200, []),
         # spaceDelimited, True
@@ -582,6 +592,7 @@ def test_scalar_integer_optional_nullable(
         ),
         ("spaceDelimited", True, {"param": "apple,hammer"}, 200, ["apple,hammer"]),
         ("spaceDelimited", True, {"param": "apple hammer"}, 200, ["apple hammer"]),
+        ("spaceDelimited", True, {"param": '"apple hammer"'}, 200, ['"apple hammer"']),
         ("spaceDelimited", True, {"param": "apple|hammer"}, 200, ["apple|hammer"]),
         ("spaceDelimited", True, {"param": ""}, 422, array_non_nullable_error),
         ("spaceDelimited", True, {}, 200, []),
@@ -596,6 +607,7 @@ def test_scalar_integer_optional_nullable(
         ),
         ("spaceDelimited", False, {"param": "apple,hammer"}, 200, ["apple,hammer"]),
         ("spaceDelimited", False, {"param": "apple hammer"}, 200, ["apple", "hammer"]),
+        ("spaceDelimited", False, {"param": '"apple hammer"'}, 200, ["apple hammer"]),
         ("spaceDelimited", False, {"param": "apple|hammer"}, 200, ["apple|hammer"]),
         ("spaceDelimited", False, {"param": ""}, 422, array_non_nullable_error),
         ("spaceDelimited", False, {}, 200, []),
@@ -611,6 +623,7 @@ def test_scalar_integer_optional_nullable(
         ("pipeDelimited", True, {"param": "apple,hammer"}, 200, ["apple,hammer"]),
         ("pipeDelimited", True, {"param": "apple hammer"}, 200, ["apple hammer"]),
         ("pipeDelimited", True, {"param": "apple|hammer"}, 200, ["apple|hammer"]),
+        ("pipeDelimited", True, {"param": '"apple|hammer"'}, 200, ['"apple|hammer"']),
         ("pipeDelimited", True, {"param": ""}, 422, array_non_nullable_error),
         ("pipeDelimited", True, {}, 200, []),
         # pipeDelimited, False
@@ -625,6 +638,7 @@ def test_scalar_integer_optional_nullable(
         ("pipeDelimited", False, {"param": "apple,hammer"}, 200, ["apple,hammer"]),
         ("pipeDelimited", False, {"param": "apple hammer"}, 200, ["apple hammer"]),
         ("pipeDelimited", False, {"param": "apple|hammer"}, 200, ["apple", "hammer"]),
+        ("pipeDelimited", False, {"param": '"apple|hammer"'}, 200, ["apple|hammer"]),
         ("pipeDelimited", False, {"param": ""}, 422, array_non_nullable_error),
         ("pipeDelimited", False, {}, 200, []),
     ],
@@ -677,6 +691,7 @@ def test_string_array_non_nullable_items(
             invalid_serialization_error,
         ),
         ("form", False, {"param": "apple,hammer"}, 200, ["apple", "hammer"]),
+        ("form", False, {"param": '"apple,hammer"'}, 200, ["apple,hammer"]),
         ("form", False, {"param": ""}, 200, [None]),
         ("form", False, {}, 200, []),
         # spaceDelimited, True
@@ -704,6 +719,7 @@ def test_string_array_non_nullable_items(
         ),
         ("spaceDelimited", False, {"param": "apple,hammer"}, 200, ["apple,hammer"]),
         ("spaceDelimited", False, {"param": "apple hammer"}, 200, ["apple", "hammer"]),
+        ("spaceDelimited", False, {"param": '"apple hammer"'}, 200, ["apple hammer"]),
         ("spaceDelimited", False, {"param": "apple|hammer"}, 200, ["apple|hammer"]),
         ("spaceDelimited", False, {"param": ""}, 200, [None]),
         ("spaceDelimited", False, {}, 200, []),
@@ -733,6 +749,7 @@ def test_string_array_non_nullable_items(
         ("pipeDelimited", False, {"param": "apple,hammer"}, 200, ["apple,hammer"]),
         ("pipeDelimited", False, {"param": "apple hammer"}, 200, ["apple hammer"]),
         ("pipeDelimited", False, {"param": "apple|hammer"}, 200, ["apple", "hammer"]),
+        ("pipeDelimited", False, {"param": '"apple|hammer"'}, 200, ["apple|hammer"]),
         ("pipeDelimited", False, {"param": ""}, 200, [None]),
         ("pipeDelimited", False, {}, 200, []),
     ],
@@ -796,6 +813,7 @@ array_not_a_valid_integer_error = {
             invalid_serialization_error,
         ),
         ("form", False, {"param": "1,2"}, 200, [1, 2]),
+        ("form", False, {"param": '"1,2"'}, 422, array_not_a_valid_integer_error),
         ("form", False, {"param": ""}, 422, array_non_nullable_error),
         ("form", False, {}, 200, []),
         # spaceDelimited, True
@@ -850,6 +868,13 @@ array_not_a_valid_integer_error = {
         (
             "spaceDelimited",
             False,
+            {"param": '"1 2"'},
+            422,
+            array_not_a_valid_integer_error,
+        ),
+        (
+            "spaceDelimited",
+            False,
             {"param": "1|2"},
             422,
             array_not_a_valid_integer_error,
@@ -894,6 +919,13 @@ array_not_a_valid_integer_error = {
             array_not_a_valid_integer_error,
         ),
         ("pipeDelimited", False, {"param": "1|2"}, 200, [1, 2]),
+        (
+            "pipeDelimited",
+            False,
+            {"param": '"1|2"'},
+            422,
+            array_not_a_valid_integer_error,
+        ),
         ("pipeDelimited", False, {"param": ""}, 422, array_non_nullable_error),
         ("pipeDelimited", False, {}, 200, []),
     ],
