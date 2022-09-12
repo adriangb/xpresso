@@ -63,7 +63,7 @@ mkdocs-material = "~8"
 mike = "~1"
 # doc examples
 msgpack = "^1.0.3"
-msgspec = {git = "https://github.com/jcrist/msgspec.git", branch = "main"}
+msgspec = {git = "https://github.com/jcrist/msgspec.git", branch = "main", python = ">=3.8"}
 # benchmarks
 fastapi = ">=0.75.0"  # incompatible with the latest starlette
 httpx = ">=0.23.0"

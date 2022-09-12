@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from msgspec import Struct
 
@@ -13,7 +13,7 @@ class Item(Struct):
     bar: int
 
 
-async def echo_item(items: FromJson[list[Item]]) -> int:
+async def echo_item(items: FromJson[List[Item]]) -> int:
     return len(items)
 
 

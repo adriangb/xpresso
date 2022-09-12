@@ -1,9 +1,15 @@
-from docs_src.advanced.binders.msgspec import tests as msgspec_binder_tests
+import sys
+
+import pytest
 
 
+@pytest.mark.skipif(sys.version_info < (3, 8), reason="msgspec does not support 3.7")
 def test_count_items() -> None:
-    msgspec_binder_tests.test_count_items()
+    from docs_src.advanced.binders.msgspec.tests import test_count_items
+    test_count_items()
 
 
+@pytest.mark.skipif(sys.version_info < (3, 8), reason="msgspec does not support 3.7")
 def test_openapi_schema() -> None:
-    msgspec_binder_tests.test_openapi_schema()
+    from docs_src.advanced.binders.msgspec.tests import test_openapi_schema
+    test_openapi_schema()
