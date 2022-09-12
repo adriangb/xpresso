@@ -35,7 +35,7 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.7,<4"
+python = ">=3.8,<4"
 di = ">=0.70.0"
 anyio = ">=3.4.0,<5"
 starlette = ">=0.17.1,<1"
@@ -63,6 +63,7 @@ mkdocs-material = "~8"
 mike = "~1"
 # doc examples
 msgpack = "^1.0.3"
+msgspec = {git = "https://github.com/jcrist/msgspec.git", branch = "main", python = ">=3.8"}
 # benchmarks
 fastapi = ">=0.75.0"  # incompatible with the latest starlette
 httpx = ">=0.23.0"
