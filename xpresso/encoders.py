@@ -25,7 +25,7 @@ from xpresso.typing import Some
 
 
 class Encoder(Protocol):
-    def __call__(self, obj: Any) -> Any:
+    def __call__(self, __obj: Any) -> Any:
         ...
 
 

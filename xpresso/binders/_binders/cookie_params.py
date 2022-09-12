@@ -71,14 +71,14 @@ class Extractor(NamedTuple):
     ) -> Any:
         param = connection.cookies.get(self.name, None)
         if param is not None:
-            return await validate_param_field(
+            return validate_param_field(
                 field=self.field,
                 in_="cookie",
                 name=self.name,
                 connection=connection,
                 values=Some(self.extractor(param)),
             )
-        return await validate_param_field(
+        return validate_param_field(
             field=self.field,
             in_="cookie",
             name=self.name,
