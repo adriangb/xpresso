@@ -117,7 +117,7 @@ class Extractor(NamedTuple):
             raise ERRORS[connection.scope["type"]](
                 [ErrorWrapper(exc=exc, loc=("header", self.name))]
             )
-        return await validate_param_field(
+        return validate_param_field(
             field=self.field,
             in_="header",
             name=self.name,

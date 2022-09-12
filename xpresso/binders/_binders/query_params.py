@@ -49,7 +49,7 @@ class Extractor(NamedTuple):
                     )
                 ]
             )
-        return await validate_param_field(
+        return validate_param_field(
             field=self.field,
             in_="query",
             name=self.name,

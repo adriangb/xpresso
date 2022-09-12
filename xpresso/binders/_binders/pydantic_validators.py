@@ -8,7 +8,7 @@ from xpresso.exceptions import RequestValidationError, WebSocketValidationError
 from xpresso.typing import Some
 
 
-async def validate_param_field(
+def validate_param_field(
     field: ModelField,
     name: str,
     in_: str,
