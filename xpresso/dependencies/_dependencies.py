@@ -1,6 +1,7 @@
 import typing
 
 from di.api.providers import DependencyProvider
+from di.concurrency import as_async
 from di.dependant import Dependant
 from di.dependant import Injectable as InjectableBase
 from di.dependant import Marker
@@ -46,11 +47,12 @@ def Depends(
     sync_to_thread: bool = False,
     scope: typing.Optional[Scope] = None,
 ) -> typing.Any:
+    if sync_to_thread:
+        call = as_async(call)
     return DependsMarker(
         call=call,
         use_cache=use_cache,
         wire=wire,
-        sync_to_thread=sync_to_thread,
         scope=scope,
     )
 

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "xpresso"
-version = "0.42.3"
+version = "0.42.4"
 description = "A developer centric, performant Python web framework"
 authors = ["Adrian Garcia Badaracco <adrian@adriangb.com>"]
 readme = "README.md"
@@ -36,7 +36,7 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = ">=3.7,<4"
-di = ">=0.70.0"
+di = ">=0.72.1"
 anyio = ">=3.4.0,<5"
 starlette = ">=0.17.1,<1"
 typing-extensions = { version = ">=3", python = "<3.9" }
