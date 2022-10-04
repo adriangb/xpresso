@@ -38,7 +38,7 @@ classifiers = [
 python = ">=3.7,<4"
 di = ">=0.72.1"
 anyio = ">=3.4.0,<5"
-starlette = ">=0.17.1,<1"
+starlette = ">=0.21.0,<1"
 typing-extensions = { version = ">=3", python = "<3.9" }
 pydantic = "^1.9.0"
 

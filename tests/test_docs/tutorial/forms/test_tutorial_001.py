@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List
 
 import pytest
 
@@ -105,8 +105,7 @@ def test_openapi_schema():
     ],
 )
 def test_upload(tags: List[str], result: str):
-    data: List[Tuple[str, str]] = [("tags", tag) for tag in tags]
-    data.append(("name", "John"))
+    data = {"tags": tags, "name": "John"}
     response = client.post("/form", data=data)
     assert response.status_code == 200, response.content
     assert response.json() == result

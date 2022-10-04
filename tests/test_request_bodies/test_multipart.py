@@ -20,7 +20,7 @@ Files = typing.List[
         ],
     ]
 ]
-Data = typing.List[typing.Tuple[str, str]]
+Data = typing.Dict[str, typing.Union[str, typing.List[str]]]
 
 
 class TruthyEmptyList(typing.List[typing.Any]):
@@ -53,7 +53,7 @@ def test_uploadfile_field() -> None:
             ),
         ),
     ]
-    data: Data = []
+    data: Data = {}
     resp = client.post("/", files=files, data=data)
     assert resp.status_code == 200, resp.text
 
@@ -157,7 +157,7 @@ def test_bytes_field() -> None:
             ),
         ),
     ]
-    data: Data = []
+    data: Data = {}
     resp = client.post("/", files=files, data=data)
     assert resp.status_code == 200, resp.text
 
@@ -261,7 +261,7 @@ def test_scalar_alias() -> None:
             ),
         ),
     ]
-    data: Data = []
+    data: Data = {}
     resp = client.post("/", files=files, data=data)
     assert resp.status_code == 200, resp.text
 
@@ -375,7 +375,7 @@ def test_array() -> None:
             ),
         ),
     ]
-    data: Data = []
+    data: Data = {}
     resp = client.post("/", files=files, data=data)
     assert resp.status_code == 200, resp.text
 
@@ -492,7 +492,7 @@ def test_array_alias() -> None:
             ),
         ),
     ]
-    data: Data = []
+    data: Data = {}
     resp = client.post("/", files=files, data=data)
     assert resp.status_code == 200, resp.text
 
@@ -590,7 +590,7 @@ def test_string_instead_of_file() -> None:
     client = TestClient(app)
 
     files: Files = TruthyEmptyList()
-    data: Data = [("file", "notafile")]
+    data: Data = {"file": "notafile"}
     resp = client.post("/", files=files, data=data)
     assert resp.status_code == 422, resp.text
     assert resp.json() == {
@@ -615,7 +615,7 @@ def test_missing_file():
     client = TestClient(app)
 
     files: Files = TruthyEmptyList()
-    data: Data = [("otherfield", "placeholder")]
+    data: Data = {"otherfield": "placeholder"}
     resp = client.post("/", files=files, data=data)
     assert resp.status_code == 422, resp.text
     assert resp.json() == {
@@ -660,7 +660,7 @@ def test_file_not_required(
     app = App([Path("/", post=test)])
     client = TestClient(app)
 
-    data: Data = [("otherfield", "placeholder to ensure a valid multipart body")]
+    data: Data = {"otherfield": "placeholder to ensure a valid multipart body"}
     resp = client.post("/", files=files, data=data)
     assert resp.status_code == 200, resp.text
     assert resp.json() == expected_response

@@ -218,7 +218,7 @@ def test_invalid_serialization() -> None:
     client = TestClient(app)
 
     # use explode=True encoding when explode=False was expected
-    resp = client.post("/", data=[("field", "1"), ("field", "2")])
+    resp = client.post("/", data={"field": ["1", "2"]})
     assert resp.status_code == 422, resp.content
     assert resp.json() == {
         "detail": [
@@ -239,7 +239,7 @@ def test_invalid_serialization() -> None:
     ],
 )
 def test_optional_form(
-    data: typing.Optional[typing.Iterable[typing.Tuple[str, str]]],
+    data: typing.Optional[typing.Mapping[str, str]],
     status_code: int,
     json_response: typing.Dict[str, typing.Any],
 ) -> None:

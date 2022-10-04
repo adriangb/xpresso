@@ -217,7 +217,9 @@ def test_non_nullable_not_required() -> None:
     resp = client.post("/")
     assert resp.status_code == 200, resp.content
 
-    resp = client.post("/", data=b"null", headers={"Content-Type": "application/json"})
+    resp = client.post(
+        "/", content=b"null", headers={"Content-Type": "application/json"}
+    )
     assert resp.status_code == 422, resp.content
 
     expected_openapi: typing.Dict[str, typing.Any] = {
@@ -324,7 +326,9 @@ def test_nullable_required() -> None:
     resp = client.post("/")
     assert resp.status_code == 422, resp.content
 
-    resp = client.post("/", data=b"null", headers={"Content-Type": "application/json"})
+    resp = client.post(
+        "/", content=b"null", headers={"Content-Type": "application/json"}
+    )
     assert resp.status_code == 200, resp.content
 
     expected_openapi: typing.Dict[str, typing.Any] = {
@@ -428,7 +432,9 @@ def test_nullable_not_required() -> None:
     resp = client.post("/")
     assert resp.status_code == 200, resp.content
 
-    resp = client.post("/", data=b"null", headers={"Content-Type": "application/json"})
+    resp = client.post(
+        "/", content=b"null", headers={"Content-Type": "application/json"}
+    )
     assert resp.status_code == 200, resp.content
 
     expected_openapi: typing.Dict[str, typing.Any] = {
@@ -559,7 +565,7 @@ def test_invalid_json() -> None:
 
     with TestClient(app) as client:
         resp = client.post(
-            "/", data=b"notvalidjson", headers={"content-type": "application/json"}
+            "/", content=b"notvalidjson", headers={"content-type": "application/json"}
         )
     assert resp.status_code == 422
     assert resp.json() == {
@@ -579,7 +585,7 @@ def test_consume() -> None:
 
     with TestClient(app) as client:
         resp = client.post(
-            "/", data=b'"test"', headers={"Content-Type": "application/json"}
+            "/", content=b'"test"', headers={"Content-Type": "application/json"}
         )
     assert resp.status_code == 200
 
@@ -695,9 +701,11 @@ def test_media_type_validation_enabled() -> None:
     app = App([Path("/", post=endpoint)])
 
     with TestClient(app) as client:
-        resp = client.post("/", data=b"1", headers={"Content-Type": "application/json"})
+        resp = client.post(
+            "/", content=b"1", headers={"Content-Type": "application/json"}
+        )
         assert resp.status_code == 200
-        resp = client.post("/", data=b"1", headers={"Content-Type": "text/plain"})
+        resp = client.post("/", content=b"1", headers={"Content-Type": "text/plain"})
         assert resp.status_code == 415
         assert "Media type text/plain is not supported" in resp.text
 
@@ -713,10 +721,12 @@ def test_media_type_validation_disabled() -> None:
 
     with TestClient(app) as client:
         resp = client.post(
-            "/validate-false", data=b"1", headers={"Content-Type": "application/json"}
+            "/validate-false",
+            content=b"1",
+            headers={"Content-Type": "application/json"},
         )
         assert resp.status_code == 200
         resp = client.post(
-            "/validate-false", data=b"1", headers={"Content-Type": "text/plain"}
+            "/validate-false", content=b"1", headers={"Content-Type": "text/plain"}
         )
         assert resp.status_code == 200

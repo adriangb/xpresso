@@ -18,7 +18,7 @@ def test_extract_into_bytes(consume: bool):
     app = App([Path("/", post=endpoint)])
 
     client = TestClient(app)
-    resp = client.post("/", data=b"data")
+    resp = client.post("/", content=b"data")
     assert resp.status_code == 200, resp.content
 
 
@@ -31,16 +31,16 @@ def test_extract_into_uploadfile(consume: bool):
     app = App([Path("/", post=endpoint)])
 
     client = TestClient(app)
-    resp = client.post("/", data=b"data")
+    resp = client.post("/", content=b"data")
     assert resp.status_code == 200, resp.content
 
 
 def test_extract_into_stream():
     async def endpoint(file: FromFile[AsyncIterator[bytes]]) -> Response:
-        expected_chunks = [b"d", b"ata", b""]
+        got = bytearray()
         async for chunk in file:
-            assert chunk == expected_chunks.pop(0)
-        assert not expected_chunks, expected_chunks
+            got.extend(chunk)
+        assert got == b"data"
         return Response()
 
     app = App([Path("/", post=endpoint)])
@@ -50,9 +50,7 @@ def test_extract_into_stream():
         yield b"ata"
 
     client = TestClient(app)
-    # note: TestClient / requests does not have the right type annotation here
-    # but see https://docs.python-requests.org/en/latest/user/advanced/#chunk-encoded-requests
-    resp = client.post("/", data=stream())  # type: ignore
+    resp = client.post("/", content=stream())  # type: ignore
     assert resp.status_code == 200, resp.content
 
 
@@ -90,7 +88,7 @@ def test_extract_into_bytes_empty_file(
     app = App([Path("/", post=endpoint)])
 
     client = TestClient(app)
-    resp = client.post("/", data=data)
+    resp = client.post("/", content=data)
     assert resp.status_code == 200, resp.content
 
 
@@ -115,7 +113,7 @@ def test_extract_into_uploadfile_empty_file(
     app = App([Path("/", post=endpoint)])
 
     client = TestClient(app)
-    resp = client.post("/", data=data)
+    resp = client.post("/", content=data)
     assert resp.status_code == 200, resp.content
 
 
@@ -138,7 +136,7 @@ def test_extract_into_stream_empty_file(
     app = App([Path("/", post=endpoint)])
 
     client = TestClient(app)
-    resp = client.post("/", data=data)
+    resp = client.post("/", content=data)
     assert resp.status_code == 200, resp.content
 
 
@@ -164,7 +162,7 @@ def test_marker_used_in_multiple_locations():
     app = App([Path("/", post=endpoint)])
 
     client = TestClient(app)
-    resp = client.post("/", data=b"data")
+    resp = client.post("/", content=b"data")
     assert resp.status_code == 200, resp.content
 
     expected_openapi: Dict[str, Any] = {

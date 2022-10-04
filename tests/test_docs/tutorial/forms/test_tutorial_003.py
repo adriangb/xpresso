@@ -107,7 +107,7 @@ def test_upload(files: List[str], result: str):
 
     response = client.post(
         "/form",
-        data=[("name", "John")],
+        data={"name": "John"},
         files=TruthyList(
             [("files", ("file.txt", BytesIO(f.encode()), "text/plain")) for f in files]
         ),
