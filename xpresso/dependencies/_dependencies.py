@@ -1,4 +1,3 @@
-import inspect
 import typing
 
 from di.api.providers import DependencyProvider
@@ -84,10 +83,7 @@ class DependsMarker(Marker, typing.Generic[DependencyType]):
     def as_dependant(self) -> Dependant[DependencyType]:
         call: "typing.Optional[DependencyProvider]"
         if self.sync_to_thread:
-            if not (
-                inspect.isasyncgenfunction(self.call)
-                or inspect.iscoroutinefunction(self.call)
-            ):
+            if not self.call:
                 raise ValueError(
                     "sync_to_thread can only be used if you explicitly declare the target function"
                 )
