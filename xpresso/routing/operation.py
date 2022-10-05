@@ -101,7 +101,7 @@ class Operation(BaseRoute):
             typing.Callable[[typing.Any], Response]
         ] = None,
         response_encoder: typing.Optional[Encoder] = JsonableEncoder(),
-        sync_to_thread: bool = True,
+        sync_to_thread: bool = False,
         # responses
         response_status_code: int = 200,
         response_media_type: str = "application/json",
