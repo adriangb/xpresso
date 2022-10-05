@@ -57,6 +57,8 @@ coverage = { extras = ["toml"], version = "~6" }
 requests = "~2"
 python-multipart = "~0"
 trio = "^0.19.0"
+# same problem as https://github.com/encode/httpcore/pull/590
+importlib-metadata = {version = "4.13.0", python = ">=3.7"}
 # docs
 mkdocs = "~1"
 mkdocs-material = "~8"
