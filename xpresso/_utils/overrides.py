@@ -39,7 +39,6 @@ class DependencyOverrideManager:
                 scope=scope,  # type: ignore[arg-type]
                 use_cache=dependant.use_cache,
                 wire=dependant.wire,
-                sync_to_thread=dependant.sync_to_thread,
             )
             if param is not None and param.annotation is not param.empty:
                 type_ = get_type(param)

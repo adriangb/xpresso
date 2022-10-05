@@ -69,7 +69,7 @@ class DependsMarker(Marker, typing.Generic[DependencyType]):
         *,
         use_cache: bool = True,
         wire: bool = True,
-        sync_to_thread: bool = True,
+        sync_to_thread: bool = False,
         scope: typing.Optional[Scope] = None,
     ) -> None:
         super().__init__(
@@ -77,16 +77,24 @@ class DependsMarker(Marker, typing.Generic[DependencyType]):
             scope=scope,
             use_cache=use_cache,
             wire=wire,
-            sync_to_thread=sync_to_thread,
         )
+        self.sync_to_thread = sync_to_thread
 
     def as_dependant(self) -> Dependant[DependencyType]:
+        call: "typing.Optional[DependencyProvider]"
+        if self.sync_to_thread:
+            if not self.call:
+                raise ValueError(
+                    "sync_to_thread can only be used if you explicitly declare the target function"
+                )
+            call = as_async(self.call)
+        else:
+            call = self.call
         return Dependant(
-            call=self.call,
+            call=call,  # type: ignore
             scope=self.scope,
             use_cache=self.use_cache,
             wire=self.wire,
-            sync_to_thread=self.sync_to_thread,
             marker=self,
         )
 

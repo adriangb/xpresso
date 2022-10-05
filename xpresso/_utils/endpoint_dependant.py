@@ -3,6 +3,7 @@ from __future__ import annotations
 import typing
 
 from di.api.providers import CallableProvider, CoroutineProvider
+from di.concurrency import as_async
 from di.dependant import Dependant
 
 from xpresso.dependencies._dependencies import Depends, DependsMarker
@@ -16,12 +17,13 @@ class EndpointDependant(Dependant[typing.Any]):
         endpoint: Endpoint,
         sync_to_thread: bool = False,
     ) -> None:
+        if sync_to_thread:
+            endpoint = as_async(endpoint)
         super().__init__(
             call=endpoint,
             scope="endpoint",
             use_cache=False,
             wire=True,
-            sync_to_thread=sync_to_thread,
         )
 
     def get_default_marker(self) -> DependsMarker[None]:
