@@ -256,7 +256,7 @@ def test_optional_form(
 
     resp = client.post(
         "/",
-        data=data,
+        data=data,  # type: ignore[arg-type]
     )
     assert resp.status_code == status_code, resp.text
     assert resp.json() == json_response

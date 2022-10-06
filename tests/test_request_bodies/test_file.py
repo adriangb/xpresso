@@ -88,7 +88,7 @@ def test_extract_into_bytes_empty_file(
     app = App([Path("/", post=endpoint)])
 
     client = TestClient(app)
-    resp = client.post("/", content=data)
+    resp = client.post("/", content=data)  # type: ignore[arg-type]
     assert resp.status_code == 200, resp.content
 
 
@@ -113,7 +113,7 @@ def test_extract_into_uploadfile_empty_file(
     app = App([Path("/", post=endpoint)])
 
     client = TestClient(app)
-    resp = client.post("/", content=data)
+    resp = client.post("/", content=data)  # type: ignore[arg-type]
     assert resp.status_code == 200, resp.content
 
 
@@ -136,7 +136,7 @@ def test_extract_into_stream_empty_file(
     app = App([Path("/", post=endpoint)])
 
     client = TestClient(app)
-    resp = client.post("/", content=data)
+    resp = client.post("/", content=data)  # type: ignore[arg-type]
     assert resp.status_code == 200, resp.content
 
 

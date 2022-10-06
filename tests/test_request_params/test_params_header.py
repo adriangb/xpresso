@@ -31,7 +31,7 @@ def test_scalar_string(
 
     client = TestClient(app)
 
-    resp = client.get("/", headers=headers)
+    resp = client.get("/", headers=headers)  # type: ignore[arg-type]
     assert resp.status_code == status_code, resp.content
     assert resp.json() == json_response
 
@@ -88,7 +88,7 @@ def test_scalar_int(
 
     client = TestClient(app)
 
-    resp = client.get("/", headers=headers)
+    resp = client.get("/", headers=headers)  # type: ignore[arg-type]
     assert resp.status_code == status_code, resp.content
     assert resp.json() == json_response
 
@@ -119,7 +119,7 @@ def test_array_string(
 
     client = TestClient(app)
 
-    resp = client.get("/", headers=headers)
+    resp = client.get("/", headers=headers)  # type: ignore[arg-type]
     assert resp.status_code == status_code, resp.content
     assert resp.json() == json_response
 
@@ -179,7 +179,7 @@ def test_array_int(
 
     client = TestClient(app)
 
-    resp = client.get("/", headers=headers)
+    resp = client.get("/", headers=headers)  # type: ignore[arg-type]
     assert resp.status_code == status_code, resp.content
     assert resp.json() == json_response
 
@@ -377,7 +377,7 @@ def test_object(
 
     client = TestClient(app)
 
-    resp = client.get("/", headers=headers)
+    resp = client.get("/", headers=headers)  # type: ignore[arg-type]
     assert resp.status_code == status_code, resp.content
     assert resp.json() == json_response
 
