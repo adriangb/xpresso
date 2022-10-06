@@ -39,7 +39,7 @@ def test_get_item_authorization(
     json_response: Dict[str, Any],
 ):
     client = TestClient(app)
-    params = [("roles", role) for role in roles]
+    params = tuple([("roles", role) for role in roles])
     response = client.get("/items/foobar", params=params)
     assert response.status_code == status_code, response.content
     assert response.json() == json_response
@@ -72,7 +72,7 @@ def test_delete_item_authorization(
     json_response: Dict[str, Any],
 ):
     client = TestClient(app)
-    params = [("roles", role) for role in roles]
+    params = tuple([("roles", role) for role in roles])
     response = client.delete("/items/foobar", params=params)
     assert response.status_code == status_code, response.content
     assert response.json() == json_response

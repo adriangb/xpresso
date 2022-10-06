@@ -93,6 +93,6 @@ def test_openapi_schema():
     ],
 )
 def test_read_item(params: Iterable[Tuple[str, str]], json_response: Dict[str, Any]):
-    response = client.get("/items/", params=params)
+    response = client.get("/items/", params=tuple(params))
     assert response.status_code == 200, response.content
     assert response.json() == json_response

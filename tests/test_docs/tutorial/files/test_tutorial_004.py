@@ -105,6 +105,6 @@ def test_put_file(
     status_code: int,
     expected_response_json: Any,
 ):
-    response = client.put("/count-bytes", data=b"123", headers=headers)
+    response = client.put("/count-bytes", content=b"123", headers=headers)
     assert response.status_code == status_code
     assert response.json() == expected_response_json
