@@ -1,8 +1,10 @@
 import asyncio
 
 from starlette.concurrency import run_in_threadpool
-from starlette.exceptions import ExceptionMiddleware as StarletteExceptionMiddleware
 from starlette.exceptions import HTTPException
+from starlette.middleware.exceptions import (
+    ExceptionMiddleware as StarletteExceptionMiddleware,
+)
 from starlette.requests import Request
 from starlette.types import Message, Receive, Scope, Send
 
