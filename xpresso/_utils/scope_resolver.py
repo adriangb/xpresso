@@ -1,12 +1,12 @@
 from typing import Any, Sequence
 
-from di.api.dependencies import DependantBase
+from di.api.dependencies import DependentBase
 from di.api.scopes import Scope
 
 
 def endpoint_scope_resolver(
-    dep: DependantBase[Any],
-    sub_dependant_scopes: Sequence[Scope],
+    dep: DependentBase[Any],
+    sub_dependent_scopes: Sequence[Scope],
     _: Sequence[Scope],
 ) -> Scope:
     """Resolve scopes by defaulting to "connection"
@@ -15,14 +15,14 @@ def endpoint_scope_resolver(
     """
     if dep.scope is not None:
         return dep.scope
-    if "endpoint" in sub_dependant_scopes:
+    if "endpoint" in sub_dependent_scopes:
         return "endpoint"
     return "connection"
 
 
 def lifespan_scope_resolver(
-    dep: DependantBase[Any],
-    sub_dependant_scopes: Sequence[Scope],
+    dep: DependentBase[Any],
+    sub_dependent_scopes: Sequence[Scope],
     _: Sequence[Scope],
 ) -> Scope:
     """Always default to the "app" scope"""

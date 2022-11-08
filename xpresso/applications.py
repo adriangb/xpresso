@@ -4,10 +4,10 @@ import inspect
 import typing
 
 import starlette.types
-from di.api.dependencies import DependantBase
-from di.api.solved import SolvedDependant
+from di.api.dependencies import DependentBase
+from di.api.solved import SolvedDependent
 from di.container import Container, ContainerState, bind_by_type
-from di.dependant import Dependant, JoinedDependant
+from di.dependent import Dependent, JoinedDependent
 from di.executors import AsyncExecutor
 from starlette.background import BackgroundTasks
 from starlette.exceptions import HTTPException
@@ -66,7 +66,7 @@ class App:
         *,
         container: typing.Optional[Container] = None,
         dependencies: typing.Optional[
-            typing.Iterable[typing.Union[DependantBase[typing.Any], BoundDependsMarker]]
+            typing.Iterable[typing.Union[DependentBase[typing.Any], BoundDependsMarker]]
         ] = None,
         tags: typing.Optional[typing.List[str]] = None,
         responses: typing.Optional[
@@ -100,8 +100,8 @@ class App:
             # first run setup to find all routes, their lifespans and callbacks to solve them
             lifespans, prepare_cbs = self._setup()
             self._setup_run = True
-            placeholder = Dependant(lambda: None, scope="app")
-            dep: "DependantBase[typing.Any]"
+            placeholder = Dependent(lambda: None, scope="app")
+            dep: "DependentBase[typing.Any]"
             executor = AsyncExecutor()
 
             async with self._container_state.enter_scope(
@@ -111,16 +111,16 @@ class App:
                 # lifespans can get a reference to the container and create/replace binds
                 # so it is important that we execute them before solving the endpoints
                 if lifespan is not None:
-                    dep = Dependant(
+                    dep = Dependent(
                         _wrap_lifespan_as_async_generator(lifespan), scope="app"
                     )
                 else:
                     dep = placeholder
                 solved = self.container.solve(
-                    JoinedDependant(
+                    JoinedDependent(
                         dep,
                         siblings=[
-                            Dependant(lifespan, scope="app") for lifespan in lifespans
+                            Dependent(lifespan, scope="app") for lifespan in lifespans
                         ],
                     ),
                     scopes=Scopes,
@@ -137,7 +137,7 @@ class App:
                     # (the server will create separate tasks for the lifespan and endpoint,
                     # if we run app scoped dependencies lazily the setup would run in a different
                     # scope than the teardown)
-                    lifespan_deps: "typing.List[DependantBase[typing.Any]]" = []
+                    lifespan_deps: "typing.List[DependentBase[typing.Any]]" = []
                     for cb in prepare_cbs:
                         prepared = cb()
                         lifespan_deps.extend(
@@ -146,7 +146,7 @@ class App:
 
                     await self.container.execute_async(
                         self.container.solve(
-                            JoinedDependant(
+                            JoinedDependent(
                                 placeholder,
                                 siblings=lifespan_deps,
                             ),
@@ -240,17 +240,17 @@ class App:
         self,
     ) -> typing.Tuple[
         typing.List[typing.Callable[..., typing.AsyncIterator[None]]],
-        typing.List[typing.Callable[[], SolvedDependant[typing.Any]]],
+        typing.List[typing.Callable[[], SolvedDependent[typing.Any]]],
     ]:
         lifespans: "typing.List[typing.Callable[..., typing.AsyncIterator[None]]]" = []
         seen_routers: "typing.Set[typing.Any]" = set()
-        prepare_cbs: "typing.List[typing.Callable[[], SolvedDependant[typing.Any]]]" = (
+        prepare_cbs: "typing.List[typing.Callable[[], SolvedDependent[typing.Any]]]" = (
             []
         )
         for route in visit_routes(
             app_type=App, router=self.router, nodes=[self, self.router], path=""
         ):
-            dependencies: typing.List[DependantBase[typing.Any]] = []
+            dependencies: typing.List[DependentBase[typing.Any]] = []
             for node in route.nodes:
                 if isinstance(node, Router):
                     dependencies.extend(node.dependencies)
@@ -413,13 +413,13 @@ def _wrap_lifespan_as_async_generator(
 def _register_framework_dependencies(container: Container, app: App):
     container.bind(
         bind_by_type(
-            Dependant(Request, scope="connection", wire=False),
+            Dependent(Request, scope="connection", wire=False),
             Request,
         )
     )
     container.bind(
         bind_by_type(
-            Dependant(
+            Dependent(
                 HTTPConnection,
                 scope="connection",
                 wire=False,
@@ -429,7 +429,7 @@ def _register_framework_dependencies(container: Container, app: App):
     )
     container.bind(
         bind_by_type(
-            Dependant(
+            Dependent(
                 WebSocket,
                 scope="connection",
                 wire=False,
@@ -439,7 +439,7 @@ def _register_framework_dependencies(container: Container, app: App):
     )
     container.bind(
         bind_by_type(
-            Dependant(
+            Dependent(
                 BackgroundTasks,
                 scope="connection",
                 wire=False,
@@ -449,7 +449,7 @@ def _register_framework_dependencies(container: Container, app: App):
     )
     container.bind(
         bind_by_type(
-            Dependant(
+            Dependent(
                 lambda: app.container,
                 scope="app",
                 wire=False,
@@ -460,7 +460,7 @@ def _register_framework_dependencies(container: Container, app: App):
     )
     container.bind(
         bind_by_type(
-            Dependant(
+            Dependent(
                 lambda: app,
                 scope="app",
                 wire=False,

@@ -1,7 +1,7 @@
 import typing
 
 import starlette.middleware
-from di.api.dependencies import DependantBase
+from di.api.dependencies import DependentBase
 from starlette.routing import BaseRoute
 from starlette.routing import Router as StarletteRouter
 from starlette.types import Receive, Scope, Send
@@ -29,7 +29,7 @@ _MiddlewareIterator = typing.Iterable[
 class Router:
     routes: typing.Sequence[BaseRoute]
     lifespan: typing.Optional[typing.Callable[..., typing.AsyncContextManager[None]]]
-    dependencies: typing.Sequence[DependantBase[typing.Any]]
+    dependencies: typing.Sequence[DependentBase[typing.Any]]
     tags: typing.Sequence[str]
     include_in_schema: bool
     _app: _ASGIApp
@@ -58,7 +58,7 @@ class Router:
         redirect_slashes: bool = True,
         default: typing.Optional[_ASGIApp] = None,
         dependencies: typing.Optional[
-            typing.Iterable[typing.Union[DependantBase[typing.Any], BoundDependsMarker]]
+            typing.Iterable[typing.Union[DependentBase[typing.Any], BoundDependsMarker]]
         ] = None,
         tags: typing.Optional[typing.List[str]] = None,
         responses: typing.Optional[
@@ -75,7 +75,7 @@ class Router:
             lifespan=lifespan,  # type: ignore[arg-type]
         )
         self.dependencies = tuple(
-            dep if isinstance(dep, DependantBase) else dep.as_dependant()
+            dep if isinstance(dep, DependentBase) else dep.as_dependent()
             for dep in dependencies or ()
         )
         self.tags = list(tags or [])

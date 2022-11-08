@@ -2,7 +2,7 @@ import inspect
 import typing
 
 from di.api.dependencies import CacheKey
-from di.dependant import Dependant, Marker
+from di.dependent import Dependent, Marker
 
 from xpresso._utils.typing import Protocol
 from xpresso.binders.api import SupportsExtractor, SupportsOpenAPI
@@ -15,7 +15,7 @@ class SupportsMarker(Protocol[T]):
         ...
 
 
-class Binder(Dependant[typing.Any]):
+class Binder(Dependent[typing.Any]):
     def __init__(
         self,
         *,
