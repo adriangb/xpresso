@@ -11,7 +11,7 @@ from starlette.routing import compile_path  # type: ignore[import]
 
 from xpresso._utils.routing import VisitedRoute
 from xpresso._utils.typing import get_args, get_origin, get_type_hints
-from xpresso.binders import dependants as binder_dependants
+from xpresso.binders import dependents as binder_dependents
 from xpresso.openapi import models
 from xpresso.openapi._constants import REF_PREFIX
 from xpresso.openapi._utils import merge_response_specs, parse_examples
@@ -203,7 +203,7 @@ def get_operation(
     docstring = inspect.cleandoc(getattr(route.endpoint, "__doc__", None) or "") or None
     if docstring and not data["description"]:
         data["description"] = docstring
-    route_dependant = route.dependant
+    route_dependent = route.dependent
     # collect responses
     response_model = route.response_model
     if response_model is TypeUnset:
@@ -262,8 +262,8 @@ def get_operation(
     )
 
     operation = models.Operation.parse_obj(data)
-    for dep in route_dependant.dag:
-        if isinstance(dep, binder_dependants.Binder):
+    for dep in route_dependent.dag:
+        if isinstance(dep, binder_dependents.Binder):
             dep.openapi.modify_operation_schema(model_name_map, operation, components)
 
     can_fail_validation = operation.parameters or operation.requestBody
@@ -375,12 +375,12 @@ def get_flat_models(routes: Routes) -> Set[type]:
     res: Set[type] = set()
     for _, operations in routes.values():
         for operation in operations.values():
-            dependant = operation.dependant
-            flat_dependencies = dependant.dag.keys()
+            dependent = operation.dependent
+            flat_dependencies = dependent.dag.keys()
             for dep in flat_dependencies:
                 if isinstance(
                     dep,
-                    binder_dependants.Binder,
+                    binder_dependents.Binder,
                 ):
                     res.update(dep.openapi.get_models())
             for response in operation.responses.values():

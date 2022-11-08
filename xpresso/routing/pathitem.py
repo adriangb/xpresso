@@ -2,11 +2,11 @@ import typing
 
 import starlette.routing
 import starlette.types
-from di.api.dependencies import DependantBase
+from di.api.dependencies import DependentBase
 from di.api.providers import DependencyProvider
 from di.api.providers import DependencyProvider as Endpoint
 
-import xpresso.binders.dependants as dependants
+import xpresso.binders.dependents as dependents
 import xpresso.openapi.models as openapi_models
 from xpresso.dependencies._dependencies import DependsMarker
 from xpresso.responses import ResponseSpec, ResponseStatusCode
@@ -45,7 +45,7 @@ class Path(starlette.routing.Route):
         dependencies: typing.Optional[
             typing.Iterable[
                 typing.Union[
-                    DependantBase[typing.Any], DependsMarker[DependencyProvider]
+                    DependentBase[typing.Any], DependsMarker[DependencyProvider]
                 ]
             ]
         ] = None,
@@ -55,7 +55,7 @@ class Path(starlette.routing.Route):
         summary: typing.Optional[str] = None,
         description: typing.Optional[str] = None,
         servers: typing.Optional[typing.Sequence[openapi_models.Server]] = None,
-        parameters: typing.Optional[typing.Sequence[dependants.BinderMarker]] = None,
+        parameters: typing.Optional[typing.Sequence[dependents.BinderMarker]] = None,
         responses: typing.Optional[
             typing.Mapping[ResponseStatusCode, ResponseSpec]
         ] = None,
@@ -66,7 +66,7 @@ class Path(starlette.routing.Route):
         self.path = path
         self.redirect_slashes = redirect_slashes
         self.dependencies = tuple(
-            dep if isinstance(dep, DependantBase) else dep.as_dependant()
+            dep if isinstance(dep, DependentBase) else dep.as_dependent()
             for dep in dependencies or ()
         )
         self.summary = summary

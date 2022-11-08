@@ -1,6 +1,6 @@
 from typing import Any
 
-from di.dependant import Injectable
+from di.dependent import Injectable
 from pydantic import BaseSettings
 
 from xpresso.dependencies._dependencies import Scope

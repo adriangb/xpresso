@@ -4,14 +4,14 @@ import typing
 
 from di.api.providers import CallableProvider, CoroutineProvider
 from di.concurrency import as_async
-from di.dependant import Dependant
+from di.dependent import Dependent
 
 from xpresso.dependencies._dependencies import Depends, DependsMarker
 
 Endpoint = typing.Union[CallableProvider[typing.Any], CoroutineProvider[typing.Any]]
 
 
-class EndpointDependant(Dependant[typing.Any]):
+class EndpointDependent(Dependent[typing.Any]):
     def __init__(
         self,
         endpoint: Endpoint,

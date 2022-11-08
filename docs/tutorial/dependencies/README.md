@@ -19,7 +19,7 @@ def make_request() -> int:
 print(make_request())
 ```
 
-This example _does not_ use dependency injection because `httpx.Client` (the **dependency**) is created by the the **dependant** (`make_request()`).
+This example _does not_ use dependency injection because `httpx.Client` (the **dependency**) is created by the the **dependent** (`make_request()`).
 The most basic form of dependency injection would be to "inject" an instance of `httpx.Client` into `make_request()`:
 
 ```python

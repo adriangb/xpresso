@@ -1,11 +1,11 @@
 import typing
 from functools import partial
 
-from di.api.dependencies import DependantBase
+from di.api.dependencies import DependentBase
 from di.api.executor import SupportsAsyncExecutor
-from di.api.solved import SolvedDependant
+from di.api.solved import SolvedDependent
 from di.container import Container
-from di.dependant import JoinedDependant
+from di.dependent import JoinedDependent
 from di.executors import AsyncExecutor, ConcurrentAsyncExecutor
 from starlette.datastructures import URLPath
 from starlette.requests import HTTPConnection, Request
@@ -15,7 +15,7 @@ from starlette.types import ASGIApp, Receive, Scope, Send
 
 import xpresso.openapi.models as openapi_models
 from xpresso._utils.asgi import XpressoHTTPExtension
-from xpresso._utils.endpoint_dependant import Endpoint, EndpointDependant
+from xpresso._utils.endpoint_dependent import Endpoint, EndpointDependent
 from xpresso._utils.scope_resolver import endpoint_scope_resolver
 from xpresso.dependencies._dependencies import BoundDependsMarker, Scopes
 from xpresso.encoders import Encoder, JsonableEncoder
@@ -27,7 +27,7 @@ class NotPreparedError(Exception):
 
 
 class _OperationApp(typing.NamedTuple):
-    dependant: SolvedDependant[typing.Any]
+    dependent: SolvedDependent[typing.Any]
     container: Container
     executor: SupportsAsyncExecutor
     response_factory: typing.Callable[[typing.Any], Response]
@@ -51,7 +51,7 @@ class _OperationApp(typing.NamedTuple):
         ) as connection_state:
             async with connection_state.enter_scope("endpoint") as endpoint_state:
                 endpoint_return = await self.container.execute_async(
-                    self.dependant,
+                    self.dependent,
                     values=values,
                     executor=self.executor,
                     state=endpoint_state,
@@ -94,7 +94,7 @@ class Operation(BaseRoute):
         # xpresso params
         name: typing.Optional[str] = None,
         dependencies: typing.Optional[
-            typing.Iterable[typing.Union[DependantBase[typing.Any], BoundDependsMarker]]
+            typing.Iterable[typing.Union[DependentBase[typing.Any], BoundDependsMarker]]
         ] = None,
         execute_dependencies_concurrently: bool = False,
         response_factory: typing.Optional[
@@ -133,7 +133,7 @@ class Operation(BaseRoute):
         self.response_examples = response_examples
         self.response_headers = response_headers
         self.dependencies = tuple(
-            dep if isinstance(dep, DependantBase) else dep.as_dependant()
+            dep if isinstance(dep, DependentBase) else dep.as_dependent()
             for dep in dependencies or ()
         )
         self._app: ASGIApp = _not_prepared_app
@@ -157,11 +157,11 @@ class Operation(BaseRoute):
     def prepare(
         self,
         container: Container,
-        dependencies: typing.Iterable[DependantBase[typing.Any]],
-    ) -> SolvedDependant[typing.Any]:
-        self.dependant = container.solve(
-            JoinedDependant(
-                EndpointDependant(self.endpoint, sync_to_thread=self._sync_to_thread),
+        dependencies: typing.Iterable[DependentBase[typing.Any]],
+    ) -> SolvedDependent[typing.Any]:
+        self.dependent = container.solve(
+            JoinedDependent(
+                EndpointDependent(self.endpoint, sync_to_thread=self._sync_to_thread),
                 siblings=[*dependencies, *self.dependencies],
             ),
             scopes=Scopes,
@@ -174,12 +174,12 @@ class Operation(BaseRoute):
             executor = AsyncExecutor()
         self._app = _OperationApp(  # type: ignore[assignment]
             container=container,
-            dependant=self.dependant,
+            dependent=self.dependent,
             executor=executor,
             response_encoder=self._response_encoder,
             response_factory=self._response_factory,
         )
-        return self.dependant
+        return self.dependent
 
     def url_path_for(self, name: str, **path_params: str) -> URLPath:
         if path_params:

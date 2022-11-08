@@ -3,10 +3,10 @@ import inspect
 import typing
 from types import TracebackType
 
-from di.api.dependencies import DependantBase
+from di.api.dependencies import DependentBase
 from di.api.providers import DependencyProvider
 from di.container import Container
-from di.dependant import Dependant
+from di.dependent import Dependent
 
 from xpresso._utils.typing import Annotated, get_args, get_origin
 
@@ -29,22 +29,22 @@ class DependencyOverrideManager:
     ) -> None:
         def hook(
             param: typing.Optional[inspect.Parameter],
-            dependant: DependantBase[typing.Any],
-        ) -> typing.Optional[DependantBase[typing.Any]]:
-            if not isinstance(dependant, Dependant):
+            dependent: DependentBase[typing.Any],
+        ) -> typing.Optional[DependentBase[typing.Any]]:
+            if not isinstance(dependent, Dependent):
                 return None
-            scope = dependant.scope
-            dep = Dependant(
+            scope = dependent.scope
+            dep = Dependent(
                 replacement,
                 scope=scope,  # type: ignore[arg-type]
-                use_cache=dependant.use_cache,
-                wire=dependant.wire,
+                use_cache=dependent.use_cache,
+                wire=dependent.wire,
             )
             if param is not None and param.annotation is not param.empty:
                 type_ = get_type(param)
                 if type_ is target:
                     return dep
-            if dependant.call is not None and dependant.call is target:
+            if dependent.call is not None and dependent.call is target:
                 return dep
             return None
 

@@ -11,7 +11,7 @@ from xpresso.binders._binders.utils import (
     wrap_consumer_as_cm,
 )
 from xpresso.binders.api import ModelNameMap, SupportsExtractor, SupportsOpenAPI
-from xpresso.binders.dependants import Binder, BinderMarker
+from xpresso.binders.dependents import Binder, BinderMarker
 from xpresso.exceptions import HTTPException, RequestValidationError
 from xpresso.requests import HTTPConnection, Request
 

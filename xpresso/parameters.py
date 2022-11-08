@@ -1,6 +1,6 @@
 import typing
 
-import xpresso.binders.dependants as dependants
+import xpresso.binders.dependents as dependents
 from xpresso._utils.typing import Annotated
 from xpresso.binders._binders import (
     cookie_params,
@@ -23,7 +23,7 @@ def QueryParam(
     description: typing.Optional[str] = None,
     deprecated: typing.Optional[bool] = None,
     include_in_schema: bool = True,
-) -> dependants.BinderMarker:
+) -> dependents.BinderMarker:
     extractor = query_params.ExtractorMarker(
         alias=alias,
         explode=explode,
@@ -39,7 +39,7 @@ def QueryParam(
         include_in_schema=include_in_schema,
         param_cls=openapi_models.Query,
     )
-    return dependants.BinderMarker(
+    return dependents.BinderMarker(
         extractor_marker=extractor,
         openapi_marker=openapi,
     )
@@ -54,7 +54,7 @@ def PathParam(
     description: typing.Optional[str] = None,
     deprecated: typing.Optional[bool] = None,
     include_in_schema: bool = True,
-) -> dependants.BinderMarker:
+) -> dependents.BinderMarker:
     extractor = path_params.ExtractorMarker(
         alias=alias,
         explode=explode,
@@ -71,7 +71,7 @@ def PathParam(
         param_cls=openapi_models.Path,
         required=True,
     )
-    return dependants.BinderMarker(
+    return dependents.BinderMarker(
         extractor_marker=extractor,
         openapi_marker=openapi,
     )
@@ -86,7 +86,7 @@ def HeaderParam(
     description: typing.Optional[str] = None,
     deprecated: typing.Optional[bool] = None,
     include_in_schema: bool = True,
-) -> dependants.BinderMarker:
+) -> dependents.BinderMarker:
     extractor = header_params.ExtractorMarker(
         alias=alias,
         explode=explode,
@@ -102,7 +102,7 @@ def HeaderParam(
         include_in_schema=include_in_schema,
         param_cls=openapi_models.Header,
     )
-    return dependants.BinderMarker(
+    return dependents.BinderMarker(
         extractor_marker=extractor,
         openapi_marker=openapi,
     )
@@ -116,7 +116,7 @@ def CookieParam(
     description: typing.Optional[str] = None,
     deprecated: typing.Optional[bool] = None,
     include_in_schema: bool = True,
-) -> dependants.BinderMarker:
+) -> dependents.BinderMarker:
     extractor = cookie_params.ExtractorMarker(
         alias=alias,
         explode=explode,
@@ -131,7 +131,7 @@ def CookieParam(
         include_in_schema=include_in_schema,
         param_cls=openapi_models.Cookie,
     )
-    return dependants.BinderMarker(
+    return dependents.BinderMarker(
         extractor_marker=extractor,
         openapi_marker=openapi,
     )

@@ -2,9 +2,9 @@ import typing
 
 from di.api.providers import DependencyProvider
 from di.concurrency import as_async
-from di.dependant import Dependant
-from di.dependant import Injectable as InjectableBase
-from di.dependant import Marker
+from di.dependent import Dependent
+from di.dependent import Injectable as InjectableBase
+from di.dependent import Marker
 
 from xpresso._utils.typing import Literal
 
@@ -80,7 +80,7 @@ class DependsMarker(Marker, typing.Generic[DependencyType]):
         )
         self.sync_to_thread = sync_to_thread
 
-    def as_dependant(self) -> Dependant[DependencyType]:
+    def as_dependent(self) -> Dependent[DependencyType]:
         call: "typing.Optional[DependencyProvider]"
         if self.sync_to_thread:
             if not self.call:
@@ -90,7 +90,7 @@ class DependsMarker(Marker, typing.Generic[DependencyType]):
             call = as_async(self.call)
         else:
             call = self.call
-        return Dependant(
+        return Dependent(
             call=call,  # type: ignore
             scope=self.scope,
             use_cache=self.use_cache,

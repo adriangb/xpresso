@@ -5,29 +5,29 @@ import starlette.responses
 import starlette.routing
 import starlette.types
 import starlette.websockets
-from di.api.dependencies import DependantBase
+from di.api.dependencies import DependentBase
 from di.api.executor import SupportsAsyncExecutor
-from di.api.solved import SolvedDependant
+from di.api.solved import SolvedDependent
 from di.container import Container
-from di.dependant import JoinedDependant
+from di.dependent import JoinedDependent
 from di.executors import AsyncExecutor, ConcurrentAsyncExecutor
 
 from xpresso._utils.asgi import XpressoWebSocketExtension
-from xpresso._utils.endpoint_dependant import Endpoint, EndpointDependant
+from xpresso._utils.endpoint_dependent import Endpoint, EndpointDependent
 from xpresso._utils.scope_resolver import endpoint_scope_resolver
 from xpresso.dependencies._dependencies import BoundDependsMarker, Scopes
 
 
 class _WebSocketRoute:
-    __slots__ = ("container", "dependant", "executor")
+    __slots__ = ("container", "dependent", "executor")
 
     def __init__(
         self,
-        dependant: SolvedDependant[typing.Any],
+        dependent: SolvedDependent[typing.Any],
         executor: SupportsAsyncExecutor,
         container: Container,
     ) -> None:
-        self.dependant = dependant
+        self.dependent = dependent
         self.executor = executor
         self.container = container
 
@@ -51,7 +51,7 @@ class _WebSocketRoute:
                 "endpoint", state=conn_state
             ) as endpoint_state:
                 await self.container.execute_async(
-                    self.dependant,
+                    self.dependent,
                     values=values,
                     executor=self.executor,
                     state=endpoint_state,
@@ -68,7 +68,7 @@ class WebSocketRoute(starlette.routing.WebSocketRoute):
         *,
         name: typing.Optional[str] = None,
         dependencies: typing.Optional[
-            typing.Iterable[typing.Union[DependantBase[typing.Any], BoundDependsMarker]]
+            typing.Iterable[typing.Union[DependentBase[typing.Any], BoundDependsMarker]]
         ] = None,
         execute_dependencies_concurrently: bool = False,
     ) -> None:
@@ -79,7 +79,7 @@ class WebSocketRoute(starlette.routing.WebSocketRoute):
         )
         self.endpoint = endpoint
         self.dependencies = tuple(
-            dep if isinstance(dep, DependantBase) else dep.as_dependant()
+            dep if isinstance(dep, DependentBase) else dep.as_dependent()
             for dep in dependencies or ()
         )
         self.execute_dependencies_concurrently = execute_dependencies_concurrently
@@ -87,11 +87,11 @@ class WebSocketRoute(starlette.routing.WebSocketRoute):
     def prepare(
         self,
         container: Container,
-        dependencies: typing.Iterable[DependantBase[typing.Any]],
-    ) -> SolvedDependant[typing.Any]:
-        self.dependant = container.solve(
-            JoinedDependant(
-                EndpointDependant(self.endpoint),
+        dependencies: typing.Iterable[DependentBase[typing.Any]],
+    ) -> SolvedDependent[typing.Any]:
+        self.dependent = container.solve(
+            JoinedDependent(
+                EndpointDependent(self.endpoint),
                 siblings=[*dependencies, *self.dependencies],
             ),
             scopes=Scopes,
@@ -103,8 +103,8 @@ class WebSocketRoute(starlette.routing.WebSocketRoute):
         else:
             executor = AsyncExecutor()
         self.app = _WebSocketRoute(
-            dependant=self.dependant,
+            dependent=self.dependent,
             executor=executor,
             container=container,
         )
-        return self.dependant
+        return self.dependent

@@ -1,6 +1,6 @@
 from typing import Any, TypeVar
 
-from xpresso.binders.dependants import BinderMarker
+from xpresso.binders.dependents import BinderMarker
 from xpresso.typing import Annotated
 
 from .extractor import ExtractorMarker
