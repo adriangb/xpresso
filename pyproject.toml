@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "xpresso"
-version = "0.45.0"
+version = "0.45.1"
 description = "A developer centric, performant Python web framework"
 authors = ["Adrian Garcia Badaracco <adrian@adriangb.com>"]
 readme = "README.md"
@@ -40,7 +40,7 @@ di = "0.73.0"
 anyio = ">=3.4.0,<5"
 starlette = ">=0.21.0,<1"
 typing-extensions = { version = ">=3", python = "<3.9" }
-pydantic = "^1.9.0"
+pydantic = "^1.10.2"
 
 [tool.poetry.dev-dependencies]
 # linting
