@@ -77,7 +77,7 @@ jobs:
           - python: "3.x"
             os: ubuntu-latest
             starlette-version: "lockfile"
-            pydantic-version: "pydantic==1.9.0"
+            pydantic-version: "pydantic==1.10.2"
           # Disabling because of high churn for Pydantic v2
           # - python: "3.x"
           #   os: ubuntu-latest
