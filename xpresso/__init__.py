@@ -5,19 +5,19 @@ from starlette.responses import Response
 from xpresso.applications import App
 from xpresso.bodies import (
     BodyUnion,
-    File,
     Form,
     FormField,
     FormFile,
     FromBodyUnion,
-    FromFile,
     FromFormData,
     FromFormField,
     FromFormFile,
     FromJson,
     FromMultipart,
+    FromRawBody,
     Json,
     Multipart,
+    RawBody,
 )
 from xpresso.datastructures import UploadFile
 from xpresso.dependencies import Depends
@@ -51,7 +51,7 @@ __all__ = (
     "FormFile",
     "FromFormFile",
     "Form",
-    "File",
+    "RawBody",
     "Multipart",
     "Depends",
     "App",
@@ -69,7 +69,7 @@ __all__ = (
     "FromPath",
     "FromQuery",
     "HTTPException",
-    "FromFile",
+    "FromRawBody",
     "status",
     "Request",
     "Response",

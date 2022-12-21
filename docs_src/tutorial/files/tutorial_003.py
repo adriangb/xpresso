@@ -1,10 +1,10 @@
 from typing import AsyncIterator
 
-from xpresso import App, FromFile, Path
+from xpresso import App, FromRawBody, Path
 
 
 async def count_bytes_in_file(
-    data: FromFile[AsyncIterator[bytes]],
+    data: FromRawBody[AsyncIterator[bytes]],
 ) -> int:
     size = 0
     async for chunk in data:

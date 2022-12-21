@@ -4,14 +4,14 @@ import pytest
 from starlette.responses import Response
 from starlette.testclient import TestClient
 
-from xpresso import App, File, Path, UploadFile
-from xpresso.bodies import FromFile
+from xpresso import App, Path, RawBody, UploadFile
+from xpresso.bodies import FromRawBody
 from xpresso.typing import Annotated
 
 
 @pytest.mark.parametrize("consume", [True, False])
 def test_extract_into_bytes(consume: bool):
-    async def endpoint(file: Annotated[bytes, File(consume=consume)]) -> Response:
+    async def endpoint(file: Annotated[bytes, RawBody(consume=consume)]) -> Response:
         assert file == b"data"
         return Response()
 
@@ -24,7 +24,9 @@ def test_extract_into_bytes(consume: bool):
 
 @pytest.mark.parametrize("consume", [True, False])
 def test_extract_into_uploadfile(consume: bool):
-    async def endpoint(file: Annotated[UploadFile, File(consume=consume)]) -> Response:
+    async def endpoint(
+        file: Annotated[UploadFile, RawBody(consume=consume)]
+    ) -> Response:
         assert await file.read() == b"data"
         return Response()
 
@@ -36,7 +38,7 @@ def test_extract_into_uploadfile(consume: bool):
 
 
 def test_extract_into_stream():
-    async def endpoint(file: FromFile[AsyncIterator[bytes]]) -> Response:
+    async def endpoint(file: FromRawBody[AsyncIterator[bytes]]) -> Response:
         got = bytearray()
         async for chunk in file:
             got.extend(chunk)
@@ -56,7 +58,7 @@ def test_extract_into_stream():
 
 def test_read_into_stream():
     async def endpoint(
-        file: Annotated[AsyncIterator[bytes], File(consume=False)]
+        file: Annotated[AsyncIterator[bytes], RawBody(consume=False)]
     ) -> Response:
         ...
 
@@ -80,7 +82,7 @@ def test_extract_into_bytes_empty_file(
     consume: bool,
 ):
     async def endpoint(
-        file: Annotated[Optional[bytes], File(consume=consume)] = None
+        file: Annotated[Optional[bytes], RawBody(consume=consume)] = None
     ) -> Response:
         assert file is None
         return Response()
@@ -105,7 +107,7 @@ def test_extract_into_uploadfile_empty_file(
     consume: bool,
 ):
     async def endpoint(
-        file: Annotated[Optional[UploadFile], File(consume=consume)] = None
+        file: Annotated[Optional[UploadFile], RawBody(consume=consume)] = None
     ) -> Response:
         assert file is None
         return Response()
@@ -128,7 +130,7 @@ def test_extract_into_stream_empty_file(
     data: Optional[bytes],
 ):
     async def endpoint(
-        file: FromFile[Optional[AsyncIterator[bytes]]] = None,
+        file: FromRawBody[Optional[AsyncIterator[bytes]]] = None,
     ) -> Response:
         assert file is None
         return Response()
@@ -141,7 +143,7 @@ def test_extract_into_stream_empty_file(
 
 
 def test_unknown_type():
-    async def endpoint(file: FromFile[str]) -> Response:
+    async def endpoint(file: FromRawBody[str]) -> Response:
         ...
 
     app = App([Path("/", post=endpoint)])
@@ -153,8 +155,8 @@ def test_unknown_type():
 
 def test_marker_used_in_multiple_locations():
     async def endpoint(
-        file1: Annotated[bytes, File(consume=True)],
-        file2: Annotated[bytes, File(consume=True)],
+        file1: Annotated[bytes, RawBody(consume=True)],
+        file2: Annotated[bytes, RawBody(consume=True)],
     ) -> Response:
         assert file1 == file2 == b"data"
         return Response()
@@ -245,7 +247,7 @@ def test_openapi_content_type(
     given_content_type: Optional[str], expected_content_type: str
 ):
     async def endpoint(
-        file: Annotated[bytes, File(media_type=given_content_type)]
+        file: Annotated[bytes, RawBody(media_type=given_content_type)]
     ) -> Response:
         ...
 
@@ -325,7 +327,7 @@ def test_openapi_content_type(
 
 
 def test_openapi_optional():
-    async def endpoint(file: FromFile[Optional[bytes]] = None) -> Response:
+    async def endpoint(file: FromRawBody[Optional[bytes]] = None) -> Response:
         ...
 
     app = App([Path("/", post=endpoint)])
@@ -409,7 +411,7 @@ def test_openapi_optional():
 
 def test_openapi_include_in_schema():
     async def endpoint(
-        file: Annotated[bytes, File(include_in_schema=False)]
+        file: Annotated[bytes, RawBody(include_in_schema=False)]
     ) -> Response:
         ...
 
@@ -440,7 +442,7 @@ def test_openapi_include_in_schema():
 
 
 def test_openapi_format():
-    async def endpoint(file: Annotated[bytes, File(format="base64")]) -> Response:
+    async def endpoint(file: Annotated[bytes, RawBody(format="base64")]) -> Response:
         ...
 
     app = App([Path("/", post=endpoint)])
@@ -523,7 +525,7 @@ def test_openapi_format():
 
 def test_openapi_description():
     async def endpoint(
-        file: Annotated[bytes, File(description="foo bar baz")]
+        file: Annotated[bytes, RawBody(description="foo bar baz")]
     ) -> Response:
         ...
 
