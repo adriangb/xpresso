@@ -1,14 +1,8 @@
 import json
 from typing import Any, Dict
 
-from pydantic import BaseModel
-
 from xpresso import App, Json, Path, RawBody
 from xpresso.typing import Annotated
-
-
-class WebhookBody(BaseModel):
-    name: str
 
 
 async def handle_event(
