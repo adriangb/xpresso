@@ -1,6 +1,6 @@
 # Files
 
-You can read the request body directly into a file or bytes.
+You can read the raw request body directly into a file or bytes.
 This will read the data from the top level request body, and can only support 1 file.
 To receive multiple files, see the [multipart/form-data documentation].
 
@@ -35,7 +35,7 @@ If you want to read the bytes without buffering to disk or memory, use `AsyncIte
 
 ## Setting the expected content-type
 
-You can set the media type via the `media_type` parameter to `File()` and enforce it via the `enforce_media_type` parameter:
+You can set the media type via the `media_type` parameter to `RawBody()` and enforce it via the `enforce_media_type` parameter:
 
 ```python
 --8<-- "docs_src/tutorial/files/tutorial_004.py"
@@ -44,6 +44,6 @@ You can set the media type via the `media_type` parameter to `File()` and enforc
 Media types can be a media type (e.g. `image/png`) or a media type range (e.g. `image/*`).
 
 If you do not explicitly set the media type, all media types are accepted.
-Once you set an explicit media type, that media type in the requests' `Content-Type` header will be validated on incoming requests, but this behavior can be disabled via the `enforce_media_type` parameter to `File()`.
+Once you set an explicit media type, that media type in the requests' `Content-Type` header will be validated on incoming requests, but this behavior can be disabled via the `enforce_media_type` parameter to `RawBody()`.
 
 [multipart/form-data documentation]: forms.md#multipart-requests

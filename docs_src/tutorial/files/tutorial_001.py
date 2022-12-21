@@ -1,7 +1,7 @@
-from xpresso import App, FromFile, Path, UploadFile
+from xpresso import App, FromRawBody, Path, UploadFile
 
 
-async def count_bytes_in_file(file: FromFile[UploadFile]) -> int:
+async def count_bytes_in_file(file: FromRawBody[UploadFile]) -> int:
     return len(await file.read())
 
 

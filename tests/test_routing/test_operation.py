@@ -3,7 +3,7 @@ from typing import Any, Dict
 import pytest
 import starlette.routing
 
-from xpresso import App, FromFile, FromJson, Operation, Path
+from xpresso import App, FromJson, FromRawBody, Operation, Path
 from xpresso.routing.operation import NotPreparedError
 from xpresso.testclient import TestClient
 
@@ -44,7 +44,7 @@ def test_operation_comparison() -> None:
 @pytest.mark.skip
 def test_multiple_bodies_are_not_allowed() -> None:
     async def endpoint(
-        body1: FromFile[bytes],
+        body1: FromRawBody[bytes],
         body2: FromJson[str],
     ) -> None:
         raise AssertionError("Should not be called")  # pragma: no cover

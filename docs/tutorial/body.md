@@ -57,14 +57,14 @@ First, import `Field` from Pydantic and `Annotated`:
     All it does is import `Annotated` from `typing` if your Python version is >= 3.9 and [typing_extensions] otherwise.
     But if you are already using Python >= 3.9, you can just replace that with `from typing import Annotated`.
 
-Now use `Field()` inside of `Annotated[...]` to attach validation and schema customziation metadata to the `price` field:
+Now use `Field()` inside of `Annotated[...]` to attach validation and schema customization metadata to the `price` field:
 
 ```python hl_lines="11-17"
 --8<-- "docs_src/tutorial/body/tutorial_002.py"
 ```
 
 !!! tip "Tip"
-    Pydantic also supports the syntax `field_name: str = Field(...)`, but we encourage youto get used to using `Annotated` instead.
+    Pydantic also supports the syntax `field_name: str = Field(...)`, but we encourage you to get used to using `Annotated` instead.
     As you will see in later chapters about forms and multipart requests, this will allow you to mix in Pydantic's validation and schema customization with Xpresso's extractor system.
     That said, for JSON bodies using `field_name: str = Field(...)` will work just fine.
 
@@ -96,5 +96,20 @@ You can add examples via the `examples` keyword to `Json()`, `FormData()` or `Mu
 The Swagger docs will now reflect this:
 
 ![Swagger UI](body_002.png)
+
+## Raw bytes
+
+To extract the raw bytes from the body (without validating it as JSON) see [Files](files.md).
+
+## Consuming of the request body
+
+By default Xpresso will _consume_ the request body.
+This is the equivalent of calling `Request.steam()` until completion.
+When you only need to extract the body once this is probably what you want since it avoids keeping around extra memory that goes unused.
+If you want to extract the request body and still have access to it in another extractor or via `Request` you need to set `consume=False` as an argument to `Json`:
+
+```python hl_lines="15 16"
+--8<-- "docs_src/tutorial/body/tutorial_006.py"
+```
 
 [Pydantic]: https://pydantic-docs.helpmanual.io

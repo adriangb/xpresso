@@ -4,21 +4,23 @@ from starlette.responses import Response
 
 from xpresso.applications import App
 from xpresso.bodies import (
+    RawBody,  # backwards compatibility aliases; TODO: remove in a couple of releases
+)
+from xpresso.bodies import (
     BodyUnion,
-    File,
     Form,
     FormField,
     FormFile,
     FromBodyUnion,
-    FromFile,
     FromFormData,
     FromFormField,
     FromFormFile,
     FromJson,
     FromMultipart,
-    Json,
-    Multipart,
 )
+from xpresso.bodies import FromRawBody
+from xpresso.bodies import FromRawBody as FromFile
+from xpresso.bodies import Json, Multipart
 from xpresso.datastructures import UploadFile
 from xpresso.dependencies import Depends
 from xpresso.exception_handlers import ExcHandler
@@ -51,7 +53,7 @@ __all__ = (
     "FormFile",
     "FromFormFile",
     "Form",
-    "File",
+    "RawBody",
     "Multipart",
     "Depends",
     "App",
@@ -69,10 +71,14 @@ __all__ = (
     "FromPath",
     "FromQuery",
     "HTTPException",
-    "FromFile",
+    "FromRawBody",
     "status",
     "Request",
     "Response",
     "WebSocketRoute",
     "WebSocket",
+    # backwards compatibility aliases
+    # TODO: remove in a couple of releases
+    "File",
+    "FromFile",
 )

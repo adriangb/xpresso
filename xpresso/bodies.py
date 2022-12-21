@@ -34,7 +34,7 @@ def Json(
     )
 
 
-def File(
+def RawBody(
     *,
     media_type: typing.Optional[str] = None,
     enforce_media_type: bool = True,
@@ -158,12 +158,34 @@ def BodyUnion(
     )
 
 
+if typing.TYPE_CHECKING:
+    from pydantic import BaseModel
+
+    from xpresso import UploadFile
+
+
 # Convenience type aliases
 _T = typing.TypeVar("_T")
-FromJson = Annotated[_T, Json()]
-FromFile = Annotated[_T, File()]
+_BaseModelT = typing.TypeVar("_BaseModelT", bound=typing.Union["BaseModel", None])
+FromJson = Annotated[_BaseModelT, Json()]
+_BinaryT = typing.TypeVar(
+    "_BinaryT",
+    bound=typing.Union[
+        bytes,
+        "UploadFile",
+        typing.AsyncIterator[bytes],
+        None,
+    ],
+)
+FromRawBody = Annotated[_BinaryT, RawBody()]
 FromFormField = Annotated[_T, FormField()]
-FromFormFile = Annotated[_T, FormFile()]
-FromFormData = Annotated[_T, Form()]
-FromMultipart = Annotated[_T, Multipart()]
+_FormFileT = typing.TypeVar(
+    "_FormFileT",
+    bound=typing.Union[
+        bytes, "UploadFile", typing.List[bytes], "typing.List[UploadFile]", None
+    ],
+)
+FromFormFile = Annotated[_FormFileT, FormFile()]
+FromFormData = Annotated[_BaseModelT, Form()]
+FromMultipart = Annotated[_BaseModelT, Multipart()]
 FromBodyUnion = Annotated[_T, BodyUnion()]
