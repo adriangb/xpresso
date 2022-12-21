@@ -14,11 +14,14 @@ from xpresso.bodies import (
     FromFormFile,
     FromJson,
     FromMultipart,
-    FromRawBody,
-    Json,
-    Multipart,
-    RawBody,
 )
+from xpresso.bodies import FromRawBody
+from xpresso.bodies import FromRawBody as FromFile
+from xpresso.bodies import Json, Multipart
+from xpresso.bodies import (
+    RawBody,  # backwards compatibility aliases; TODO: remove in a couple of releases
+)
+from xpresso.bodies import RawBody as File
 from xpresso.datastructures import UploadFile
 from xpresso.dependencies import Depends
 from xpresso.exception_handlers import ExcHandler
@@ -75,4 +78,8 @@ __all__ = (
     "Response",
     "WebSocketRoute",
     "WebSocket",
+    # backwards compatibility aliases
+    # TODO: remove in a couple of releases
+    "File",
+    "FromFile",
 )
