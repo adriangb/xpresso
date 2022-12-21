@@ -4,6 +4,9 @@ from starlette.responses import Response
 
 from xpresso.applications import App
 from xpresso.bodies import (
+    RawBody,  # backwards compatibility aliases; TODO: remove in a couple of releases
+)
+from xpresso.bodies import (
     BodyUnion,
     Form,
     FormField,
@@ -18,10 +21,6 @@ from xpresso.bodies import (
 from xpresso.bodies import FromRawBody
 from xpresso.bodies import FromRawBody as FromFile
 from xpresso.bodies import Json, Multipart
-from xpresso.bodies import (
-    RawBody,  # backwards compatibility aliases; TODO: remove in a couple of releases
-)
-from xpresso.bodies import RawBody as File
 from xpresso.datastructures import UploadFile
 from xpresso.dependencies import Depends
 from xpresso.exception_handlers import ExcHandler
