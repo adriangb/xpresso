@@ -3,9 +3,9 @@ import inspect
 import typing
 from types import TracebackType
 
+from di import Container
 from di.api.dependencies import DependentBase
 from di.api.providers import DependencyProvider
-from di.container import Container
 from di.dependent import Dependent
 
 from xpresso._utils.typing import Annotated, get_args, get_origin

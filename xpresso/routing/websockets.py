@@ -5,10 +5,9 @@ import starlette.responses
 import starlette.routing
 import starlette.types
 import starlette.websockets
+from di import Container, SolvedDependent
 from di.api.dependencies import DependentBase
 from di.api.executor import SupportsAsyncExecutor
-from di.api.solved import SolvedDependent
-from di.container import Container
 from di.dependent import JoinedDependent
 from di.executors import AsyncExecutor, ConcurrentAsyncExecutor
 

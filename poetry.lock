@@ -168,7 +168,7 @@ toml = ["tomli"]
 
 [[package]]
 name = "di"
-version = "0.73.0"
+version = "0.75.0"
 description = "Dependency injection toolkit"
 category = "main"
 optional = false
@@ -1011,7 +1011,7 @@ testing = ["func-timeout", "jaraco.itertools", "pytest (>=6)", "pytest-black (>=
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7,<4"
-content-hash = "a62f820459e8efd8346833e4d0f2d4cc78f53d70d7d00248dda8b4f1c9fd4ed4"
+content-hash = "78ad61efab050edd1961dbe8c86dd34b15133a80b24c42005c3670ac3e29bfe3"
 
 [metadata.files]
 anyio = [
@@ -1201,8 +1201,8 @@ coverage = [
     {file = "coverage-6.5.0.tar.gz", hash = "sha256:f642e90754ee3e06b0e7e51bce3379590e76b7f76b708e1a71ff043f87025c84"},
 ]
 di = [
-    {file = "di-0.73.0-py3-none-any.whl", hash = "sha256:8ded24a6efd540eafb7df7258fabc985cf97733da4f31b1637c48d876e2212fb"},
-    {file = "di-0.73.0.tar.gz", hash = "sha256:d11341d81d42f23841b54a8ae917a0a8a7616e4713ec73dd9d6f3560f57ce3de"},
+    {file = "di-0.75.0-py3-none-any.whl", hash = "sha256:137ff4cda7d89af278ac726b19a9f3d62934dc819d5a25d8e303c751fc492d8d"},
+    {file = "di-0.75.0.tar.gz", hash = "sha256:dbe2967397294305d6384f1304ae94ab53db20d3509992157001ae5a74871f69"},
 ]
 distlib = [
     {file = "distlib-0.3.6-py2.py3-none-any.whl", hash = "sha256:f35c4b692542ca110de7ef0bea44d73981caeb34ca0b9b6b2e6d7790dda8f80e"},

@@ -5,7 +5,7 @@ from typing import AsyncIterator, List
 import anyio
 import anyio.abc
 import pytest
-from di.container import Container
+from di import Container
 from starlette.responses import Response
 from starlette.testclient import TestClient
 
