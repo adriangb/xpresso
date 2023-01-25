@@ -4,9 +4,8 @@ import inspect
 import typing
 
 import starlette.types
+from di import Container, ScopeState, SolvedDependent, bind_by_type
 from di.api.dependencies import DependentBase
-from di.api.solved import SolvedDependent
-from di.container import Container, ContainerState, bind_by_type
 from di.dependent import Dependent, JoinedDependent
 from di.executors import AsyncExecutor
 from starlette.background import BackgroundTasks
@@ -92,7 +91,7 @@ class App:
         self.container = container or Container()
         _register_framework_dependencies(self.container, app=self)
         self.dependency_overrides = DependencyOverrideManager(self.container)
-        self._container_state: ContainerState = ContainerState()
+        self._container_state: ScopeState = ScopeState()
         self._setup_run = False
 
         @contextlib.asynccontextmanager
@@ -160,7 +159,7 @@ class App:
                 finally:
                     # make this context manager reentrant for testing purposes
                     self._setup_run = False
-                    self._container_state = ContainerState()
+                    self._container_state = ScopeState()
 
         self._debug = debug
 
